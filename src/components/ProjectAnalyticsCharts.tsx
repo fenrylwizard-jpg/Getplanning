@@ -198,20 +198,14 @@ export default function ProjectAnalyticsCharts({ tasks, weeklyPlans }: { tasks: 
                                     paddingAngle={2}
                                     dataKey="value"
                                     stroke="none"
-                                    activeIndex={activeIndex as any}
-                                    activeShape={renderActiveShape}
-                                    onMouseEnter={onPieEnter}
-                                    onMouseLeave={onPieLeave}
+                                    {...{ activeIndex, activeShape: renderActiveShape, onMouseEnter: onPieEnter, onMouseLeave: onPieLeave } as any}
                                 >
                                     {pieData.map((entry, index) => (
                                         <Cell 
                                             key={`cell-${index}`} 
                                             fill={COLORS[index % COLORS.length]} 
-                                            style={{
-                                                opacity: activeIndex === -1 || activeIndex === index ? 1 : 0.4,
-                                                outline: 'none',
-                                                transition: 'opacity 0.2s ease-in-out'
-                                            }}
+                                            opacity={activeIndex === -1 || activeIndex === index ? 1 : 0.4}
+                                            className="outline-none transition-opacity duration-200 ease-in-out"
                                         />
                                     ))}
                                 </Pie>

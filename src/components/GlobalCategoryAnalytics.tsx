@@ -109,10 +109,7 @@ export default function GlobalCategoryAnalytics({ projects }: { projects: Extend
                             paddingAngle={5}
                             dataKey="executed"
                             stroke="none"
-                            activeIndex={activeIndex as any}
-                            activeShape={renderActiveShape}
-                            onMouseEnter={onPieEnter}
-                            onMouseLeave={onPieLeave}
+                            {...{ activeIndex, activeShape: renderActiveShape, onMouseEnter: onPieEnter, onMouseLeave: onPieLeave } as any}
                         >
                             {heatmapData.map((entry, index) => (
                                 <Cell 
@@ -162,7 +159,7 @@ export default function GlobalCategoryAnalytics({ projects }: { projects: Extend
                             onMouseLeave={() => setActiveIndex(-1)}
                         >
                             <div className="flex items-center gap-3">
-                                <div className={`w-3 h-3 rounded-full shadow-[0_0_10px_rgba(0,0,0,0.5)] bg-${COLORS[idx % COLORS.length].replace('#','')} ${isActive ? 'animate-pulse' : ''}`} style={{ backgroundColor: COLORS[idx % COLORS.length] }}></div>
+                                <div className={`w-3 h-3 rounded-full shadow-[0_0_10px_rgba(0,0,0,0.5)] ${['bg-blue-500', 'bg-emerald-500', 'bg-amber-500', 'bg-red-500', 'bg-violet-500', 'bg-pink-500'][idx % 6]} ${isActive ? 'animate-pulse' : ''}`}></div>
                                 <span className={`text-base font-bold transition-colors ${isActive ? 'text-white' : 'text-gray-200'}`}>{itemName}</span>
                             </div>
                             <div className="flex flex-col items-end">
