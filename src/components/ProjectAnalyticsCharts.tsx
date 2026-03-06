@@ -3,14 +3,15 @@
 "use client";
 
 import React, { useMemo, useState } from 'react';
-import { PieChart, Pie, Cell, Tooltip as PieTooltip, ResponsiveContainer, CartesianGrid, XAxis, YAxis, Tooltip as BarTooltip, LineChart, Line, BarChart, Bar } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip as PieTooltip, ResponsiveContainer, CartesianGrid, XAxis, YAxis, Tooltip as BarTooltip, LineChart, Line, BarChart, Bar, Sector } from 'recharts';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTranslation } from '@/lib/LanguageContext';
 
 export default function ProjectAnalyticsCharts({ tasks, weeklyPlans }: { tasks: any[], weeklyPlans: any[] }) {
     const { t, tData } = useTranslation();
-    const [weeksToShow, setWeeksToShow] = useState<number>(0); // 0 = all
+    const [weeksToShow, setWeeksToShow] = useState<number>(0);
     const [startIndex, setStartIndex] = useState<number>(0);
+    const [activeIndex, setActiveIndex] = useState<number>(-1);
 
     // 1. Prepare Pie Chart Data (Hours per Category)
     const pieData = useMemo(() => {
@@ -51,10 +52,45 @@ export default function ProjectAnalyticsCharts({ tasks, weeklyPlans }: { tasks: 
         const lower = catName.toLowerCase();
         if (lower.includes('câble') || lower.includes('chemin') || lower.includes('treillis')) return '/categories/cable.png';
         if (lower.includes('tableau') || lower.includes('coffret') || lower.includes('commut') || lower.includes('cc / cv')) return '/categories/panel.png';
-        if (lower.includes('eclairage') || lower.includes('eclairage') || lower.includes('luminaire')) return '/categories/light.png';
+        if (lower.includes('eclairage') || lower.includes('lumi') || lower.includes('luminaire')) return '/categories/light.png';
         if (lower.includes('equipement') || lower.includes('appareillage') || lower.includes('prise')) return '/categories/plug.png';
         if (lower.includes('astrid') || lower.includes('réseau') || lower.includes('donnée')) return '/categories/network.png';
         return '/categories/generic.png';
+    };
+
+    const renderActiveShape = (props: any) => {
+        const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props;
+        return (
+            <g>
+                <Sector
+                    cx={cx}
+                    cy={cy}
+                    innerRadius={innerRadius}
+                    outerRadius={outerRadius + 8}
+                    startAngle={startAngle}
+                    endAngle={endAngle}
+                    fill={fill}
+                />
+                <Sector
+                    cx={cx}
+                    cy={cy}
+                    startAngle={startAngle}
+                    endAngle={endAngle}
+                    innerRadius={outerRadius + 12}
+                    outerRadius={outerRadius + 15}
+                    fill={fill}
+                    opacity={0.3}
+                />
+            </g>
+        );
+    };
+
+    const onPieEnter = (_: any, index: number) => {
+        setActiveIndex(index);
+    };
+    
+    const onPieLeave = () => {
+        setActiveIndex(-1);
     };
 
     // 2. Prepare Progression Chart Data (Weekly Planned vs Executed)
@@ -153,7 +189,7 @@ export default function ProjectAnalyticsCharts({ tasks, weeklyPlans }: { tasks: 
                         {pieData.length > 0 ? (
                             <ResponsiveContainer width="99%" height="99%">
                                 <PieChart>
-                                    <Pie
+                                <Pie
                                     data={pieData}
                                     cx="50%"
                                     cy="50%"
@@ -162,12 +198,36 @@ export default function ProjectAnalyticsCharts({ tasks, weeklyPlans }: { tasks: 
                                     paddingAngle={2}
                                     dataKey="value"
                                     stroke="none"
+                                    activeIndex={activeIndex as any}
+                                    activeShape={renderActiveShape}
+                                    onMouseEnter={onPieEnter}
+                                    onMouseLeave={onPieLeave}
                                 >
                                     {pieData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        <Cell 
+                                            key={`cell-${index}`} 
+                                            fill={COLORS[index % COLORS.length]} 
+                                            style={{
+                                                opacity: activeIndex === -1 || activeIndex === index ? 1 : 0.4,
+                                                outline: 'none',
+                                                transition: 'opacity 0.2s ease-in-out'
+                                            }}
+                                        />
                                     ))}
                                 </Pie>
-                                <PieTooltip formatter={(value: any) => `${Number(value).toFixed(0)} ${t("hours")}`} contentStyle={{ backgroundColor: 'rgba(0,0,0,0.8)', border: '1px solid var(--accent-primary)', borderRadius: '8px', color: 'white' }} />
+                                <PieTooltip 
+                                    formatter={(value: any, name: any) => [`${Number(value).toFixed(0)} ${t("hours")}`, name]} 
+                                    contentStyle={{ 
+                                        backgroundColor: 'rgba(15, 23, 42, 0.95)', 
+                                        border: '1px solid var(--accent-primary)', 
+                                        borderRadius: '8px', 
+                                        color: '#fff', 
+                                        backdropFilter: 'blur(4px)',
+                                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.5)'
+                                    }} 
+                                    itemStyle={{ color: '#fff', fontWeight: 600 }}
+                                    labelStyle={{ display: 'none' }} // Pie charts don't use label typically, hide to prevent black text
+                                />
                                 </PieChart>
                             </ResponsiveContainer>
                         ) : (
@@ -178,15 +238,25 @@ export default function ProjectAnalyticsCharts({ tasks, weeklyPlans }: { tasks: 
                     <div className="w-1/2 h-full overflow-y-auto pr-2 custom-scrollbar flex flex-col gap-3 justify-center">
                         {pieData.map((entry, idx) => {
                             const percent = (pieData.reduce((acc, curr) => acc + curr.value, 0) > 0) ? ((entry.value / pieData.reduce((acc, curr) => acc + curr.value, 0)) * 100).toFixed(1) : 0;
+                            const isActive = activeIndex === idx;
                             return (
-                                <div key={entry.name} className="flex items-center gap-3 p-2 rounded bg-white/5 border border-white/10 hover:border-white/20 transition-colors">
-                                    <div className={`rounded-md overflow-hidden flex-shrink-0 border flex items-center justify-center bg-black w-10 h-10 ${BORDER_COLORS[idx % COLORS.length]}`}>
+                                <div 
+                                    key={entry.name} 
+                                    className={`flex items-center gap-3 p-2 rounded transition-all cursor-default border ${
+                                        isActive 
+                                            ? `bg-white/10 ${BORDER_COLORS[idx % COLORS.length]} scale-105 origin-left shadow-lg` 
+                                            : `bg-white/5 border-white/5 opacity-${activeIndex === -1 ? '100' : '40'} hover:border-white/20`}
+                                    `}
+                                    onMouseEnter={() => setActiveIndex(idx)}
+                                    onMouseLeave={() => setActiveIndex(-1)}
+                                >
+                                    <div className={`rounded-md overflow-hidden flex-shrink-0 border flex items-center justify-center bg-black w-10 h-10 ${BORDER_COLORS[idx % COLORS.length]} ${isActive ? 'shadow-[0_0_10px_currentColor] shadow-' + COLORS[idx % COLORS.length].replace('#','') : ''}`}>
                                         <img src={getCategoryIcon(entry.name)} alt={entry.name} className="w-full h-full object-cover" />
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <div className="text-sm font-medium text-white truncate" title={entry.name}>{entry.name}</div>
+                                        <div className={`text-sm font-medium truncate ${isActive ? 'text-white' : 'text-gray-300'}`} title={entry.name}>{entry.name}</div>
                                         <div className="text-xs text-secondary flex items-center gap-2">
-                                            <span className={`w-2 h-2 rounded-full ${BG_COLORS[idx % COLORS.length]}`}></span>
+                                            <span className={`w-2 h-2 rounded-full ${BG_COLORS[idx % COLORS.length]} ${isActive ? 'animate-pulse' : ''}`}></span>
                                             {percent}% ({Number(entry.value).toFixed(0)}h)
                                         </div>
                                     </div>
