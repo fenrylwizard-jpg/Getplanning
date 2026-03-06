@@ -1,0 +1,185 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id               String    @id @default(cuid())
+  name             String
+  email            String    @unique
+  passwordHash     String    
+  role             String    // 'PM' (Chef de projet) or 'SM' (Chef d'équipe) or 'ADMIN'
+  status           String    @default("PENDING") // 'PENDING' | 'APPROVED' | 'REJECTED'
+  
+  // RPG System
+  xp               Int       @default(0)
+  level            Int       @default(1)
+  characterId      Int       @default(1) // 1-5
+  
+  projectsAsPM     Project[] @relation("ProjectPM")
+  projectsAsSM     Project[] @relation("ProjectSM")
+  
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+model Project {
+  id               String    @id @default(cuid())
+  name             String
+  location         String?
+  startDate        DateTime?
+  endDate          DateTime?
+  
+  projectManagerId String
+  projectManager   User      @relation("ProjectPM", fields: [projectManagerId], references: [id])
+  
+  siteManagerId    String?
+  siteManager      User?     @relation("ProjectSM", fields: [siteManagerId], references: [id])
+  
+  subLocations     SubLocation[]
+  tasks            Task[]
+  weeklyPlans      WeeklyPlan[]
+  revisions        RevisionLog[]
+  dailyReports     DailyReport[]
+  
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+model SubLocation {
+  id        String   @id @default(cuid())
+  name      String
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model RevisionLog {
+  id           String   @id @default(cuid())
+  projectId    String
+  fileName     String
+  uploadedAt   DateTime @default(now())
+  changesMade  String?  
+  
+  project      Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model Task {
+  id                  String    @id @default(cuid())
+  taskCode            String    
+  status              String    @default("ACTIVE") 
+  category            String    @default("Non Catégorisé")
+  description         String
+  unit                String    
+  quantity            Float     
+  completedQuantity   Float     @default(0) 
+  minutesPerUnit      Float     
+  
+  projectId           String
+  project             Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  weeklyPlanTasks     WeeklyPlanTask[]
+  dailyProgress       DailyTaskProgress[]
+  
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@unique([projectId, taskCode])
+}
+
+model WeeklyPlan {
+  id                  String    @id @default(cuid())
+  weekNumber          Int
+  year                Int
+  numberOfWorkers     Int
+  targetHoursCapacity Float     
+  
+  projectId           String
+  project             Project   @relation(fields: [projectId], references: [id])
+  
+  // Checklist
+  hasDrawings         Boolean   @default(false)
+  hasMaterials        Boolean   @default(false)
+  hasTools            Boolean   @default(false)
+  hasSubcontractors   Boolean   @default(false)
+  
+  // Reporting end-of-week
+  isSubmitted         Boolean   @default(false)
+  isClosed            Boolean   @default(false) // For auto-closure Monday 07h00
+  targetReached       Boolean?
+  issuesReported      String?
+  missedTargetReason  String?   
+  workersCount        Float?    // Daily workforce logged by SM
+  
+  tasks               WeeklyPlanTask[]
+  
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+}
+
+model WeeklyPlanTask {
+  id                  String    @id @default(cuid())
+  
+  weeklyPlanId        String
+  weeklyPlan          WeeklyPlan @relation(fields: [weeklyPlanId], references: [id])
+  
+  taskId              String
+  task                Task       @relation(fields: [taskId], references: [id])
+  
+  plannedQuantity     Float
+  actualQuantity      Float      @default(0) // Sum of daily progress
+  locations           String?    
+
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+}
+
+model DailyReport {
+  id                  String    @id @default(cuid())
+  date                DateTime
+  remarks             String?
+  status              String    @default("DRAFT") // DRAFT, SUBMITTED, APPROVED
+  
+  projectId           String
+  project             Project   @relation(fields: [projectId], references: [id])
+  
+  siteManagerId       String
+  
+  attendance          Attendance[]
+  taskProgress        DailyTaskProgress[]
+
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+}
+
+model Attendance {
+  id                  String    @id @default(cuid())
+  workerName          String
+  hours               Float
+  
+  dailyReportId       String
+  dailyReport         DailyReport @relation(fields: [dailyReportId], references: [id], onDelete: Cascade)
+}
+
+model DailyTaskProgress {
+  id                  String    @id @default(cuid())
+  quantity            Float
+  hours               Float?    // Option to track specific hours per task
+  
+  dailyReportId       String
+  dailyReport         DailyReport @relation(fields: [dailyReportId], references: [id], onDelete: Cascade)
+  
+  taskId              String
+  task                Task       @relation(fields: [taskId], references: [id], onDelete: Cascade)
+}
+
+model PhotoProof {
+  id                  String    @id @default(cuid())
+  url                 String    
+  caption             String?
+  
+  createdAt           DateTime  @default(now())
+}

@@ -1,0 +1,54 @@
+[
+  {
+    "__EMPTY": "CODE",
+    "Révision tps MO de VRI": "Decriptif CODE",
+    "__EMPTY_1": "Kptot",
+    "__EMPTY_2": "MONTAGE",
+    "__EMPTY_3": "Ref1",
+    "__EMPTY_4": "#",
+    "__EMPTY_5": "KP/st",
+    "__EMPTY_6": "Ref2",
+    "__EMPTY_7": "#",
+    "__EMPTY_8": "KP/st",
+    "__EMPTY_9": "Ref3",
+    "__EMPTY_10": "#",
+    "__EMPTY_11": "KP/st",
+    "__EMPTY_12": "Ref4",
+    "__EMPTY_13": "#",
+    "__EMPTY_14": "KP/st",
+    "__EMPTY_15": "Ref5",
+    "__EMPTY_16": "#",
+    "__EMPTY_17": "KP/st",
+    "__EMPTY_18": "Ref6",
+    "__EMPTY_19": "#",
+    "__EMPTY_20": "KP/st",
+    "__EMPTY_21": "Ref7",
+    "__EMPTY_22": "#",
+    "__EMPTY_23": "KP/st",
+    "__EMPTY_24": "Ref8",
+    "__EMPTY_25": "#",
+    "__EMPTY_26": "KP/st"
+  },
+  {
+    "Révision tps MO de VRI": "Câbles",
+    "__EMPTY_1": 0
+  },
+  {
+    "__EMPTY": "XGB2x1,5",
+    "Révision tps MO de VRI": "XGB2X1,5-CCA B 1000",
+    "__EMPTY_1": 0.8815,
+    "__EMPTY_2": 1.5
+  },
+  {
+    "__EMPTY": "XGB2x2,5",
+    "Révision tps MO de VRI": "XGB2X2,5-CCA B 1000",
+    "__EMPTY_1": 1.3069,
+    "__EMPTY_2": 1.5
+  },
+  {
+    "__EMPTY": "XGB2x4",
+    "Révision tps MO de VRI": "XGB2X4-CCA B 1000",
+    "__EMPTY_1": 1.7543,
+    "__EMPTY_2": 1.5
+  }
+]

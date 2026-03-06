@@ -1,0 +1,7 @@
+/*.js
+/*.ts
+!next.config.js
+!src/
+!prisma/
+*.js
+*.mjs

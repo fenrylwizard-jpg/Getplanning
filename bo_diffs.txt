@@ -1,0 +1,26 @@
+﻿=== Discrepancy Analysis ===
+Tech Code | BO Budget | Meetstaat Sum | Diff
+1          |     10.00 |          0.00 |   -10.00  => 3
+AFBR1      |    418.17 |        418.17 |    -0.00  => Travaux préparatoires/démolitions
+HS1        |     16.00 |         16.00 |     0.00  => Moyenne Tension (MT)
+VKO1       |      8.00 |          8.00 |     0.00  => Canalisations Primaires Enterrées
+BVER1      |     72.00 |         72.00 |     0.00  => Eclairage Extérieur
+AA1        |      5.42 |          5.42 |    -0.00  => Mise à la terre
+KD1        |    247.50 |        247.50 |     0.00  => Gaines à câbles
+VK1        |     85.15 |         85.15 |     0.00  => Canalisations Primaires
+VSK1       |   1339.02 |       1339.02 |    -0.00  => Canalisations secondaires
+DA2        |    691.50 |        691.50 |     0.00  => Canalisation Câblage Structuré
+BD2        |    298.88 |        298.88 |     0.00  => Canalisation Détection Incendie
+INB2       |      2.00 |          2.00 |     0.00  => Canalisation Intrusion
+TC2        |     64.00 |         64.00 |     0.00  => Canalisation Controle d'Accès
+SM1        |    199.87 |        199.87 |    -0.00  => Petit appareillage
+ABM1       |     36.00 |         36.00 |     0.00  => Détecteurs de présence/mouvement
+VER1       |    482.50 |        482.50 |     0.00  => Eclairage Intérieur
+NVER1      |     62.93 |         62.93 |     0.00  => Eclairage de secours
+DA1        |    263.87 |        263.87 |    -0.00  => Câblage Structuré
+BD1        |    174.17 |        174.17 |    -0.00  => Détection Incendie
+INB1       |     54.20 |         54.20 |     0.00  => Intrusion
+TC1        |     47.17 |         47.17 |    -0.00  => Controle d'Accès
+UUR1       |    214.05 |        214.05 |    -0.00  => Horloge
+EB1        |    184.50 |        184.50 |     0.00  => Tableaux Electriques
+NTP        |    418.17 |          0.00 |  -418.17  => Poste Non Attribués

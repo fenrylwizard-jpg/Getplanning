@@ -1,0 +1,165 @@
+﻿=== SM VERIFICATION ===
+SM2 state: {"id":"cmmek1pnv0005kvs10fl9358b","name":"Nathalie Petit","email":"sm2@eeg.be","passwordHash":"$2b$10$dBHVxLopShZPXdIAoqAQFuIaG7X/69gZIntjHsY64EXLSOPlhhGAi","role":"SM","status":"APPROVED","xp":22000,"level":24,"characterId":1,"createdAt":"2026-03-06T07:10:20.204Z","updatedAt":"2026-03-06T07:10:20.204Z"}
+Recent reports: [
+  {
+    "date": "2026-02-27T07:10:21.624Z",
+    "status": "APPROVED",
+    "projectId": "cmmek1rj300bekvs105drfe5h"
+  },
+  {
+    "date": "2026-02-20T07:10:21.624Z",
+    "status": "APPROVED",
+    "projectId": "cmmek1rj300bekvs105drfe5h"
+  },
+  {
+    "date": "2026-02-13T07:10:21.624Z",
+    "status": "APPROVED",
+    "projectId": "cmmek1rj300bekvs105drfe5h"
+  },
+  {
+    "date": "2026-02-06T07:10:21.624Z",
+    "status": "APPROVED",
+    "projectId": "cmmek1rj300bekvs105drfe5h"
+  },
+  {
+    "date": "2026-01-30T07:10:21.624Z",
+    "status": "APPROVED",
+    "projectId": "cmmek1rj300bekvs105drfe5h"
+  }
+]
+
+=== PM VERIFICATION ===
+PM1 state: {"id":"cmmek1pne0001kvs19r96lfoi","name":"Laurent Dupont","email":"pm1@eeg.be","passwordHash":"$2b$10$dBHVxLopShZPXdIAoqAQFuIaG7X/69gZIntjHsY64EXLSOPlhhGAi","role":"PM","status":"APPROVED","xp":2500,"level":8,"characterId":1,"createdAt":"2026-03-06T07:10:20.187Z","updatedAt":"2026-03-06T07:10:20.187Z"}
+Herlin Jupiter project: {"id":"cmmek1qre0008kvs15fl6xbbw","name":"Herlin - Jupiter","location":"Naninne, B├ótiment A","startDate":"2026-02-06T07:10:21.624Z","endDate":"2026-03-06T07:10:21.624Z","projectManagerId":"cmmek1pne0001kvs19r96lfoi","siteManagerId":"cmmek1pnr0004kvs1r3hwki7i","createdAt":"2026-03-06T07:10:21.626Z","updatedAt":"2026-03-06T07:10:21.626Z"}
+Plans: [
+  {
+    "weekNumber": 1,
+    "targetReached": true,
+    "isClosed": true,
+    "numberOfWorkers": 5,
+    "targetHoursCapacity": 160
+  },
+  {
+    "weekNumber": 2,
+    "targetReached": true,
+    "isClosed": true,
+    "numberOfWorkers": 5,
+    "targetHoursCapacity": 160
+  },
+  {
+    "weekNumber": 3,
+    "targetReached": true,
+    "isClosed": true,
+    "numberOfWorkers": 5,
+    "targetHoursCapacity": 160
+  },
+  {
+    "weekNumber": 4,
+    "targetReached": true,
+    "isClosed": true,
+    "numberOfWorkers": 4,
+    "targetHoursCapacity": 160
+  },
+  {
+    "weekNumber": 10,
+    "targetReached": false,
+    "isClosed": true,
+    "numberOfWorkers": 5,
+    "targetHoursCapacity": 200
+  }
+]
+Sample plan tasks: [
+  {
+    "plannedQuantity": 2,
+    "actualQuantity": 2,
+    "task": {
+      "minutesPerUnit": 60,
+      "description": "Nouveau TD E1",
+      "category": "├ëclairage"
+    }
+  },
+  {
+    "plannedQuantity": 5,
+    "actualQuantity": 5,
+    "task": {
+      "minutesPerUnit": 9.6,
+      "description": "Alimentation du nouveau TD E1",
+      "category": "├ëclairage de secours"
+    }
+  },
+  {
+    "plannedQuantity": 1,
+    "actualQuantity": 1,
+    "task": {
+      "minutesPerUnit": 227.5,
+      "description": "C├óblage des ├®quipements ├á conserver",
+      "category": "├ëclairage de secours"
+    }
+  },
+  {
+    "plannedQuantity": 4,
+    "actualQuantity": 4,
+    "task": {
+      "minutesPerUnit": 10,
+      "description": "Alimentation du TD E1.1",
+      "category": "├ëclairage de secours"
+    }
+  },
+  {
+    "plannedQuantity": 19,
+    "actualQuantity": 19,
+    "task": {
+      "minutesPerUnit": 3.88,
+      "description": "D├®tection incendie",
+      "category": "D├®tection incendie"
+    }
+  },
+  {
+    "plannedQuantity": 2,
+    "actualQuantity": 2,
+    "task": {
+      "minutesPerUnit": 60,
+      "description": "Nouveau TD E1",
+      "category": "├ëclairage"
+    }
+  },
+  {
+    "plannedQuantity": 4,
+    "actualQuantity": 4,
+    "task": {
+      "minutesPerUnit": 9.6,
+      "description": "Alimentation du nouveau TD E1",
+      "category": "├ëclairage de secours"
+    }
+  },
+  {
+    "plannedQuantity": 1,
+    "actualQuantity": 1,
+    "task": {
+      "minutesPerUnit": 227.5,
+      "description": "C├óblage des ├®quipements ├á conserver",
+      "category": "├ëclairage de secours"
+    }
+  },
+  {
+    "plannedQuantity": 5,
+    "actualQuantity": 5,
+    "task": {
+      "minutesPerUnit": 10,
+      "description": "Alimentation du TD E1.1",
+      "category": "├ëclairage de secours"
+    }
+  },
+  {
+    "plannedQuantity": 26,
+    "actualQuantity": 26,
+    "task": {
+      "minutesPerUnit": 3.88,
+      "description": "D├®tection incendie",
+      "category": "D├®tection incendie"
+    }
+  }
+]
+
+=== ADMIN VERIFICATION ===
+Admin KPIs: {"projects":3,"users":7,"pendingUsers":0,"closedPlans":41,"openPlans":0}

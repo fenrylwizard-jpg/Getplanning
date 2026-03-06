@@ -1,0 +1,16 @@
+{
+  "users": [
+    "admin@eeg.be | Admin EEG | ADMIN | Lvl:1 | XP:0 | CID:1",
+    "pm1@eeg.be | Laurent Dupont | PM | Lvl:8 | XP:2500 | CID:1",
+    "pm2@eeg.be | Sophie Leroy | PM | Lvl:18 | XP:14000 | CID:2",
+    "pm3@eeg.be | Marc Renard | PM | Lvl:28 | XP:28000 | CID:3",
+    "sm1@eeg.be | Antoine Bernard | SM | Lvl:5 | XP:1200 | CID:2",
+    "sm2@eeg.be | Nathalie Petit | SM | Lvl:24 | XP:22000 | CID:1",
+    "sm3@eeg.be | Thomas Moreau | SM | Lvl:35 | XP:36000 | CID:3"
+  ],
+  "projects": [
+    "cmmek1qre0008kvs15fl6xbbw | Herlin - Jupiter",
+    "cmmek1rj300bekvs105drfe5h | Herlin - Mars",
+    "cmmek1su300rwkvs1nhobd64s | Herlin - Neptune"
+  ]
+}

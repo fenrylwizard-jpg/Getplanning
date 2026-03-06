@@ -1,0 +1,179 @@
+{
+  "sheets": [
+    "INFO",
+    "Voorblad",
+    "Meetstaat",
+    "Feuil2",
+    "Feuil1",
+    "OPM",
+    "SPEC VKVW",
+    "ALG VKVW",
+    "BB",
+    "BO",
+    "CODES",
+    "Kabels",
+    "Materiaal",
+    "Voorbeeld",
+    "Market Type",
+    "UOM",
+    "MATERIAL CODES",
+    "BUDGETCODES",
+    "Legende"
+  ],
+  "sheetInfo": [
+    {
+      "name": "INFO",
+      "sheetId": "8",
+      "sheetid": "8",
+      "id": "rId1",
+      "Hidden": 0,
+      "CodeName": "Blad1"
+    },
+    {
+      "name": "Voorblad",
+      "sheetId": "14",
+      "sheetid": "14",
+      "id": "rId2",
+      "Hidden": 1,
+      "CodeName": "Blad23"
+    },
+    {
+      "name": "Meetstaat",
+      "sheetId": "9",
+      "sheetid": "9",
+      "id": "rId3",
+      "Hidden": 0,
+      "CodeName": "Blad9"
+    },
+    {
+      "name": "Feuil2",
+      "sheetId": "29",
+      "sheetid": "29",
+      "id": "rId4",
+      "Hidden": 0,
+      "CodeName": "Feuil7"
+    },
+    {
+      "name": "Feuil1",
+      "sheetId": "28",
+      "sheetid": "28",
+      "id": "rId5",
+      "Hidden": 0,
+      "CodeName": "Feuil8"
+    },
+    {
+      "name": "OPM",
+      "sheetId": "17",
+      "sheetid": "17",
+      "id": "rId6",
+      "Hidden": 1,
+      "CodeName": "Blad16"
+    },
+    {
+      "name": "SPEC VKVW",
+      "sheetId": "12",
+      "sheetid": "12",
+      "id": "rId7",
+      "Hidden": 1,
+      "CodeName": "Blad10"
+    },
+    {
+      "name": "ALG VKVW",
+      "sheetId": "19",
+      "sheetid": "19",
+      "id": "rId8",
+      "Hidden": 1,
+      "CodeName": "Blad5"
+    },
+    {
+      "name": "BB",
+      "sheetId": "21",
+      "sheetid": "21",
+      "id": "rId9",
+      "Hidden": 0,
+      "CodeName": "Blad2"
+    },
+    {
+      "name": "BO",
+      "sheetId": "10",
+      "sheetid": "10",
+      "id": "rId10",
+      "Hidden": 0,
+      "CodeName": "Blad4"
+    },
+    {
+      "name": "CODES",
+      "sheetId": "2",
+      "sheetid": "2",
+      "id": "rId11",
+      "Hidden": 0,
+      "CodeName": "Blad6"
+    },
+    {
+      "name": "Kabels",
+      "sheetId": "4",
+      "sheetid": "4",
+      "id": "rId12",
+      "Hidden": 0,
+      "CodeName": "Blad8"
+    },
+    {
+      "name": "Materiaal",
+      "sheetId": "3",
+      "sheetid": "3",
+      "id": "rId13",
+      "Hidden": 0,
+      "CodeName": "Blad7"
+    },
+    {
+      "name": "Voorbeeld",
+      "sheetId": "22",
+      "sheetid": "22",
+      "id": "rId14",
+      "Hidden": 0,
+      "CodeName": "Feuil1"
+    },
+    {
+      "name": "Market Type",
+      "sheetId": "23",
+      "sheetid": "23",
+      "id": "rId15",
+      "Hidden": 0,
+      "CodeName": "Feuil2"
+    },
+    {
+      "name": "UOM",
+      "sheetId": "24",
+      "sheetid": "24",
+      "id": "rId16",
+      "Hidden": 0,
+      "CodeName": "Feuil3"
+    },
+    {
+      "name": "MATERIAL CODES",
+      "sheetId": "25",
+      "sheetid": "25",
+      "id": "rId17",
+      "Hidden": 0,
+      "CodeName": "Feuil4"
+    },
+    {
+      "name": "BUDGETCODES",
+      "sheetId": "26",
+      "sheetid": "26",
+      "id": "rId18",
+      "Hidden": 0,
+      "CodeName": "Feuil5"
+    },
+    {
+      "name": "Legende",
+      "sheetId": "27",
+      "sheetid": "27",
+      "id": "rId19",
+      "Hidden": 0,
+      "CodeName": "Feuil6"
+    }
+  ],
+  "vorderstaat": [],
+  "baseDonnees": []
+}

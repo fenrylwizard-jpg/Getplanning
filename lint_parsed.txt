@@ -1,0 +1,83 @@
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\fix_params.js:1 [@typescript-eslint/no-require-imports] A `require()` style import is forbidden.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\fix_params.js:2 [@typescript-eslint/no-require-imports] A `require()` style import is forbidden.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\inspect_meetstaat.js:1 [@typescript-eslint/no-require-imports] A `require()` style import is forbidden.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\inspect_meetstaat.js:2 [@typescript-eslint/no-require-imports] A `require()` style import is forbidden.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\inspect_xls.js:1 [@typescript-eslint/no-require-imports] A `require()` style import is forbidden.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\prisma\seed.js:1 [@typescript-eslint/no-require-imports] A `require()` style import is forbidden.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\prisma\seed.ts:46 [@typescript-eslint/no-unused-vars] 'project' is assigned a value but never used.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\api\admin\users\[id]\approve\route.ts:10 [@typescript-eslint/no-explicit-any] Unexpected any. Specify a different type.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\api\admin\users\[id]\approve\route.ts:32 [@typescript-eslint/no-unused-vars] 'err' is defined but never used.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\api\admin\users\[id]\approve\route.ts:32 [@typescript-eslint/no-explicit-any] Unexpected any. Specify a different type.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\api\admin\users\route.ts:10 [@typescript-eslint/no-explicit-any] Unexpected any. Specify a different type.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\api\admin\users\route.ts:33 [@typescript-eslint/no-unused-vars] 'err' is defined but never used.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\api\admin\users\route.ts:33 [@typescript-eslint/no-explicit-any] Unexpected any. Specify a different type.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\api\auth\register\route.ts:35 [@typescript-eslint/no-explicit-any] Unexpected any. Specify a different type.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\api\project\[id]\active-plan\route.ts:20 [@typescript-eslint/no-explicit-any] Unexpected any. Specify a different type.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\api\project\[id]\plan\route.ts:28 [@typescript-eslint/no-explicit-any] Unexpected any. Specify a different type.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\api\project\[id]\plan\route.ts:38 [@typescript-eslint/no-explicit-any] Unexpected any. Specify a different type.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\api\project\[id]\report\route.ts:8 [@typescript-eslint/no-unused-vars] 'id' is assigned a value but never used.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\api\project\[id]\report\route.ts:86 [@typescript-eslint/no-explicit-any] Unexpected any. Specify a different type.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\api\project\[id]\route.ts:26 [@typescript-eslint/no-explicit-any] Unexpected any. Specify a different type.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\api\upload\route.ts:35 [prefer-const] 'techCodeToCategory' is never reassigned. Use 'const' instead.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\api\upload\route.ts:38 [@typescript-eslint/no-explicit-any] Unexpected any. Specify a different type.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\api\upload\route.ts:54 [prefer-const] 'codeToMinutesMap' is never reassigned. Use 'const' instead.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\api\upload\route.ts:58 [@typescript-eslint/no-explicit-any] Unexpected any. Specify a different type.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\api\upload\route.ts:74 [@typescript-eslint/no-explicit-any] Unexpected any. Specify a different type.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\api\upload\route.ts:89 [@typescript-eslint/no-unused-vars] 'headers' is assigned a value but never used.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\api\upload\route.ts:95 [@typescript-eslint/no-explicit-any] Unexpected any. Specify a different type.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\api\upload\route.ts:101 [@typescript-eslint/no-explicit-any] Unexpected any. Specify a different type.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\api\upload\route.ts:106 [@typescript-eslint/no-explicit-any] Unexpected any. Specify a different type.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\api\upload\route.ts:107 [@typescript-eslint/no-explicit-any] Unexpected any. Specify a different type.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\api\upload\route.ts:157 [@typescript-eslint/no-unused-vars] 'totalMins' is assigned a value but never used.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\api\upload\route.ts:165 [prefer-const] 'subDesc' is never reassigned. Use 'const' instead.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\api\upload\route.ts:324 [@typescript-eslint/no-explicit-any] Unexpected any. Specify a different type.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\api\users\sm\route.ts:11 [@typescript-eslint/no-explicit-any] Unexpected any. Specify a different type.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\login\page.tsx:43 [@typescript-eslint/no-unused-vars] 'err' is defined but never used.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\page.tsx:44 [@next/next/no-img-element] Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\page.tsx:52 [@next/next/no-img-element] Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\page.tsx:60 [@next/next/no-img-element] Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\pm\analytics\page.tsx:29 [@typescript-eslint/no-explicit-any] Unexpected any. Specify a different type.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\pm\analytics\page.tsx:33 [@typescript-eslint/no-explicit-any] Unexpected any. Specify a different type.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\pm\analytics\page.tsx:85 [react/no-unescaped-entities] `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\pm\analytics\page.tsx:85 [react/no-unescaped-entities] `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\pm\project\[id]\page.tsx:27 [prefer-const] 'totalTasksLoaded' is never reassigned. Use 'const' instead.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\pm\project\[id]\page.tsx:31 [@typescript-eslint/no-explicit-any] Unexpected any. Specify a different type.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\pm\project\[id]\page.tsx:98 [@typescript-eslint/no-explicit-any] Unexpected any. Specify a different type.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\pm\project\[id]\page.tsx:118 [react/no-unescaped-entities] `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\pm\project\[id]\page.tsx:118 [react/no-unescaped-entities] `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\pm\project\[id]\page.tsx:130 [@typescript-eslint/no-explicit-any] Unexpected any. Specify a different type.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\pm\project\[id]\page.tsx:141 [@typescript-eslint/no-explicit-any] Unexpected any. Specify a different type.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\pm\project\[id]\page.tsx:142 [@next/next/no-img-element] Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\sm\analytics\page.tsx:23 [@typescript-eslint/no-explicit-any] Unexpected any. Specify a different type.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\sm\analytics\page.tsx:27 [@typescript-eslint/no-explicit-any] Unexpected any. Specify a different type.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\sm\dashboard\page.tsx:3 [@typescript-eslint/no-unused-vars] 'ArrowRight' is defined but never used.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\sm\dashboard\page.tsx:54 [@typescript-eslint/no-explicit-any] Unexpected any. Specify a different type.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\sm\dashboard\page.tsx:79 [react/no-unescaped-entities] `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\sm\project\[id]\analytics\page.tsx:26 [prefer-const] 'totalTasksLoaded' is never reassigned. Use 'const' instead.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\sm\project\[id]\analytics\page.tsx:30 [@typescript-eslint/no-explicit-any] Unexpected any. Specify a different type.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\components\AnalyticsCharts.tsx:5 [@typescript-eslint/no-explicit-any] Unexpected any. Specify a different type.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\components\AnalyticsCharts.tsx:23 [@typescript-eslint/no-explicit-any] Unexpected any. Specify a different type.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\components\ProjectAnalyticsCharts.tsx:8 [@typescript-eslint/no-explicit-any] Unexpected any. Specify a different type.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\components\ProjectAnalyticsCharts.tsx:8 [@typescript-eslint/no-explicit-any] Unexpected any. Specify a different type.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\components\ProjectAnalyticsCharts.tsx:26 [prefer-const] 'finalData' is never reassigned. Use 'const' instead.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\components\ProjectAnalyticsCharts.tsx:26 [@typescript-eslint/no-explicit-any] Unexpected any. Specify a different type.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\components\ProjectAnalyticsCharts.tsx:67 [@typescript-eslint/no-explicit-any] Unexpected any. Specify a different type.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\components\ProjectAnalyticsCharts.tsx:114 [@typescript-eslint/no-explicit-any] Unexpected any. Specify a different type.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\components\ProjectAnalyticsCharts.tsx:158 [@typescript-eslint/no-explicit-any] Unexpected any. Specify a different type.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\components\ProjectAnalyticsCharts.tsx:172 [@next/next/no-img-element] Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\lib\auth.ts:6 [@typescript-eslint/no-explicit-any] Unexpected any. Specify a different type.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\lib\auth.ts:18 [@typescript-eslint/no-unused-vars] 'e' is defined but never used.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\lib\indexedDB.ts:4 [@typescript-eslint/no-explicit-any] Unexpected any. Specify a different type.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\lib\prisma.ts:1 [@typescript-eslint/ban-ts-comment] Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\test_query.js:1 [@typescript-eslint/no-require-imports] A `require()` style import is forbidden.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\test_query2.js:1 [@typescript-eslint/no-require-imports] A `require()` style import is forbidden.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\test_upload.js:1 [@typescript-eslint/no-require-imports] A `require()` style import is forbidden.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\test_upload.js:2 [@typescript-eslint/no-require-imports] A `require()` style import is forbidden.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\tester.js:1 [@typescript-eslint/no-require-imports] A `require()` style import is forbidden.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\tester_clean.js:1 [@typescript-eslint/no-require-imports] A `require()` style import is forbidden.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\tester_delete.js:1 [@typescript-eslint/no-require-imports] A `require()` style import is forbidden.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\tester_seed.js:1 [@typescript-eslint/no-require-imports] A `require()` style import is forbidden.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\tester_seed.js:2 [@typescript-eslint/no-require-imports] A `require()` style import is forbidden.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\tester_seed.js:3 [@typescript-eslint/no-require-imports] A `require()` style import is forbidden.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\tester_tasks.js:1 [@typescript-eslint/no-require-imports] A `require()` style import is forbidden.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\tester_tasks.js:14 [@typescript-eslint/no-unused-vars] 'activeTasks' is assigned a value but never used.

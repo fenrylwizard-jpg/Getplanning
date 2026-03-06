@@ -1,0 +1,42 @@
+﻿
+> worksite-tracker@0.1.0 lint
+> eslint
+
+node.exe : 
+(node:29628) 
+ESLintIgnoreWarning: 
+The ".eslintignore" 
+file is no longer 
+supported. Switch to 
+using the "ignores" 
+property in 
+"eslint.config.js": htt
+ps://eslint.org/docs/la
+test/use/configure/migr
+ation-guide#ignoring-fi
+les
+Au caractère Ligne:1 : 
+1
++ & "C:\Program 
+Files\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo 
+...
++ ~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~
+    + CategoryInfo     
+         : 
+NotSpecified: ((no    
+de:29628) ES...#ignori 
+   ng-files:String) 
+[], R    emoteException
+    + 
+FullyQualifiedErrorI   
+ d : NativeCommandError
+ 
+(Use `node 
+--trace-warnings ...` 
+to show where the 
+warning was created)

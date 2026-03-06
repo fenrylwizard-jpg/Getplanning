@@ -1,0 +1,22 @@
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\fix_params.js:1 [@typescript-eslint/no-require-imports] A `require()` style import is forbidden.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\fix_params.js:2 [@typescript-eslint/no-require-imports] A `require()` style import is forbidden.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\inspect_meetstaat.js:1 [@typescript-eslint/no-require-imports] A `require()` style import is forbidden.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\inspect_meetstaat.js:2 [@typescript-eslint/no-require-imports] A `require()` style import is forbidden.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\inspect_xls.js:1 [@typescript-eslint/no-require-imports] A `require()` style import is forbidden.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\prisma\seed.js:1 [@typescript-eslint/no-require-imports] A `require()` style import is forbidden.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\prisma\seed.ts:46 [@typescript-eslint/no-unused-vars] 'project' is assigned a value but never used.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\api\upload\route.ts:93 [null] Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any').
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\api\upload\route.ts:97 [@typescript-eslint/no-explicit-any] Unexpected any. Specify a different type.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\lib\prisma.ts:1 [@typescript-eslint/ban-ts-comment] Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\test_query.js:1 [@typescript-eslint/no-require-imports] A `require()` style import is forbidden.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\test_query2.js:1 [@typescript-eslint/no-require-imports] A `require()` style import is forbidden.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\test_upload.js:1 [@typescript-eslint/no-require-imports] A `require()` style import is forbidden.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\test_upload.js:2 [@typescript-eslint/no-require-imports] A `require()` style import is forbidden.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\tester.js:1 [@typescript-eslint/no-require-imports] A `require()` style import is forbidden.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\tester_clean.js:1 [@typescript-eslint/no-require-imports] A `require()` style import is forbidden.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\tester_delete.js:1 [@typescript-eslint/no-require-imports] A `require()` style import is forbidden.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\tester_seed.js:1 [@typescript-eslint/no-require-imports] A `require()` style import is forbidden.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\tester_seed.js:2 [@typescript-eslint/no-require-imports] A `require()` style import is forbidden.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\tester_seed.js:3 [@typescript-eslint/no-require-imports] A `require()` style import is forbidden.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\tester_tasks.js:1 [@typescript-eslint/no-require-imports] A `require()` style import is forbidden.
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\tester_tasks.js:14 [@typescript-eslint/no-unused-vars] 'activeTasks' is assigned a value but never used.

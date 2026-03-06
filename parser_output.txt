@@ -1,0 +1,23 @@
+﻿=== Category Totals ===
+Tableaux Electriques                     | 184.50
+Canalisations Primaires Enterrées        | 8.00
+Canalisations Primaires                  | 85.14
+Canalisation Détection Incendie          | 298.92
+Canalisation Câblage Structuré           | 691.50
+Travaux préparatoires/démolitions        | 418.55
+Mise à la terre                          | 5.42
+Moyenne Tension (MT)                     | 16.00
+Canalisations secondaires                | 1340.18
+Gaines à câbles                          | 247.50
+Petit appareillage                       | 199.87
+Eclairage Intérieur                      | 482.50
+Eclairage Extérieur                      | 72.00
+Eclairage de secours                     | 62.93
+Détecteurs de présence/mouvement         | 36.00
+Câblage Structuré                        | 263.87
+Détection Incendie                       | 174.17
+Intrusion                                | 54.20
+Canalisation Intrusion                   | 2.00
+Controle d'Accès                         | 47.17
+Canalisation Controle d'Accès            | 64.00
+Horloge                                  | 214.05

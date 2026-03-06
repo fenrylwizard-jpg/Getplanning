@@ -1,0 +1,17 @@
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\node_modules\.prisma\client\default.js:43
+    throw new Error('@prisma/client did not initialize yet. Please run "prisma generate" and try to import it again.');
+          ^
+
+Error: @prisma/client did not initialize yet. Please run "prisma generate" and try to import it again.
+    at new PrismaClient (C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\node_modules\.prisma\client\default.js:43:11)
+    at bcrypt (C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\prisma\seed.ts:4:16)
+    at Object.<anonymous> (C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\prisma\seed.ts:77:6)
+    at Module._compile (node:internal/modules/cjs/loader:1811:14)
+    at Object.transformer (C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\node_modules\tsx\dist\register-D46fvsV_.cjs:3:1104)
+    at Module.load (node:internal/modules/cjs/loader:1532:32)
+    at Module._load (node:internal/modules/cjs/loader:1334:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at loadCJSModuleWithModuleLoad (node:internal/modules/esm/translators:327:3)
+    at ModuleWrap.<anonymous> (node:internal/modules/esm/translators:232:7)
+
+Node.js v25.6.1

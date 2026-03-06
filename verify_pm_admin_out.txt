@@ -1,0 +1,22 @@
+﻿Planned vs Executed per week (Herlin - Jupiter):
+  W1: Planned 8.5h | Actual 8.5h | TargetReached: true
+  W2: Planned 8.9h | Actual 8.9h | TargetReached: true
+  W3: Planned 9.1h | Actual 9.1h | TargetReached: true
+  W4: Planned 13.8h | Actual 13.8h | TargetReached: true
+  W10: Planned 0.0h | Actual 0.0h | TargetReached: false
+
+  Total Planned: 40.40h
+  Total Actual:  40.40h
+
+  Tasks in project: 149
+  Avg min/unit: 49.08
+  Implied cost rate check: Ôé¼43.30/h
+
+Open plans (for auto-close trigger):
+  None (all plans are closed)
+
+Admin Dashboard KPIs:
+  Total Projects: 3
+  Total Reports: 40
+  Approved Reports: 40
+  Hit Rate (approved/total): 100.0%

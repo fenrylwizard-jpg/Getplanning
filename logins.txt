@@ -1,0 +1,19 @@
+Test Accounts
+
+All accounts use the password: "password"
+
+Administrator
+-------------
+admin@eeg.be
+
+Project Managers (PM)
+---------------------
+pm1@eeg.be  (Laurent,  Mason T0,       Level 8)
+pm2@eeg.be  (Sophie,   Electrician T1, Level 18)
+pm3@eeg.be  (Marc,     Carpenter T2,   Level 28)
+
+Site Managers (SM)
+------------------
+sm1@eeg.be  (Antoine,  Electrician T0, Level 5)
+sm2@eeg.be  (Nathalie, Mason T2,       Level 24)
+sm3@eeg.be  (Thomas,   Carpenter T3,   Level 35)

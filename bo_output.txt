@@ -1,0 +1,64 @@
+﻿Sheets: [
+  'INFO',           'Voorblad',
+  'Meetstaat',      'Feuil2',
+  'Feuil1',         'OPM',
+  'SPEC VKVW',      'ALG VKVW',
+  'BB',             'BO',
+  'CODES',          'Kabels',
+  'Materiaal',      'Voorbeeld',
+  'Market Type',    'UOM',
+  'MATERIAL CODES', 'BUDGETCODES',
+  'Legende'
+]
+
+=== BO ===
+Row 0: [null,null,null,null,"EEG NV , Divisie Electro Entreprise",null,null,"Projectnr:",0]
+Row 1: [null,null,null,null,"Oostlaan 5"]
+Row 2: [null,null,null,null,"8560 Gullegem",null,null,"Titel:"," -  - "]
+Row 3: [null,null,null,null,"+32 (0)56 42 53 43"]
+Row 4: [null,null,null,null,"electro-entreprise@eeg.be",null,null,"Versie:",0]
+Row 5: []
+Row 6: [null,null,null,null,null,"CONTROLE",515860.7100000001,"= SI CETTE CELLULE DEVIENT ROUGE, IL Y A UN MAUVAIS CODE QUELQUE PART !"]
+Row 7: [null,null,null,null,null,null,515860.7100000001,88098.79,5385.070000000001,222457.24170000007]
+Row 8: [null,null,"Code","Utilisé","Description","Total Vente par code","Achats",null,"Ouvriers"]
+Row 9: [null,null,null,null,null,null,"Matériel","STRT","Heures Pretées","Coût horaire","Taux horaire","Tâche","Général"]
+Row 10: [null,null,"1","2","3","5","7","8","10","11","12","13","132","14"]
+Row 11: [null,null,"AFBR1",null,"Travaux préparatoires/démolitions",28514.14,2557,0,418.17,17274.602700000003,41.31,"Démolitions",100,"Ja"]
+Row 12: [null,null,"WINF1",null,"Infrastructure de chantier / Container",0,0,0,0,0,41.31,"Installation d echantier",101,"Ja"]
+Row 13: [null,null,"HS1",null,"Moyenne Tension (MT)",103159.6,0,88098.79,16,660.96,41.31,"MT",102,"Ja"]
+Row 14: [null,null,"HS2",null,"Canalisation MT",0,0,0,0,0,41.31,"MT",102,"Ja"]
+Row 15: [null,null,"EG1",null,"Groupe Electrogène",0,0,0,0,0,41.31,"GS",103,"Ja"]
+Row 16: [null,null,"BB1",null,"Paratonnerre",0,0,0,0,0,41.31,"PARATONNERRE",104,"Ja"]
+Row 17: [null,null,"LF1",null,"Ascenseurs",0,0,0,0,0,41.31,"ASC",105,"Ja"]
+Row 18: [null,null,"BU1",null,"Tubages",0,0,0,0,0,41.31,"TUB",106,"Ja"]
+Row 19: [null,null,"MG1",null,"Gaz Médicaux",0,0,0,0,0,41.31,"FM",107,"Ja"]
+Row 20: [null,null,"AS1",null,"A.S.T.R.I.D.",37580.74,29177.6,0,0,0,41.31,"ASTRID",108,"Ja"]
+Row 21: [null,null,"PV1",null,"Installation Panneaux Photovoltaïques",0,0,0,0,0,41.31,"PV",109,"Ja"]
+Row 22: [null,null,"LP1",null,"Borne de recharge V.E.",0,0,0,0,0,41.31,"Borne V.E.",110,"Ja"]
+Row 23: [null,null,"PK1",null,"Equipement Parking",0,0,0,0,0,41.31,"PK",111,"Ja"]
+Row 24: [null,null,"VENT1",null,"Ventilation",0,0,0,0,0,41.31,"Ventilatie",112,"Ja"]
+Row 25: [null,null,"VH1",null,"Locations",0,0,0,0,0,41.31,"Location",113,"Ja"]
+Row 26: [null,null,"DIV1","","Divers",0,0,0,0,0,41.31,"Divers",114,"Ja"]
+Row 27: [null,null,"VKO1",null,"Canalisations Primaires Enterrées",1852.3,1063.51,0,8,330.48,41.31,"Canalisation Extérieure",115,"Ja"]
+Row 28: [null,null,"VSKO1",null,"Canalisations secondaires Enterrées",0,0,0,0,0,41.31,"Canalisation Extérieure",115,"Ja"]
+Row 29: [null,null,"GR1",null,"Tranchées",0,0,0,0,0,41.31,"Canalisation Extérieure",115,"Ja"]
+Row 30: [null,null,"PK2",null,"Canalisation Equipement Parking",0,0,0,0,0,41.31,"Canalisation Extérieure",115,"Ja"]
+Row 31: [null,null,"BVER1",null,"Eclairage Extérieur",22010.83,13717.69,0,72,2974.32,41.31,"Eclairage Extérieur",116,"Ja"]
+Row 32: [null,null,"BROP1",null,"Resserrage RF",0,0,0,0,0,41.31,"Resserrage",141,"Ja"]
+Row 33: [null,null,"KEUR1",null,"Réceptions",0,0,0,0,0,41.31,"Réception",142,"Ja"]
+Row 34: [null,null,"AA1",null,"Mise à la terre",1366.06,806.97,0,5.42,223.9002,41.31,"Canalisation Courant Fort",201]
+Row 35: [null,null,"KD1",null,"Gaines à câbles",24284.05,7262.98,0,247.5,10224.225,41.31,"Canalisation Courant Fort",201]
+Row 36: [null,null,"BUSB1",null,"Busbars / Canalis",0,0,0,0,0,41.31,"Canalisation Courant Fort",201]
+Row 37: [null,null,"VK1",null,"Canalisations Primaires",10781.32,4383.31,0,85.15,3517.5465000000004,41.31,"Canalisation Courant Fort",201]
+Row 38: [null,null,"VSK1",null,"Canalisations secondaires",274280.6,150249.89,0,1339.02,55314.9162,41.31,"Canalisation Courant Fort",201]
+Row 39: [null,null,"KNX2",null,"Canalisation KNX",0,0,0,0,0,41.31,"Canalisation Courant Fort",201]
+Row 40: [null,null,"GBS2",null,"Canalisation GBS",0,0,0,0,0,41.31,"Canalisation Courant Fort",201]
+Row 41: [null,null,"ZW2",null,"Canalisation Stores",0,0,0,0,0,41.31,"Canalisation Courant Fort",201]
+Row 42: [null,null,"DIV2",null,"Canalisation Divers",0,0,0,0,0,41.31,"Canalisation Courant Fort",201]
+Row 43: [null,null,"KAPBO1",null,"Percements",0,0,0,0,0,41.31,"Canalisation Courant Fort",201]
+Row 44: [null,null,"VP2",null,"Canalisation Appel Infirmière",0,0,0,0,0,41.31,"Canalisation Courant Faible",202]
+Row 45: [null,null,"DA2",null,"Canalisation Câblage Structuré",65704.36,18609.95,0,691.5,28565.865,41.31,"Canalisation Courant Faible",202]
+Row 46: [null,null,"BD2",null,"Canalisation Détection Incendie",31125.42,10170.19,0,298.88,12346.7328,41.31,"Canalisation Courant Faible",202]
+Row 47: [null,null,"CAM2",null,"Canalisation CCTV",0,0,0,0,0,41.31,"Canalisation Courant Faible",202]
+Row 48: [null,null,"INB2",null,"Canalisation Intrusion",1126.81,781.2,0,2,82.62,41.31,"Canalisation Courant Faible",202]
+Row 49: [null,null,"TC2",null,"Canalisation Controle d'Accès",5000.01,885.1,0,64,2643.84,41.31,"Canalisation Courant Faible",202]

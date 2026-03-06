@@ -1,0 +1,68 @@
+﻿
+> worksite-tracker@0.1.0 lint
+> eslint
+
+node.exe : 
+(node:18292) 
+ESLintIgnoreWarning: 
+The ".eslintignore" 
+file is no longer 
+supported. Switch to 
+using the "ignores" 
+property in 
+"eslint.config.js": htt
+ps://eslint.org/docs/la
+test/use/configure/migr
+ation-guide#ignoring-fi
+les
+Au caractère Ligne:1 : 
+1
++ & "C:\Program 
+Files\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo 
+...
++ ~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~
+    + CategoryInfo     
+         : NotSpecifi  
+  ed: ((node:18292)    
+ ES...#ignoring-fil    
+es:String) [], Rem    
+oteException
+    + FullyQualifiedEr 
+   rorId : NativeComm  
+  andError
+ 
+(Use `node 
+--trace-warnings ...` 
+to show where the 
+warning was created)
+
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\api\project\[id]\plan\route.ts
+  43:14  warning  'err' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\layout.tsx
+  34:9  warning  Custom fonts not added in `pages/_document.js` will only load for a single page. This is discouraged. See: https://nextjs.org/docs/messages/no-page-custom-font  @next/next/no-page-custom-font
+
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\pm\project\[id]\page.tsx
+    1:1   warning  Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element')
+    4:59  warning  'FileText' is defined but never used                                                          @typescript-eslint/no-unused-vars
+  140:54  error    Unexpected any. Specify a different type                                                      @typescript-eslint/no-explicit-any
+
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\pm\project\[id]\plan\[planId]\page.tsx
+   98:47  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  188:53  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\app\sm\project\[id]\plan\[planId]\page.tsx
+   96:47  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  186:53  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\Imam\.gemini\antigravity\scratch\worksite-tracker\src\components\AnalyticsCharts.tsx
+  112:49  warning  'name' is defined but never used  @typescript-eslint/no-unused-vars
+
+Ô£û 10 problems (3 errors, 7 warnings)
+  0 errors and 1 warning potentially fixable with the `--fix` option.
+

@@ -1,0 +1,538 @@
+"use client";
+import React, { useState, useEffect, use } from "react";
+import { useRouter } from "next/navigation";
+import { Camera, AlertCircle, WifiOff } from "lucide-react";
+import { useTranslation } from "@/lib/LanguageContext";
+import T from "@/components/T";
+
+import { saveOfflineReport, getOfflineReports, clearOfflineReports, OfflineReport } from "@/lib/indexedDB";
+
+interface PlanTask {
+    id: string;
+    plannedQuantity: number;
+    task: {
+        id: string;
+        description: string;
+        unit: string;
+        minutesPerUnit: number;
+        category?: string;
+    };
+    isAdHoc?: boolean;
+}
+
+interface PlanWithTasks {
+    id: string;
+    targetHoursCapacity: number;
+    workersCount?: number;
+    tasks: PlanTask[];
+}
+
+const CameraInput = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>((props, ref) => {
+    return React.createElement('input', {
+        type: 'file',
+        accept: 'image/*',
+        capture: 'environment',
+        ref,
+        ...props
+    });
+});
+CameraInput.displayName = 'CameraInput';
+
+export default function ReportWeek({ params }: { params: Promise<{ id: string }> }) {
+    const resolvedParams = use(params);
+    const id = resolvedParams.id;
+    const router = useRouter();
+    const { t } = useTranslation();
+    const [activePlan, setActivePlan] = useState<PlanWithTasks | null>(null);
+    const [actuals, setActuals] = useState<Record<string, number>>({});
+    const [taskPhotos, setTaskPhotos] = useState<Record<string, string>>({});
+    const [issueCategory, setIssueCategory] = useState("");
+    const [issueDescription, setIssueDescription] = useState("");
+    const [emptyDrumsCount, setEmptyDrumsCount] = useState<number>(0);
+    const [loading, setLoading] = useState(true);
+    const [isOffline, setIsOffline] = useState(false);
+
+    const [workersCount, setWorkersCount] = useState<number | ''>('');
+    const [projectTasks, setProjectTasks] = useState<any[]>([]);
+    const [taskCategories, setTaskCategories] = useState<string[]>([]);
+    const [selectedCategory, setSelectedCategory] = useState<string>("");
+    const [selectedAdHocTaskId, setSelectedAdHocTaskId] = useState<string>("");
+
+    const [taskLocations, setTaskLocations] = useState<Record<string, string[]>>({});
+    const [subLocations, setSubLocations] = useState<string[]>([]);
+
+    useEffect(() => {
+        Promise.all([
+            fetch(`/api/project/${id}/active-plan`).then(res => res.json()),
+            fetch(`/api/project/${id}/tasks`).then(res => res.json())
+        ]).then(([planData, tasksData]) => {
+            if (planData.plan) {
+                setActivePlan(planData.plan);
+                setWorkersCount(planData.plan.workersCount || '');
+                setSubLocations(planData.subLocations || []);
+                const initActuals: Record<string, number> = {};
+                const initLocs: Record<string, string[]> = {};
+                planData.plan.tasks.forEach((t: PlanTask) => {
+                    initActuals[t.id] = 0;
+                    if ((t as any).locations) {
+                        try {
+                            initLocs[t.id] = JSON.parse((t as any).locations);
+                        } catch {}
+                    }
+                });
+                setActuals(initActuals);
+                setTaskLocations(initLocs);
+            }
+            if (tasksData.tasks) {
+                setProjectTasks(tasksData.tasks);
+                const categories = Array.from(new Set(tasksData.tasks.map((t: any) => t.category || 'Uncategorized'))) as string[];
+                setTaskCategories(categories);
+            }
+            if (tasksData.subLocations && !planData.plan) {
+                setSubLocations(tasksData.subLocations);
+            }
+            setLoading(false);
+        }).catch(console.error);
+    }, [id]);
+
+    useEffect(() => {
+        const handleOnline = async () => {
+            setIsOffline(false);
+            try {
+                const reports = await getOfflineReports();
+                if (reports.length > 0) {
+                    for (const rep of reports) {
+                        const res = await fetch(rep.url, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(rep.body)
+                        });
+                        if (res.ok && rep.photos) {
+                            for (const [tId, base64Photo] of Object.entries(rep.photos)) {
+                                if (!base64Photo) continue;
+                                try {
+                                    await fetch(`/api/project/${rep.id}/report/upload-photo`, {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({
+                                            planTaskId: tId,
+                                            base64Photo: base64Photo,
+                                            caption: "Photo (Offline Sync)"
+                                        })
+                                    });
+                                } catch (e) { console.error(e); }
+                            }
+                        }
+                    }
+                    await clearOfflineReports();
+                    alert(t("network_restored"));
+                }
+            } catch (e) {
+                console.error("Erreur de synchronisation", e);
+            }
+        };
+
+        const handleOffline = () => setIsOffline(true);
+
+        if (typeof window !== 'undefined') {
+            if (navigator.onLine !== undefined) {
+                setTimeout(() => setIsOffline(!navigator.onLine), 0);
+            }
+            window.addEventListener('online', handleOnline);
+            window.addEventListener('offline', handleOffline);
+        }
+        return () => {
+            if (typeof window !== 'undefined') {
+                window.removeEventListener('online', handleOnline);
+                window.removeEventListener('offline', handleOffline);
+            }
+        };
+    }, [t]);
+
+    const handleActualChange = (planTaskId: string, valStr: string) => {
+        const val = parseFloat(valStr) || 0;
+        setActuals(prev => ({ ...prev, [planTaskId]: val }));
+    };
+
+    const handlePhotoCapture = (taskId: string, e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const base64Str = event.target?.result as string;
+            setTaskPhotos(prev => ({ ...prev, [taskId]: base64Str }));
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const addAdHocTask = () => {
+        if (!selectedAdHocTaskId || !activePlan) return;
+        const taskDef = projectTasks.find(t => t.id === selectedAdHocTaskId);
+        if (!taskDef) return;
+
+        const tempId = `temp_${Date.now()}`;
+        
+        const newTask: PlanTask = {
+            id: tempId,
+            plannedQuantity: 0,
+            task: {
+                id: taskDef.id,
+                description: taskDef.description,
+                unit: taskDef.unit,
+                minutesPerUnit: taskDef.minutesPerUnit,
+                category: taskDef.category
+            },
+            isAdHoc: true
+        };
+
+        setActivePlan({
+            ...activePlan,
+            tasks: [...activePlan.tasks, newTask]
+        });
+        
+        setActuals(prev => ({ ...prev, [tempId]: 0 }));
+        setSelectedAdHocTaskId("");
+    };
+
+    const submitReport = async () => {
+        const adHocTasksPayload = activePlan?.tasks
+            .filter(t => t.isAdHoc)
+            .map(t => ({
+                tempId: t.id,
+                taskId: t.task.id,
+                actualQuantity: actuals[t.id] || 0,
+                locations: taskLocations[t.id]
+            }));
+
+        const payload = {
+            planId: activePlan?.id,
+            actuals,
+            locations: taskLocations,
+            issues: issueDescription,
+            missedTargetReason: !hitTarget ? issueCategory : null,
+            emptyDrumsCount,
+            workersCount: typeof workersCount === 'number' ? workersCount : undefined,
+            adHocTasks: adHocTasksPayload
+        };
+
+        if (isOffline || (typeof navigator !== 'undefined' && !navigator.onLine)) {
+            const offlineReport: OfflineReport = {
+                id: id,
+                url: `/api/project/${id}/report`,
+                body: payload,
+                photos: taskPhotos,
+                timestamp: new Date().toISOString()
+            };
+            await saveOfflineReport(offlineReport);
+            alert(t("offline_mode_detected"));
+            router.push('/sm/dashboard');
+            return;
+        }
+
+        const res = await fetch(`/api/project/${id}/report`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+            const data = await res.json();
+            const mapping = data.adHocIdsMapping || {};
+
+            for (const [tId, base64Photo] of Object.entries(taskPhotos)) {
+                if (!base64Photo) continue;
+                
+                const realTaskId = mapping[tId] || tId; // Use real DB ID if it was an ad-hoc temp task
+
+                try {
+                    await fetch(`/api/project/${id}/report/upload-photo`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            planTaskId: realTaskId,
+                            base64Photo,
+                            caption: "Photo proof"
+                        })
+                    });
+                } catch (e) {
+                    console.error("Photo upload failed:", e);
+                }
+            }
+            router.push('/sm/dashboard');
+        }
+    };
+
+    if (loading) return <div className="aurora-page flex items-center justify-center text-cyan-400 font-bold animate-pulse"><T k="checking_db" /></div>;
+
+    if (!activePlan) return (
+        <div className="aurora-page flex flex-col items-center justify-center text-center p-6">
+            <AlertCircle size={48} className="text-orange-500 mb-6 drop-shadow-[0_0_15px_rgba(249,115,22,0.8)]" />
+            <h2 className="text-2xl font-bold text-white mb-2"><T k="no_active_plan" /></h2>
+            <p className="text-gray-400 mb-8 max-w-sm"><T k="no_active_plan_desc" /></p>
+            <button 
+                className="px-8 py-4 rounded-full bg-cyan-600/20 text-cyan-400 font-bold border border-cyan-500/50 hover:bg-cyan-500 hover:text-[#050810] transition-colors" 
+                onClick={() => router.push(`/sm/project/${id}/plan`)}
+                title={t("plan_next_week_title")}
+            >
+                <T k="plan_next_week_title" />
+            </button>
+        </div>
+    );
+
+    let totalAchievedMins = 0;
+    activePlan.tasks.forEach((t: PlanTask) => {
+        const qty = actuals[t.id] || 0;
+        totalAchievedMins += (qty * t.task.minutesPerUnit);
+    });
+    const totalAchievedHours = totalAchievedMins / 60;
+    const targetHours = activePlan.targetHoursCapacity;
+    const hitTarget = totalAchievedHours >= targetHours;
+
+    return (
+        <div className="aurora-page text-white p-4 sm:p-8 pb-32 selection:bg-orange-500/30 font-sans">
+            <div className="max-w-7xl mx-auto flex flex-col gap-8">
+                
+                {/* Header Sub-section */}
+                <div className="flex flex-col gap-2">
+                    <div className="flex justify-between items-center">
+                        <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-yellow-300 drop-shadow-[0_0_15px_rgba(249,115,22,0.4)]">
+                            <T k="daily_report_title" />
+                        </h2>
+                        {isOffline && (
+                            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-500/10 border border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]">
+                                <WifiOff size={16} className="text-red-400" />
+                                <span className="text-xs font-bold text-red-400 tracking-wider"><T k="offline_badge" /></span>
+                            </div>
+                        )}
+                    </div>
+                    <p className="text-gray-400 text-sm font-medium tracking-wide"><T k="daily_report_desc" /></p>
+                </div>
+
+                {/* Workforce Input */}
+                <div className="mechanical-panel p-6 flex flex-col sm:flex-row gap-6 justify-between items-center focus-within:ring-2 focus-within:ring-cyan-500/50 transition-all">
+                    <div className="flex flex-col flex-1 pr-4">
+                        <label htmlFor="workersCount" className="font-bold text-white/90 text-xl mb-1 leading-tight"><T k="workforce_count_label" /></label>
+                        <div className="text-gray-400 text-sm font-medium tracking-wide"><T k="workforce_count_desc" /></div>
+                    </div>
+                    <div className="relative flex-1 sm:w-[150px]">
+                        <input
+                            id="workersCount"
+                            type="number"
+                            className="w-full bg-[#050810]/50 border border-white/10 text-white text-2xl font-black rounded-2xl py-4 px-4 outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 transition-all text-center"
+                            placeholder="0"
+                            min="0"
+                            value={workersCount}
+                            onChange={(e) => setWorkersCount(e.target.value === '' ? '' : parseInt(e.target.value) || 0)}
+                        />
+                    </div>
+                </div>
+
+                {/* Progress Rings Replacement (Variant 3 Style) */}
+                <div className="mechanical-panel flex p-8 items-center divide-x divide-white/10 relative overflow-hidden group">
+                    <div className="shape-container right-1/2 top-[-50px] translate-x-1/2 scale-150 opacity-20 z-0">
+                        <div className="css-radar-plate"></div>
+                    </div>
+                    <div className="px-6 text-center flex-1 relative z-10">
+                        <div className="text-pink-400 text-xs font-bold uppercase tracking-widest mb-3 drop-shadow-md"><T k="planned_target" /></div>
+                        <div className="text-4xl font-black text-white drop-shadow-lg">{targetHours.toFixed(1)} <span className="text-lg font-medium text-gray-400"><T k="hours" /></span></div>
+                    </div>
+                    <div className="px-6 text-center flex-1 relative z-10">
+                        <div className="text-cyan-400 text-xs font-bold uppercase tracking-widest mb-3 drop-shadow-md"><T k="achieved" /></div>
+                        <div className={`text-5xl font-black drop-shadow-[0_0_20px_rgba(255,255,255,0.3)] ${hitTarget ? 'text-green-400' : 'text-orange-400'}`}>
+                            {totalAchievedHours.toFixed(1)} <span className="text-lg font-medium text-gray-400"><T k="hours" /></span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Task Entry List */}
+                <div className="flex flex-col gap-4">
+                    <h3 className="text-xl font-bold flex items-center gap-2"><T k="recorded_activity" /></h3>
+                    {activePlan.tasks.map((pt: PlanTask) => (
+                        <div key={pt.id} className="mechanical-panel p-6 flex flex-col sm:flex-row gap-6 justify-between items-start sm:items-center focus-within:ring-2 focus-within:ring-cyan-500/50 transition-all">
+                            <div className="flex flex-col flex-1 pr-4">
+                                <label htmlFor={`actual_${pt.id}`} className="font-bold text-white/90 text-lg mb-1 leading-tight flex items-center flex-wrap gap-2">
+                                    {pt.task.description}
+                                    {pt.isAdHoc && <span className="text-xs bg-orange-500/20 border border-orange-500/30 text-orange-400 px-2 py-0.5 rounded-full uppercase tracking-wider font-bold"><T k="non_planifie_badge" /></span>}
+                                </label>
+                                {!pt.isAdHoc && <div className="text-cyan-400/80 text-xs font-bold tracking-wider uppercase"><T k="planned_qty_var" />{pt.plannedQuantity} <T k={pt.task.unit} /></div>}
+                            </div>
+                            
+                            <div className="flex items-center gap-4 w-full sm:w-auto mt-2 sm:mt-0">
+                                <div className="relative flex-1 sm:w-[120px]">
+                                    <input
+                                        id={`actual_${pt.id}`}
+                                        type="number"
+                                        className="w-full bg-[#050810]/50 border border-white/10 text-white text-xl font-bold rounded-2xl py-4 px-4 outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 transition-all text-center"
+                                        placeholder="0"
+                                        min="0"
+                                        value={actuals[pt.id] || ''}
+                                        onChange={(e) => handleActualChange(pt.id, e.target.value)}
+                                    />
+                                    <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
+                                        <span className="text-gray-500 font-bold"><T k={pt.task.unit} /></span>
+                                    </div>
+                                </div>
+                                
+                                <label htmlFor={`photo_${pt.id}`} className={`shrink-0 flex items-center justify-center w-14 h-14 rounded-2xl cursor-pointer transition-all ${taskPhotos[pt.id] ? 'bg-green-500/20 border-green-500/50 text-green-400 shadow-[0_0_15px_rgba(34,197,94,0.3)]' : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10 hover:text-white'} border`}>
+                                    <Camera size={24} />
+                                    <CameraInput 
+                                        id={`photo_${pt.id}`}
+                                        className="hidden"
+                                        onChange={(e) => handlePhotoCapture(pt.id, e)} 
+                                    />
+                                </label>
+                            </div>
+                            
+                            {/* Locations Dropdowns */}
+                            <div className="w-full mt-4 pt-4 border-t border-white/10 sm:col-span-2">
+                                <div className="text-xs text-gray-400 mb-2 font-medium tracking-wider uppercase"><T k="execution_locations" /></div>
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                    {[0, 1, 2, 3].map(locIndex => (
+                                        <select 
+                                            key={locIndex}
+                                            aria-label={`Localisation ${locIndex + 1}`}
+                                            className="bg-[#050810]/50 border border-white/10 text-gray-300 text-xs py-2 px-2 rounded-xl outline-none focus:border-cyan-400 font-medium transition-colors"
+                                            value={(taskLocations[pt.id] || [])[locIndex] || ''}
+                                            onChange={(e) => {
+                                                const newLocs = [...(taskLocations[pt.id] || [])];
+                                                newLocs[locIndex] = e.target.value;
+                                                setTaskLocations(prev => ({ ...prev, [pt.id]: newLocs.filter(Boolean) }));
+                                            }}
+                                        >
+                                            <option value=""><T k="none" /></option>
+                                            {subLocations.map(sl => (
+                                                <option key={sl} value={sl}>{sl}</option>
+                                            ))}
+                                        </select>
+                                    ))}
+                                </div>
+                            </div>
+
+                        </div>
+                    ))}
+                </div>
+
+                {/* Ad-Hoc Task Entry */}
+                <div className="mechanical-panel p-6 mt-2 relative overflow-hidden">
+                    <h3 className="text-xl font-bold flex items-center gap-2 mb-4 text-orange-400"><T k="add_unplanned_task" /></h3>
+                    <div className="flex flex-col sm:flex-row gap-4">
+                        <select 
+                            className="flex-1 bg-[#050810]/50 border border-white/10 text-white py-3 px-4 rounded-xl outline-none focus:border-orange-400"
+                            value={selectedCategory}
+                            title={t('select_category')}
+                            onChange={(e) => {
+                                setSelectedCategory(e.target.value);
+                                setSelectedAdHocTaskId("");
+                            }}
+                        >
+                            <option value="">-- <T k="select_category" /> --</option>
+                            {taskCategories.map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                        
+                        <select
+                            className="flex-[2] bg-[#050810]/50 border border-white/10 text-white py-3 px-4 rounded-xl outline-none focus:border-orange-400 disabled:opacity-50"
+                            value={selectedAdHocTaskId}
+                            title={t('select_task')}
+                            onChange={(e) => setSelectedAdHocTaskId(e.target.value)}
+                            disabled={!selectedCategory}
+                        >
+                            <option value="">-- <T k="select_task" /> --</option>
+                            {projectTasks.filter(t => (t.category || 'Uncategorized') === selectedCategory).map(t => (
+                                <option key={t.id} value={t.id}>{t.description} ({t.unit})</option>
+                            ))}
+                        </select>
+
+                        <button 
+                            className="bg-orange-500/20 border border-orange-500/50 hover:bg-orange-500 text-white font-bold py-3 px-6 rounded-xl transition-colors disabled:opacity-50"
+                            onClick={addAdHocTask}
+                            title={t('add_btn')}
+                            disabled={!selectedAdHocTaskId}
+                        >
+                            <T k="add_btn" />
+                        </button>
+                    </div>
+                </div>
+
+                {/* Issues section */}
+                <div className="mechanical-panel p-8 mt-8 relative overflow-hidden group">
+                    <div className="shape-container left-[-50px] bottom-[-50px] scale-100 opacity-20 z-0">
+                        <div className="css-holo-core"></div>
+                    </div>
+                    <div className="relative z-10">
+                        <h3 className="text-2xl font-black text-white mb-6 drop-shadow-md"><T k="issues_observations" /></h3>
+                    
+                    {!hitTarget && (
+                        <div className="mb-6 p-4 rounded-2xl bg-orange-500/10 border border-orange-500/30 animate-pulse">
+                            <p className="text-orange-400 text-sm font-bold flex items-center gap-2 mb-3">
+                                <AlertCircle size={16} /> <T k="target_missed_categorize" />
+                            </p>
+                            <select 
+                                aria-label="Raison de l'objectif manqué"
+                                className="w-full bg-[#050810]/80 border border-orange-500/50 text-white rounded-2xl py-4 px-4 outline-none focus:ring-1 focus:ring-orange-500 appearance-none font-bold" 
+                                value={issueCategory}
+                                onChange={(e) => setIssueCategory(e.target.value)}
+                            >
+                                <option value=""><T k="select_rca_cause" /></option>
+                                <option value="MATERIAL_DELAY"><T k="MATERIAL_DELAY" /></option>
+                                <option value="WEATHER"><T k="WEATHER" /></option>
+                                <option value="EQUIPMENT_FAILURE"><T k="EQUIPMENT_FAILURE" /></option>
+                                <option value="LABOR_SHORTAGE"><T k="LABOR_SHORTAGE" /></option>
+                                <option value="PLANNING_ERROR"><T k="PLANNING_ERROR" /></option>
+                                <option value="OTHER"><T k="OTHER" /></option>
+                            </select>
+                        </div>
+                    )}
+                    
+                    <p className="text-gray-400 text-sm mb-4"><T k="detailed_desc_optional" /></p>
+
+                    <textarea
+                        aria-label="Description du problème"
+                        className="w-full bg-[#050810]/80 border border-white/10 text-white rounded-2xl py-4 px-4 min-h-[120px] outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/50 resize-y placeholder-gray-600"
+                        placeholder={t("problem_details_placeholder")}
+                        value={issueDescription}
+                        onChange={(e) => setIssueDescription(e.target.value)}
+                    />
+
+                    <div className="mt-8 pt-8 border-t border-white/10">
+                        <h3 className="font-bold text-white mb-1"><T k="empty_drums_title" /></h3>
+                        <p className="text-gray-400 text-sm mb-4"><T k="empty_drums_desc" /></p>
+                        <div className="flex items-center justify-between bg-[#050810]/50 p-4 rounded-2xl border border-white/5">
+                            <label htmlFor="emptyDrums" className="font-medium text-gray-300 cursor-pointer"><T k="empty_drums_label" /></label>
+                            <input 
+                                id="emptyDrums"
+                                type="number" 
+                                className="w-[100px] bg-[#050810] border border-white/20 text-white text-xl font-bold rounded-xl py-2 px-3 outline-none text-center focus:border-cyan-400" 
+                                min="0"
+                                value={emptyDrumsCount}
+                                onChange={(e) => setEmptyDrumsCount(parseInt(e.target.value) || 0)}
+                                aria-label={t("empty_drums_label")}
+                            />
+                        </div>
+                    </div>
+                    </div>
+                </div>
+
+                {/* Floating Submit Action */}
+                <div className="fixed bottom-0 left-0 w-full p-4 sm:p-6 bg-gradient-to-t from-[#050810] via-[#050810]/90 to-transparent flex justify-center z-50">
+                    <div className="flex gap-4 w-full max-w-7xl">
+                        <button 
+                            className="flex-1 py-4 sm:py-5 rounded-full bg-white/5 border border-white/10 text-white font-bold tracking-wider uppercase text-sm hover:bg-white/10 transition-colors backdrop-blur-md" 
+                            onClick={() => router.push('/sm/dashboard')}
+                            title={t("cancel")}
+                        >
+                            <T k="cancel" />
+                        </button>
+                        <button 
+                            className={`flex-[2] py-4 sm:py-5 rounded-full font-black tracking-wider uppercase text-sm text-white shadow-[0_0_20px_rgba(249,115,22,0.4)] hover:shadow-[0_0_30px_rgba(249,115,22,0.6)] transition-all hover:scale-[1.02] ${isOffline ? 'bg-yellow-600' : 'bg-gradient-to-r from-orange-500 to-red-500'}`} 
+                            onClick={submitReport}
+                            title={isOffline ? t("save_locally") : t("submit_report")}
+                        >
+                            {isOffline ? <T k="save_locally" /> : <T k="submit_report" />}
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    );
+}
