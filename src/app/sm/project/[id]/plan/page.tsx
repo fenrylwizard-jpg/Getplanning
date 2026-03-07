@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, use, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronRight, Folder, ArrowLeft, Trash2, PlusCircle, ShoppingBag, Loader2, List, Clock } from "lucide-react";
+import { ChevronRight, Folder, ArrowLeft, Trash2, PlusCircle, ShoppingBag, Loader2, List, Clock, AlertTriangle } from "lucide-react";
 import { useTranslation } from "@/lib/LanguageContext";
 import T from "@/components/T";
 import { getISOWeek, getYear, addWeeks, startOfISOWeek } from 'date-fns';
@@ -490,8 +490,11 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
                                         cartItems.map((item) => {
                                             const task = tasks.find(t => t.id === item.taskId);
                                             if (!task) return null;
+                                            const remaining = task.quantity - task.completedQuantity;
+                                            const isOverflow = item.planQty > remaining;
+                                            const isNearLimit = item.planQty > remaining * 0.8 && !isOverflow;
                                             return (
-                                                <div key={item.id} className="p-5 bg-white/5 rounded-[30px] border border-white/5 relative group/cart hover:bg-white/10 transition-all">
+                                                <div key={item.id} className={`p-5 rounded-[30px] border relative group/cart transition-all ${isOverflow ? 'bg-red-500/5 border-red-500/30 hover:bg-red-500/10' : 'bg-white/5 border-white/5 hover:bg-white/10'}`}>
                                                     <div className="flex justify-between items-start gap-4 mb-4">
                                                         <h6 className="font-bold text-sm leading-tight text-white/90">{task.description}</h6>
                                                         <button 
@@ -503,11 +506,11 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
                                                         </button>
                                                     </div>
                                                     
-                                                    <div className="flex items-center gap-4 mb-5">
+                                                    <div className="flex items-center gap-4 mb-2">
                                                         <div className="relative flex-1">
                                                             <input 
                                                                 type="number" 
-                                                                className="w-full bg-cyan-950/40 border-2 border-cyan-500/30 hover:border-cyan-500/60 rounded-2xl py-3 pl-4 pr-16 text-white text-xl font-black focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-all placeholder:text-white/20" 
+                                                                className={`w-full rounded-2xl py-3 pl-4 pr-16 text-white text-xl font-black focus:outline-none focus:ring-2 transition-all placeholder:text-white/20 ${isOverflow ? 'bg-red-950/40 border-2 border-red-500/50 hover:border-red-500/70 focus:border-red-400 focus:ring-red-400/20' : 'bg-cyan-950/40 border-2 border-cyan-500/30 hover:border-cyan-500/60 focus:border-cyan-400 focus:ring-cyan-400/20'}`}
                                                                 value={item.planQty || ''} 
                                                                 onChange={(e) => updateCartItem(item.id, { planQty: parseFloat(e.target.value) || 0 })}
                                                                 placeholder="0.0"
@@ -520,6 +523,15 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
                                                             <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest bg-gray-600/20 px-2 py-0.5 rounded-md inline-block mb-1"><T k="duration" /></span>
                                                             <span className="text-base font-black text-cyan-400">{((item.planQty * task.minutesPerUnit) / 60).toFixed(1)}<span className="text-xs">h</span></span>
                                                         </div>
+                                                    </div>
+
+                                                    {/* Remaining Budget Indicator */}
+                                                    <div className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest mb-4 px-1 ${isOverflow ? 'text-red-400' : isNearLimit ? 'text-amber-400' : 'text-gray-500'}`}>
+                                                        {isOverflow && <AlertTriangle size={12} className="text-red-400 animate-pulse" />}
+                                                        {isOverflow 
+                                                            ? <span>Dépasse le budget ! Max: {remaining.toFixed(1)} {task.unit}</span>
+                                                            : <span>Reste: {remaining.toFixed(1)} {task.unit} disponibles</span>
+                                                        }
                                                     </div>
 
                                                     <div className="grid grid-cols-2 gap-2">
@@ -575,10 +587,22 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
 
                                 {/* Action Bar */}
                                 <div className="flex flex-col gap-4 shrink-0 pb-2">
+                                    {cartItems.some(item => {
+                                        const t2 = tasks.find(tk => tk.id === item.taskId);
+                                        return t2 && item.planQty > (t2.quantity - t2.completedQuantity);
+                                    }) && (
+                                        <div className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-bold mb-3">
+                                            <AlertTriangle size={14} />
+                                            <span>Un ou plusieurs postes dépassent le budget restant. Corrigez les quantités avant de soumettre.</span>
+                                        </div>
+                                    )}
                                     <button 
                                         className="w-full py-5 rounded-[25px] bg-gradient-to-r from-cyan-600 via-cyan-500 to-blue-600 text-white font-black uppercase tracking-[0.2em] text-sm shadow-[0_20px_40px_rgba(6,182,212,0.3)] hover:shadow-cyan-500/50 hover:-translate-y-1 transition-all disabled:opacity-30 disabled:translate-y-0 disabled:shadow-none flex items-center justify-center gap-3 relative overflow-hidden" 
                                         onClick={submitPlan} 
-                                        disabled={cartItems.length === 0 || isSubmitting}
+                                        disabled={cartItems.length === 0 || isSubmitting || cartItems.some(item => {
+                                            const t2 = tasks.find(tk => tk.id === item.taskId);
+                                            return t2 && item.planQty > (t2.quantity - t2.completedQuantity);
+                                        })}
                                     >
                                         <div className="absolute inset-0 bg-white/20 opacity-0 hover:opacity-100 transition-opacity" />
                                         {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <T k="validate_and_save_plan" />}

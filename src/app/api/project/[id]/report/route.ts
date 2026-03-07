@@ -15,8 +15,10 @@ export async function POST(req: Request) {
             adHocTasks?: { tempId: string, taskId: string, actualQuantity: number, locations?: string[] }[],
             siteManagerId?: string,
             workersCount?: number,
+            blockageLogs?: Record<string, { reason: string, description: string }>,
+            emptyDrumsCount?: number,
         } = await req.json();
-        const { planId, actuals, locations, issues, missedTargetReason, adHocTasks, siteManagerId, workersCount } = body;
+        const { planId, actuals, locations, issues, missedTargetReason, adHocTasks, siteManagerId, workersCount, blockageLogs } = body;
 
         const plan = await prisma.weeklyPlan.findUnique({
             where: { id: planId },
@@ -47,6 +49,27 @@ export async function POST(req: Request) {
                     where: { id: pt.taskId },
                     data: { completedQuantity: { increment: actualQty } }
                 });
+
+                // Create daily task progress for blockage log linking
+                const dtp = await tx.dailyTaskProgress.create({
+                    data: {
+                        quantity: actualQty,
+                        hours: (actualQty * pt.task.minutesPerUnit) / 60,
+                        taskId: pt.taskId,
+                        dailyReportId: plan.id, // Will be re-linked if daily report is separate
+                    }
+                });
+
+                // Store blockage log if SM exceeded planned quantity
+                if (blockageLogs && blockageLogs[pt.id] && blockageLogs[pt.id].reason) {
+                    await tx.blockageLog.create({
+                        data: {
+                            reason: blockageLogs[pt.id].reason,
+                            description: blockageLogs[pt.id].description || '',
+                            dailyTaskProgressId: dtp.id
+                        }
+                    });
+                }
             }
             
             const adHocIdsMapping: Record<string, string> = {};

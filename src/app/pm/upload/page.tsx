@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { FileSpreadsheet, CheckCircle2, X, ArrowRight, Save } from 'lucide-react';
+import { FileSpreadsheet, CheckCircle2, X, ArrowRight, Save, Edit3, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from "@/lib/LanguageContext";
 import T from '@/components/T';
@@ -133,6 +133,14 @@ export default function UploadXLS() {
         setTasks(tasks.map(t => t.taskCode === taskCode ? { ...t, [field]: numVal } : t));
     };
 
+    const updateTaskField = (taskCode: string, field: keyof TaskPreview, value: string | number) => {
+        setTasks(prev => prev.map(t => t.taskCode === taskCode ? { ...t, [field]: value } : t));
+    };
+
+    const removeTask = (taskCode: string) => {
+        setTasks(prev => prev.filter(t => t.taskCode !== taskCode));
+    };
+
     if (success) {
         return (
             <div className="aurora-page flex flex-col items-center">
@@ -234,12 +242,16 @@ export default function UploadXLS() {
                     <div className="flex flex-col gap-8 w-full">
                         <div className="glass-card p-8 bg-black/60 backdrop-blur-3xl border border-white/10 rounded-[32px] flex flex-col md:flex-row justify-between items-center gap-6">
                             <div>
-                                <h1 className="text-3xl font-black text-white"><T k="initial_progress" /></h1>
-                                <p className="text-emerald-400 font-bold mt-1">Total: {totalHours.toFixed(1)} <T k="labor_hours" /></p>
+                                <h1 className="text-3xl font-black text-white flex items-center gap-3">
+                                    <Edit3 size={24} className="text-purple-400" />
+                                    <T k="initial_progress" />
+                                </h1>
+                                <p className="text-emerald-400 font-bold mt-1">{tasks.length} postes • {totalHours.toFixed(1)} <T k="labor_hours" /></p>
+                                <p className="text-gray-500 text-xs mt-1">Modifiez les cellules avant de finaliser</p>
                             </div>
                             <div className="flex gap-4">
                                 <button title={t("back")} onClick={() => setStep(1)} className="px-6 py-3 rounded-xl bg-white/5 border border-white/10 font-bold text-gray-400 hover:text-white transition-all"><T k="back" /></button>
-                                <button title={t("finalize_import")} onClick={handleFinalize} className="px-8 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-black flex items-center gap-2 transition-all shadow-lg" disabled={loading}>
+                                <button title={t("finalize_import")} onClick={handleFinalize} className="px-8 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-black flex items-center gap-2 transition-all shadow-lg" disabled={loading || tasks.length === 0}>
                                     {loading ? t("creating_parsing") : <><Save size={20} /> <T k="finalize_import" /></>}
                                 </button>
                             </div>
@@ -250,33 +262,83 @@ export default function UploadXLS() {
                                 <table className="w-full text-left border-collapse">
                                     <thead>
                                         <tr className="bg-white/5 text-gray-400 text-[10px] sm:text-xs uppercase tracking-[0.2em] font-black">
-                                            <th className="px-6 py-5 border-b border-white/5"><T k="description" /></th>
-                                            <th className="px-6 py-5 border-b border-white/5 text-center"><T k="quantity" /></th>
-                                            <th className="px-6 py-5 border-b border-white/5 bg-emerald-500/10 text-emerald-400 text-center uppercase"><T k="already_done" /> (Qty)</th>
-                                            <th className="px-6 py-5 border-b border-white/5 bg-emerald-500/10 text-emerald-400 text-center uppercase"><T k="already_done" /> (<T k="labor_hours" />)</th>
+                                            <th className="px-4 py-5 border-b border-white/5 w-8"></th>
+                                            <th className="px-4 py-5 border-b border-white/5 bg-purple-500/5 text-purple-400"><T k="category" /></th>
+                                            <th className="px-4 py-5 border-b border-white/5"><T k="description" /></th>
+                                            <th className="px-4 py-5 border-b border-white/5 text-center bg-blue-500/5 text-blue-400">Qty</th>
+                                            <th className="px-4 py-5 border-b border-white/5 text-center bg-blue-500/5 text-blue-400">Unit</th>
+                                            <th className="px-4 py-5 border-b border-white/5 text-center bg-blue-500/5 text-blue-400">Min/U</th>
+                                            <th className="px-4 py-5 border-b border-white/5 bg-emerald-500/10 text-emerald-400 text-center"><T k="already_done" /> (Qty)</th>
+                                            <th className="px-4 py-5 border-b border-white/5 bg-emerald-500/10 text-emerald-400 text-center"><T k="already_done" /> (H)</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-white/5">
                                         {tasks.map((task) => (
                                             <tr key={task.taskCode} className="hover:bg-white/[0.02] transition-colors group">
-                                                <td className="px-6 py-4">
-                                                    <div className="font-bold text-white group-hover:text-purple-300 transition-colors">{task.description}</div>
-                                                    <div className="text-[10px] text-gray-500 mt-1 uppercase tracking-wider">{task.category} • {task.unit}</div>
+                                                <td className="px-2 py-3 text-center">
+                                                    <button title="Supprimer" onClick={() => removeTask(task.taskCode)} className="p-1.5 rounded-lg text-gray-700 hover:text-red-400 hover:bg-red-400/10 transition-all opacity-0 group-hover:opacity-100">
+                                                        <Trash2 size={14} />
+                                                    </button>
                                                 </td>
-                                                <td className="px-6 py-4 text-center font-mono text-gray-400">{task.quantity}</td>
-                                                <td className="px-6 py-4 text-center bg-emerald-500/5">
+                                                <td className="px-3 py-3 bg-purple-500/[0.03]">
+                                                    <input
+                                                        type="text"
+                                                        title="Catégorie"
+                                                        className="w-full bg-transparent border border-transparent hover:border-white/10 focus:border-purple-400 rounded-lg px-2 py-1.5 text-xs text-purple-300 font-bold outline-none transition-all"
+                                                        value={task.category}
+                                                        onChange={(e) => updateTaskField(task.taskCode, 'category', e.target.value)}
+                                                    />
+                                                </td>
+                                                <td className="px-3 py-3">
+                                                    <input
+                                                        type="text"
+                                                        title="Description"
+                                                        className="w-full bg-transparent border border-transparent hover:border-white/10 focus:border-cyan-400 rounded-lg px-2 py-1.5 text-sm text-white font-medium outline-none transition-all"
+                                                        value={task.description}
+                                                        onChange={(e) => updateTaskField(task.taskCode, 'description', e.target.value)}
+                                                    />
+                                                </td>
+                                                <td className="px-3 py-3 text-center bg-blue-500/[0.03]">
+                                                    <input
+                                                        type="number"
+                                                        title="Quantité"
+                                                        className="w-20 bg-black/40 border border-white/10 rounded-lg p-2 text-center text-blue-300 font-bold focus:border-blue-500 outline-none text-sm"
+                                                        value={task.quantity || ''}
+                                                        onChange={(e) => updateTaskField(task.taskCode, 'quantity', parseFloat(e.target.value) || 0)}
+                                                    />
+                                                </td>
+                                                <td className="px-3 py-3 text-center bg-blue-500/[0.03]">
+                                                    <input
+                                                        type="text"
+                                                        title="Unité"
+                                                        className="w-16 bg-transparent border border-transparent hover:border-white/10 focus:border-blue-400 rounded-lg px-2 py-1.5 text-center text-xs text-gray-400 outline-none transition-all"
+                                                        value={task.unit}
+                                                        onChange={(e) => updateTaskField(task.taskCode, 'unit', e.target.value)}
+                                                    />
+                                                </td>
+                                                <td className="px-3 py-3 text-center bg-blue-500/[0.03]">
+                                                    <input
+                                                        type="number"
+                                                        title="Minutes par unité"
+                                                        className="w-20 bg-black/40 border border-white/10 rounded-lg p-2 text-center text-blue-300 font-bold focus:border-blue-500 outline-none text-sm"
+                                                        value={task.minutesPerUnit || ''}
+                                                        onChange={(e) => updateTaskField(task.taskCode, 'minutesPerUnit', parseFloat(e.target.value) || 0)}
+                                                        step="0.01"
+                                                    />
+                                                </td>
+                                                <td className="px-3 py-3 text-center bg-emerald-500/5">
                                                     <input 
                                                         type="number" 
-                                                        className="w-24 bg-black/40 border border-white/10 rounded-lg p-2 text-center text-emerald-400 font-bold focus:border-emerald-500 outline-none"
+                                                        className="w-20 bg-black/40 border border-white/10 rounded-lg p-2 text-center text-emerald-400 font-bold focus:border-emerald-500 outline-none text-sm"
                                                         value={task.initialQty || ''}
                                                         onChange={(e) => updateTaskProgress(task.taskCode, 'initialQty', e.target.value)}
                                                         placeholder="0"
                                                     />
                                                 </td>
-                                                <td className="px-6 py-4 text-center bg-emerald-500/5">
+                                                <td className="px-3 py-3 text-center bg-emerald-500/5">
                                                     <input 
                                                         type="number" 
-                                                        className="w-24 bg-black/40 border border-white/10 rounded-lg p-2 text-center text-emerald-400 font-bold focus:border-emerald-500 outline-none"
+                                                        className="w-20 bg-black/40 border border-white/10 rounded-lg p-2 text-center text-emerald-400 font-bold focus:border-emerald-500 outline-none text-sm"
                                                         value={task.initialHours || ''}
                                                         onChange={(e) => updateTaskProgress(task.taskCode, 'initialHours', e.target.value)}
                                                         placeholder="0"

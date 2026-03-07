@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
-import { Camera, AlertCircle, WifiOff } from "lucide-react";
+import { Camera, AlertCircle, WifiOff, AlertTriangle } from "lucide-react";
 import { useTranslation } from "@/lib/LanguageContext";
 import T from "@/components/T";
 
@@ -60,6 +60,9 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
 
     const [taskLocations, setTaskLocations] = useState<Record<string, string[]>>({});
     const [subLocations, setSubLocations] = useState<string[]>([]);
+
+    // Blockage exception state
+    const [blockageLogs, setBlockageLogs] = useState<Record<string, { reason: string, description: string }>>({});
 
     useEffect(() => {
         Promise.all([
@@ -212,7 +215,8 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
             missedTargetReason: !hitTarget ? issueCategory : null,
             emptyDrumsCount,
             workersCount: typeof workersCount === 'number' ? workersCount : undefined,
-            adHocTasks: adHocTasksPayload
+            adHocTasks: adHocTasksPayload,
+            blockageLogs
         };
 
         if (isOffline || (typeof navigator !== 'undefined' && !navigator.onLine)) {
@@ -407,6 +411,35 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                                     ))}
                                 </div>
                             </div>
+
+                            {/* Blockage Exception Warning */}
+                            {!pt.isAdHoc && (actuals[pt.id] || 0) > pt.plannedQuantity && (
+                                <div className="w-full mt-4 pt-4 border-t border-amber-500/20">
+                                    <div className="flex items-center gap-2 text-amber-400 text-xs font-bold mb-3">
+                                        <AlertTriangle size={14} className="animate-pulse" />
+                                        <span>Quantité ({actuals[pt.id]}) dépasse le prévu ({pt.plannedQuantity}). Justification requise :</span>
+                                    </div>
+                                    <select
+                                        aria-label="Raison du dépassement"
+                                        className="w-full bg-amber-950/30 border border-amber-500/30 text-amber-200 text-sm py-2.5 px-4 rounded-xl outline-none focus:border-amber-400 font-medium mb-2"
+                                        value={blockageLogs[pt.id]?.reason || ''}
+                                        onChange={(e) => setBlockageLogs(prev => ({ ...prev, [pt.id]: { ...prev[pt.id], reason: e.target.value, description: prev[pt.id]?.description || '' } }))}
+                                    >
+                                        <option value="">-- Sélectionner une raison --</option>
+                                        <option value="SCOPE_CHANGE">Changement de périmètre</option>
+                                        <option value="REWORK">Reprise / Refaire</option>
+                                        <option value="EMERGENCY">Urgence</option>
+                                        <option value="OTHER">Autre</option>
+                                    </select>
+                                    <textarea
+                                        className="w-full bg-amber-950/20 border border-amber-500/20 text-white text-sm py-2.5 px-4 rounded-xl outline-none focus:border-amber-400 placeholder:text-amber-800 resize-none"
+                                        rows={2}
+                                        placeholder="Décrivez brièvement la raison du dépassement..."
+                                        value={blockageLogs[pt.id]?.description || ''}
+                                        onChange={(e) => setBlockageLogs(prev => ({ ...prev, [pt.id]: { ...prev[pt.id], reason: prev[pt.id]?.reason || 'OTHER', description: e.target.value } }))}
+                                    />
+                                </div>
+                            )}
 
                         </div>
                     ))}

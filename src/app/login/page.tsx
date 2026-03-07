@@ -125,6 +125,10 @@ export default function LoginPage() {
                         <Link href="/forgot-password" className="mt-8 text-sm text-gray-400 hover:text-cyan-400 transition-colors underline-offset-4 hover:underline">
                             Mot de passe oublié ?
                         </Link>
+
+                        <Link href="/register" className="mt-3 text-sm text-cyan-400 hover:text-cyan-300 transition-colors underline-offset-4 hover:underline font-medium">
+                            Créer un compte →
+                        </Link>
                     </div>
                 </form>
             </div>
