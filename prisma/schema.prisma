@@ -22,6 +22,8 @@ model User {
   
   projectsAsPM     Project[] @relation("ProjectPM")
   projectsAsSM     Project[] @relation("ProjectSM")
+  planTemplates    PlanTemplate[] @relation("templatesCreatedBy")
+  userBadges       UserBadge[]
   
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
@@ -45,6 +47,7 @@ model Project {
   weeklyPlans      WeeklyPlan[]
   revisions        RevisionLog[]
   dailyReports     DailyReport[]
+  planTemplates    PlanTemplate[]
   
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
@@ -195,4 +198,43 @@ model PhotoProof {
   caption             String?
   
   createdAt           DateTime  @default(now())
+}
+
+model PlanTemplate {
+  id                  String    @id @default(cuid())
+  name                String
+  projectId           String
+  project             Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdById         String
+  createdBy           User      @relation("templatesCreatedBy", fields: [createdById], references: [id])
+  
+  // JSON: Array of { taskId: string, quantity: number }
+  taskSelections      String    // Stored as JSON
+
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+}
+
+model Badge {
+  id                  String    @id @default(cuid())
+  code                String    @unique
+  name                String
+  description         String
+  icon                String    // emoji or icon name
+  category            String    // 'streak', 'milestone', 'performance'
+  threshold           Int       @default(1)
+  
+  userBadges          UserBadge[]
+}
+
+model UserBadge {
+  id                  String    @id @default(cuid())
+  userId              String
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badgeId             String
+  badge               Badge     @relation(fields: [badgeId], references: [id])
+  
+  earnedAt            DateTime  @default(now())
+
+  @@unique([userId, badgeId])
 }
