@@ -2,6 +2,7 @@
 import React, { useState, useEffect, use, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronRight, Folder, ArrowLeft, Trash2, PlusCircle, ShoppingBag, Loader2, List, Clock, AlertTriangle } from "lucide-react";
+import { toast } from "sonner";
 import { useTranslation } from "@/lib/LanguageContext";
 import T from "@/components/T";
 import { getISOWeek, getYear, addWeeks, startOfISOWeek } from 'date-fns';
@@ -221,11 +222,11 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
                 router.push('/sm/dashboard');
             } else {
                 const errData = await res.json();
-                alert(errData.error || t("error_saving_plan"));
+                toast.error(errData.error || t("error_saving_plan"));
             }
         } catch (err) {
             console.error(err);
-            alert(t("error_saving_plan"));
+            toast.error(t("error_saving_plan"));
         } finally {
             setIsSubmitting(false);
         }

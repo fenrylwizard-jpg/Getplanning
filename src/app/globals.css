@@ -13,6 +13,84 @@
   --glass-border: rgba(255, 255, 255, 0.1);
 }
 
+/* ── Light Theme Override ── */
+[data-theme="light"] {
+  --aurora-violet: #f0e6ff;
+  --aurora-navy: #e8edf5;
+  --aurora-teal: #e0f2f5;
+  --accent-purple: #7c3aed;
+  --accent-teal: #0891b2;
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] body {
+  background: linear-gradient(135deg, #f5f0ff 0%, #eef2ff 50%, #ecfeff 100%);
+  color: var(--text-primary);
+}
+
+[data-theme="light"] .aurora-glow {
+  opacity: 0.15 !important;
+}
+
+[data-theme="light"] .aurora-page {
+  background: linear-gradient(135deg, #f5f0ff 0%, #eef2ff 50%, #ecfeff 100%) !important;
+}
+
+[data-theme="light"] nav {
+  background: rgba(255, 255, 255, 0.85) !important;
+  border-color: rgba(0, 0, 0, 0.06) !important;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.06) !important;
+}
+
+[data-theme="light"] .glass-card {
+  background: rgba(255, 255, 255, 0.8) !important;
+  border-color: rgba(0, 0, 0, 0.06) !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-theme="light"] .text-white {
+  color: #1e293b !important;
+}
+
+[data-theme="light"] .text-gray-400,
+[data-theme="light"] .text-gray-500 {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .text-gray-300 {
+  color: #475569 !important;
+}
+
+[data-theme="light"] table,
+[data-theme="light"] thead,
+[data-theme="light"] tbody {
+  background: transparent !important;
+}
+
+[data-theme="light"] tr {
+  border-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+[data-theme="light"] th {
+  color: #475569 !important;
+}
+
+[data-theme="light"] input,
+[data-theme="light"] select,
+[data-theme="light"] textarea {
+  color: #1e293b !important;
+  background: rgba(245, 247, 250, 0.9) !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+[data-theme="light"] input::placeholder,
+[data-theme="light"] textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;

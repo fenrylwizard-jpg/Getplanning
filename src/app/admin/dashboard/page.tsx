@@ -5,6 +5,7 @@ import {
     ShieldCheck, CheckCircle, XCircle, Clock, UserIcon, LogOut,
     TrendingUp, Euro, Activity, Folder, Target, RefreshCw, Globe, ListOrdered
 } from 'lucide-react';
+import { toast } from 'sonner';
 import AvatarDisplay from '@/components/AvatarDisplay';
 import T from '@/components/T';
 import { useTranslation } from '@/lib/LanguageContext';
@@ -77,8 +78,11 @@ export default function AdminDashboard() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action })
         });
-        if (res.ok) fetchData();
-        else alert(t('action_error'));
+        if (res.ok) {
+            toast.success(action === 'APPROVE' ? 'Utilisateur approuvé ✓' : 'Utilisateur rejeté');
+            fetchData();
+        }
+        else toast.error(t('action_error'));
     };
 
     const handleLogout = async () => {

@@ -2,6 +2,7 @@
 import React, { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { Camera, AlertCircle, WifiOff, AlertTriangle } from "lucide-react";
+import { toast } from "sonner";
 import { useTranslation } from "@/lib/LanguageContext";
 import T from "@/components/T";
 
@@ -128,7 +129,7 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                         }
                     }
                     await clearOfflineReports();
-                    alert(t("network_restored"));
+                    toast.success(t("network_restored"));
                 }
             } catch (e) {
                 console.error("Erreur de synchronisation", e);
@@ -228,7 +229,7 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                 timestamp: new Date().toISOString()
             };
             await saveOfflineReport(offlineReport);
-            alert(t("offline_mode_detected"));
+            toast.info(t("offline_mode_detected"));
             router.push('/sm/dashboard');
             return;
         }

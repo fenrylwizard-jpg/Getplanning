@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 export default function DeleteProjectButton({ projectId, projectName }: { projectId: string, projectName: string }) {
     const [isDeleting, setIsDeleting] = useState(false);
@@ -11,7 +12,7 @@ export default function DeleteProjectButton({ projectId, projectName }: { projec
     const handleDelete = async () => {
         const pin = prompt(`Pour supprimer "${projectName}", veuillez entrer le code PIN :`);
         if (pin !== "645428") {
-            if (pin !== null) alert("Code PIN incorrect.");
+            if (pin !== null) toast.error("Code PIN incorrect.");
             return;
         }
 
@@ -25,13 +26,14 @@ export default function DeleteProjectButton({ projectId, projectName }: { projec
                 method: 'DELETE',
             });
             if (res.ok) {
+                toast.success(`Projet "${projectName}" supprimé.`);
                 router.refresh();
             } else {
-                alert("Erreur lors de la suppression du projet.");
+                toast.error("Erreur lors de la suppression du projet.");
             }
         } catch (e) {
             console.error(e);
-            alert("Erreur lors de la suppression.");
+            toast.error("Erreur lors de la suppression.");
         } finally {
             setIsDeleting(false);
         }
