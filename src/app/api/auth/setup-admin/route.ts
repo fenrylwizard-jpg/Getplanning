@@ -11,16 +11,15 @@ export async function GET(request: Request) {
     }
 
     try {
-        const email = 'antigravityadmin@eeg.be';
-        const user = await prisma.user.update({
-            where: { email },
+        const result = await prisma.user.updateMany({
+            where: { name: 'Admin Antigravity' },
             data: {
                 role: 'ADMIN',
                 status: 'APPROVED'
             }
         });
 
-        return NextResponse.json({ success: true, message: `User ${email} promoted to ADMIN and APPROVED`, user });
+        return NextResponse.json({ success: true, message: `Promoted Admin Antigravity`, result });
     } catch (error) {
         console.error("Failed to promote user:", error);
         return NextResponse.json({ error: 'Failed to promote user', details: error instanceof Error ? error.message : String(error) }, { status: 500 });
