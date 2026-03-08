@@ -32,6 +32,17 @@ export async function POST(req: Request) {
         let achievedMins = 0;
 
         const transactionResult = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+            // First, create a proper DailyReport record
+            const dailyReport = await tx.dailyReport.create({
+                data: {
+                    projectId: plan.projectId,
+                    siteManagerId: siteManagerId || plan.project.siteManagerId || '',
+                    date: new Date(),
+                    status: 'SUBMITTED',
+                    remarks: issues || null,
+                }
+            });
+
             for (const pt of plan.tasks) {
                 const actualQty = actuals[pt.id] || 0;
                 achievedMins += (actualQty * pt.task.minutesPerUnit);
@@ -50,13 +61,13 @@ export async function POST(req: Request) {
                     data: { completedQuantity: { increment: actualQty } }
                 });
 
-                // Create daily task progress for blockage log linking
+                // Create daily task progress linked to the real DailyReport
                 const dtp = await tx.dailyTaskProgress.create({
                     data: {
                         quantity: actualQty,
                         hours: (actualQty * pt.task.minutesPerUnit) / 60,
                         taskId: pt.taskId,
-                        dailyReportId: plan.id, // Will be re-linked if daily report is separate
+                        dailyReportId: dailyReport.id,
                     }
                 });
 
