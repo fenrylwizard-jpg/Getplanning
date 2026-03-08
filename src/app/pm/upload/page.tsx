@@ -98,7 +98,6 @@ export default function UploadXLS() {
     const handleFinalize = async () => {
         setLoading(true);
         setErrorMsg('');
-        const pmEmail = "pm@worksite.com";
 
         try {
             const resFinal = await fetch('/api/project/create-with-progress', {
@@ -106,7 +105,6 @@ export default function UploadXLS() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     name: projectName,
-                    pmEmail,
                     siteManagerId,
                     location,
                     subLocations,

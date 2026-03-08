@@ -1,19 +1,29 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { verifyToken } from "@/lib/auth";
 
 export async function POST(req: Request) {
     try {
+        const token = req.headers.get('cookie')?.split('auth-token=')[1]?.split(';')[0];
+        if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+        const payload = await verifyToken(token) as { email?: string; id?: string; role?: string } | null;
+        if (!payload || payload.role !== 'PM') {
+            return NextResponse.json({ error: 'Forbidden. Only Project Managers can create projects.' }, { status: 403 });
+        }
+
         const body = await req.json();
         const { 
             name, 
-            pmEmail, 
             siteManagerId, 
             location, 
             subLocations, 
             startDate, 
             endDate,
-            tasks // Array of { taskCode, description, category, unit, quantity, minutesPerUnit, initialQty, initialHours }
+            tasks 
         } = body;
+
+        const pmEmail = payload.email;
 
         if (!name || !pmEmail || !tasks) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
