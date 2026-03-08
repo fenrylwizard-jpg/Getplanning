@@ -39,9 +39,7 @@ export default function DeleteProjectButton({ projectId, projectName }: { projec
         }
     };
 
-    if (projectName.toLowerCase().includes('herlin')) {
-        return null;
-    }
+
 
     return (
         <button

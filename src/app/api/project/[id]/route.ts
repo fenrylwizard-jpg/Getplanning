@@ -6,6 +6,26 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
         const resolvedParams = await params;
         const id = resolvedParams.id;
 
+        // Delete blockage logs linked to daily task progress for this project
+        await prisma.blockageLog.deleteMany({
+            where: { dailyTaskProgress: { dailyReport: { projectId: id } } }
+        });
+
+        // Delete daily task progress for this project
+        await prisma.dailyTaskProgress.deleteMany({
+            where: { dailyReport: { projectId: id } }
+        });
+
+        // Delete attendance records for this project
+        await prisma.attendance.deleteMany({
+            where: { dailyReport: { projectId: id } }
+        });
+
+        // Delete daily reports for this project
+        await prisma.dailyReport.deleteMany({
+            where: { projectId: id }
+        });
+
         await prisma.weeklyPlanTask.deleteMany({
             where: { weeklyPlan: { projectId: id } }
         });
