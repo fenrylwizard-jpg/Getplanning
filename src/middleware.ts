@@ -19,7 +19,7 @@ export async function middleware(req: NextRequest) {
     }
 
     // Exempt authentication and seed routes from JWT check
-    if (pathname.startsWith('/api/auth') || pathname.startsWith('/api/seed')) {
+    if (pathname.startsWith('/api/auth') || pathname.startsWith('/api/seed') || pathname.startsWith('/api/cron')) {
         return NextResponse.next();
     }
 
