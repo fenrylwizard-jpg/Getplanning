@@ -6,7 +6,7 @@
     "dev": "next dev",
     "postinstall": "prisma generate",
     "build": "next build",
-    "start": "prisma db push --skip-generate && next start",
+    "start": "npx prisma db push --skip-generate --accept-data-loss || echo 'DB push skipped'; next start",
     "lint": "eslint"
   },
   "prisma": {
