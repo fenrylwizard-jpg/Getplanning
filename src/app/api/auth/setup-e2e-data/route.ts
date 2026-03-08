@@ -23,7 +23,7 @@ export async function GET(request: Request) {
 
         // Generate 3 weeks of data (Mon-Fri) ending yesterday
         const reports = [];
-        let dateCounter = new Date();
+        const dateCounter = new Date();
         dateCounter.setDate(dateCounter.getDate() - 22); // Start ~3 weeks ago
 
         // Pick 5 tasks to progress on
@@ -45,8 +45,7 @@ export async function GET(request: Request) {
                     date: new Date(dateCounter),
                     status: 'APPROVED',
                     remarks: `E2E Simulated historical report for ${dateCounter.toDateString()}`,
-                    weather: 'Beau',
-                    progress: {
+                    taskProgress: {
                         create: activeTasks.map(t => ({
                             taskId: t.id,
                             quantity: Math.floor(Math.random() * 5) + 1, // Random 1-5 qty
