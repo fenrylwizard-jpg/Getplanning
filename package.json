@@ -5,8 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "postinstall": "prisma generate",
-    "build": "prisma db push --skip-generate && next build",
-    "start": "next start",
+    "build": "next build",
+    "start": "prisma db push --skip-generate && next start",
     "lint": "eslint"
   },
   "prisma": {
