@@ -6,7 +6,7 @@ export async function middleware(req: NextRequest) {
     const { pathname } = req.nextUrl;
 
     // Public routes that don't need protection
-    if (pathname.startsWith('/login') || pathname.startsWith('/register') || pathname.startsWith('/_next') || pathname.startsWith('/favicon.ico') || pathname === '/') {
+    if (pathname.startsWith('/login') || pathname.startsWith('/register') || pathname.startsWith('/_next') || pathname.startsWith('/favicon.ico') || pathname.startsWith('/characters') || pathname === '/') {
         return NextResponse.next();
     }
 
