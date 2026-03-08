@@ -2,14 +2,12 @@ import React from "react";
 
 interface SkeletonProps {
     className?: string;
-    style?: React.CSSProperties;
 }
 
-export function Skeleton({ className = "", style }: SkeletonProps) {
+export function Skeleton({ className = "" }: SkeletonProps) {
     return (
         <div 
             className={`animate-pulse bg-white/5 rounded-xl ${className}`}
-            style={style}
         />
     );
 }
@@ -65,13 +63,13 @@ export function SkeletonChart() {
                 <Skeleton className="h-8 w-24 rounded-lg" />
             </div>
             <div className="flex items-end gap-2 h-[200px] pt-8">
-                {[45, 70, 55, 80, 40, 65, 50].map((h, i) => (
-                    <Skeleton 
-                        key={i} 
-                        className="flex-1 rounded-t-lg"
-                        style={{ height: `${h}%` }}
-                    />
-                ))}
+                <Skeleton className="flex-1 rounded-t-lg h-[45%]" />
+                <Skeleton className="flex-1 rounded-t-lg h-[70%]" />
+                <Skeleton className="flex-1 rounded-t-lg h-[55%]" />
+                <Skeleton className="flex-1 rounded-t-lg h-[80%]" />
+                <Skeleton className="flex-1 rounded-t-lg h-[40%]" />
+                <Skeleton className="flex-1 rounded-t-lg h-[65%]" />
+                <Skeleton className="flex-1 rounded-t-lg h-[50%]" />
             </div>
             <div className="flex gap-4 justify-center">
                 <Skeleton className="h-3 w-12 rounded-md" />

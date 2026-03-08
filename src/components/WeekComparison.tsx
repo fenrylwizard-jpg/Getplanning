@@ -96,6 +96,7 @@ export default function WeekComparison({ projectId }: WeekComparisonProps) {
                     <select 
                         value={selectedA} 
                         onChange={e => setSelectedA(e.target.value)}
+                        title="Sélectionner la semaine A"
                         className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm"
                     >
                         {weeks.map(w => <option key={w} value={w}>{w}</option>)}
@@ -111,6 +112,7 @@ export default function WeekComparison({ projectId }: WeekComparisonProps) {
                     <select 
                         value={selectedB} 
                         onChange={e => setSelectedB(e.target.value)}
+                        title="Sélectionner la semaine B"
                         className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm"
                     >
                         {weeks.map(w => <option key={w} value={w}>{w}</option>)}
