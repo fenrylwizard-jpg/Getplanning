@@ -128,7 +128,14 @@ export default function UploadXLS() {
 
     const updateTaskProgress = (taskCode: string, field: 'initialQty' | 'initialHours', value: string) => {
         const numVal = parseFloat(value) || 0;
-        setTasks(tasks.map(t => t.taskCode === taskCode ? { ...t, [field]: numVal } : t));
+        setTasks(tasks.map(t => {
+            if (t.taskCode !== taskCode) return t;
+            const updatedTask = { ...t, [field]: numVal };
+            if (field === 'initialQty') {
+                updatedTask.initialHours = Number(((numVal * updatedTask.minutesPerUnit) / 60).toFixed(2));
+            }
+            return updatedTask;
+        }));
     };
 
     const updateTaskField = (taskCode: string, field: keyof TaskPreview, value: string | number) => {
@@ -268,6 +275,8 @@ export default function UploadXLS() {
                                             <th className="px-4 py-5 border-b border-white/5 text-center bg-blue-500/5 text-blue-400">Min/U</th>
                                             <th className="px-4 py-5 border-b border-white/5 bg-emerald-500/10 text-emerald-400 text-center"><T k="already_done" /> (Qty)</th>
                                             <th className="px-4 py-5 border-b border-white/5 bg-emerald-500/10 text-emerald-400 text-center"><T k="already_done" /> (H)</th>
+                                            <th className="px-4 py-5 border-b border-white/5 bg-orange-500/10 text-orange-400 text-center">Solde (Qty)</th>
+                                            <th className="px-4 py-5 border-b border-white/5 bg-orange-500/10 text-orange-400 text-center">Solde (H)</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-white/5">
@@ -341,6 +350,16 @@ export default function UploadXLS() {
                                                         onChange={(e) => updateTaskProgress(task.taskCode, 'initialHours', e.target.value)}
                                                         placeholder="0"
                                                     />
+                                                </td>
+                                                <td className="px-3 py-3 text-center bg-orange-500/5">
+                                                    <div className="w-20 mx-auto text-orange-400 font-bold text-sm">
+                                                        {(task.quantity - (task.initialQty || 0)).toFixed(2).replace(/\.00$/, '')}
+                                                    </div>
+                                                </td>
+                                                <td className="px-3 py-3 text-center bg-orange-500/5">
+                                                    <div className="w-20 mx-auto text-orange-400 font-bold text-sm">
+                                                        {(((task.quantity * task.minutesPerUnit) / 60) - (task.initialHours || 0)).toFixed(2).replace(/\.00$/, '')}
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))}
