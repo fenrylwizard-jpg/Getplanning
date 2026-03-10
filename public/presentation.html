@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EEG GetPlanning — Présentation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg-dark: #050a18;
+            --bg-card: rgba(15, 23, 55, 0.7);
+            --border: rgba(255,255,255,0.06);
+            --cyan: #22d3ee;
+            --purple: #a855f7;
+            --emerald: #34d399;
+            --blue: #3b82f6;
+            --orange: #f97316;
+            --red: #ef4444;
+            --gold: #fbbf24;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: #e2e8f0;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Background gradient orbs */
+        body::before, body::after {
+            content: '';
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.15;
+            pointer-events: none;
+            z-index: 0;
+        }
+        body::before {
+            width: 600px; height: 600px;
+            background: var(--cyan);
+            top: -200px; left: -100px;
+        }
+        body::after {
+            width: 500px; height: 500px;
+            background: var(--purple);
+            bottom: -100px; right: -100px;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 1; }
+
+        /* ── NAV ── */
+        nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            background: rgba(5,10,24,0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 0;
+        }
+        nav .container { display: flex; align-items: center; justify-content: space-between; }
+        .logo { font-weight: 900; font-size: 1.3rem; letter-spacing: -0.02em; }
+        .logo span { background: linear-gradient(135deg, var(--cyan), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .nav-links { display: flex; gap: 2rem; }
+        .nav-links a { color: rgba(255,255,255,0.5); text-decoration: none; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; transition: color 0.3s; }
+        .nav-links a:hover { color: var(--cyan); }
+
+        /* ── HERO ── */
+        .hero {
+            min-height: 100vh;
+            display: flex; align-items: center; justify-content: center;
+            text-align: center;
+            padding-top: 5rem;
+            position: relative;
+        }
+        .hero-content { max-width: 850px; }
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            background: rgba(34,211,238,0.08); border: 1px solid rgba(34,211,238,0.2);
+            padding: 0.5rem 1.2rem; border-radius: 100px;
+            font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em;
+            color: var(--cyan); margin-bottom: 2rem;
+        }
+        .hero h1 {
+            font-size: clamp(2.5rem, 6vw, 5rem);
+            font-weight: 900; letter-spacing: -0.04em;
+            line-height: 1.05; margin-bottom: 1.5rem;
+        }
+        .hero h1 .gradient {
+            background: linear-gradient(135deg, var(--cyan), var(--purple), var(--blue));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .hero p { font-size: 1.15rem; color: rgba(255,255,255,0.5); max-width: 600px; margin: 0 auto 2.5rem; line-height: 1.7; }
+        .hero-stats {
+            display: flex; justify-content: center; gap: 3rem; margin-top: 3rem;
+            padding-top: 2rem; border-top: 1px solid var(--border);
+        }
+        .hero-stat { text-align: center; }
+        .hero-stat .val { font-size: 2.5rem; font-weight: 900; background: linear-gradient(135deg, var(--cyan), var(--blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .hero-stat .label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; color: rgba(255,255,255,0.35); margin-top: 0.3rem; }
+
+        /* ── SECTION ── */
+        section { padding: 7rem 0; }
+        .section-header { text-align: center; margin-bottom: 4rem; }
+        .section-badge {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.2em;
+            color: var(--cyan); margin-bottom: 1rem;
+        }
+        .section-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--cyan); }
+        .section-header h2 { font-size: clamp(2rem, 4vw, 3rem); font-weight: 900; letter-spacing: -0.03em; margin-bottom: 1rem; }
+        .section-header p { color: rgba(255,255,255,0.45); max-width: 650px; margin: 0 auto; }
+
+        /* ── CARDS ── */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 2.5rem;
+            transition: all 0.4s cubic-bezier(0.16,1,0.3,1);
+            position: relative;
+            overflow: hidden;
+        }
+        .card::before {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+            opacity: 0; transition: opacity 0.4s;
+        }
+        .card:hover { transform: translateY(-4px); border-color: rgba(34,211,238,0.15); }
+        .card:hover::before { opacity: 1; }
+        .card-icon {
+            width: 56px; height: 56px;
+            border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .card h3 { font-size: 1.25rem; font-weight: 800; margin-bottom: 0.8rem; letter-spacing: -0.02em; }
+        .card p { color: rgba(255,255,255,0.5); font-size: 0.9rem; line-height: 1.7; }
+        .card-features { margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.6rem; }
+        .card-feature {
+            display: flex; align-items: center; gap: 0.6rem;
+            font-size: 0.82rem; color: rgba(255,255,255,0.55);
+        }
+        .card-feature .check { color: var(--emerald); font-weight: 900; font-size: 0.9rem; }
+
+        /* ── GRIDS ── */
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+        .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+        @media (max-width: 768px) {
+            .grid-3, .grid-2 { grid-template-columns: 1fr; }
+        }
+
+        /* ── ROLE SECTION ── */
+        .role-card {
+            padding: 3rem;
+            border-radius: 32px;
+            position: relative;
+        }
+        .role-card .role-tag {
+            font-size: 0.65rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.25em;
+            margin-bottom: 1.5rem; display: inline-block;
+            padding: 0.4rem 1rem; border-radius: 100px;
+        }
+        .role-card h3 { font-size: 1.6rem; font-weight: 900; margin-bottom: 0.8rem; letter-spacing: -0.02em; }
+        .role-card .role-desc { color: rgba(255,255,255,0.5); margin-bottom: 2rem; font-size: 0.95rem; }
+
+        .role-sm { border-left: 4px solid var(--emerald); }
+        .role-sm .role-tag { background: rgba(52,211,153,0.1); color: var(--emerald); }
+        .role-pm { border-left: 4px solid var(--blue); }
+        .role-pm .role-tag { background: rgba(59,130,246,0.1); color: var(--blue); }
+        .role-admin { border-left: 4px solid var(--purple); }
+        .role-admin .role-tag { background: rgba(168,85,247,0.1); color: var(--purple); }
+
+        /* ── TIMELINE ── */
+        .timeline { display: flex; flex-direction: column; gap: 0rem; position: relative; }
+        .timeline::before { content: ''; position: absolute; left: 28px; top: 0; bottom: 0; width: 2px; background: linear-gradient(to bottom, var(--cyan), var(--purple), var(--emerald)); opacity: 0.3; }
+        .timeline-step {
+            display: flex; gap: 2rem; align-items: flex-start; padding: 1.5rem 0;
+            position: relative;
+        }
+        .timeline-dot {
+            width: 20px; height: 20px; min-width: 20px;
+            border-radius: 50%; border: 3px solid;
+            background: var(--bg-dark);
+            margin-top: 4px; position: relative; z-index: 2;
+        }
+        .timeline-step:nth-child(1) .timeline-dot { border-color: var(--cyan); box-shadow: 0 0 12px rgba(34,211,238,0.3); }
+        .timeline-step:nth-child(2) .timeline-dot { border-color: var(--blue); box-shadow: 0 0 12px rgba(59,130,246,0.3); }
+        .timeline-step:nth-child(3) .timeline-dot { border-color: var(--purple); box-shadow: 0 0 12px rgba(168,85,247,0.3); }
+        .timeline-step:nth-child(4) .timeline-dot { border-color: var(--emerald); box-shadow: 0 0 12px rgba(52,211,153,0.3); }
+        .timeline-step:nth-child(5) .timeline-dot { border-color: var(--gold); box-shadow: 0 0 12px rgba(251,191,36,0.3); }
+        .timeline-content h4 { font-weight: 800; font-size: 1.1rem; margin-bottom: 0.3rem; }
+        .timeline-content p { color: rgba(255,255,255,0.45); font-size: 0.85rem; line-height: 1.6; }
+
+        /* ── FEATURE HIGHLIGHT ── */
+        .highlight-row {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 4rem;
+            align-items: center; padding: 4rem 0;
+        }
+        .highlight-row.reverse { direction: rtl; }
+        .highlight-row.reverse > * { direction: ltr; }
+        .highlight-text h3 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.03em; margin-bottom: 1rem; }
+        .highlight-text p { color: rgba(255,255,255,0.5); font-size: 0.95rem; line-height: 1.7; margin-bottom: 1.5rem; }
+        .highlight-visual {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 2rem;
+            min-height: 300px;
+            display: flex; align-items: center; justify-content: center;
+            position: relative; overflow: hidden;
+        }
+        @media (max-width: 768px) {
+            .highlight-row { grid-template-columns: 1fr; gap: 2rem; }
+            .highlight-row.reverse { direction: ltr; }
+        }
+
+        /* ── MOCKUP BARS ── */
+        .mock-bar { height: 10px; border-radius: 100px; margin-bottom: 0.6rem; }
+
+        /* ── PILL TAGS ── */
+        .pill { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.35rem 0.9rem; border-radius: 100px; font-size: 0.72rem; font-weight: 700; }
+        .pill-cyan { background: rgba(34,211,238,0.1); color: var(--cyan); border: 1px solid rgba(34,211,238,0.2); }
+        .pill-purple { background: rgba(168,85,247,0.1); color: var(--purple); border: 1px solid rgba(168,85,247,0.2); }
+        .pill-emerald { background: rgba(52,211,153,0.1); color: var(--emerald); border: 1px solid rgba(52,211,153,0.2); }
+        .pill-blue { background: rgba(59,130,246,0.1); color: var(--blue); border: 1px solid rgba(59,130,246,0.2); }
+        .pill-orange { background: rgba(249,115,22,0.1); color: var(--orange); border: 1px solid rgba(249,115,22,0.2); }
+        .pill-gold { background: rgba(251,191,36,0.1); color: var(--gold); border: 1px solid rgba(251,191,36,0.2); }
+
+        /* ── FOOTER ── */
+        footer {
+            background: rgba(5,10,24,0.9);
+            border-top: 1px solid var(--border);
+            padding: 4rem 0 3rem;
+            text-align: center;
+        }
+        footer h2 { font-size: 2.2rem; font-weight: 900; margin-bottom: 1rem; }
+        footer p { color: rgba(255,255,255,0.4); margin-bottom: 2rem; }
+        .footer-cta {
+            display: inline-flex; align-items: center; gap: 0.6rem;
+            padding: 1rem 2.5rem; border-radius: 16px;
+            background: linear-gradient(135deg, var(--cyan), var(--blue));
+            color: #000; font-weight: 800; font-size: 1rem;
+            text-decoration: none; transition: all 0.3s;
+            box-shadow: 0 0 30px rgba(34,211,238,0.2);
+        }
+        .footer-cta:hover { transform: translateY(-2px); box-shadow: 0 0 50px rgba(34,211,238,0.35); }
+
+        /* ── VISUAL DECORATIONS ── */
+        .glow-orb {
+            position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none; opacity: 0.12;
+        }
+
+        /* ── ANIMATED COUNTER VISUAL ── */
+        .stat-grid {
+            display: grid; grid-template-columns: repeat(4,1fr); gap: 1.5rem;
+            margin-top: 3rem;
+        }
+        .stat-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .stat-box:hover { border-color: rgba(34,211,238,0.2); transform: translateY(-2px); }
+        .stat-box .stat-val { font-size: 2.2rem; font-weight: 900; margin-bottom: 0.4rem; }
+        .stat-box .stat-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; color: rgba(255,255,255,0.35); }
+        @media (max-width: 768px) {
+            .stat-grid { grid-template-columns: repeat(2,1fr); }
+        }
+
+        /* ── ROLE CAPABILITIES ── */
+        .cap-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 1rem; margin-top: 1.5rem; }
+        .cap-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 14px;
+            padding: 1rem 1.2rem;
+            font-size: 0.85rem;
+            display: flex; align-items: flex-start; gap: 0.7rem;
+        }
+        .cap-item .cap-icon { font-size: 1.2rem; margin-top: 2px; }
+        .cap-item strong { display: block; font-weight: 700; margin-bottom: 0.2rem; color: #fff; }
+        .cap-item span { color: rgba(255,255,255,0.45); font-size: 0.8rem; }
+
+        /* ── DIVIDER ── */
+        .divider { border: none; border-top: 1px solid var(--border); margin: 0; }
+
+        /* Smooth fade-in animation */
+        .fade-in { opacity: 0; transform: translateY(30px); transition: all 0.8s cubic-bezier(0.16,1,0.3,1); }
+        .fade-in.visible { opacity: 1; transform: translateY(0); }
+    </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+    <div class="container">
+        <div class="logo"><span>EEG</span> GetPlanning</div>
+        <div class="nav-links">
+            <a href="#fonctionnalites">Fonctionnalités</a>
+            <a href="#roles">Rôles</a>
+            <a href="#workflow">Workflow</a>
+            <a href="#analytics">Analytics</a>
+        </div>
+    </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-content fade-in">
+        <div class="hero-badge">⚡ Plateforme SaaS de Nouvelle Génération</div>
+        <h1>
+            Maîtrisez la<br>
+            <span class="gradient">planification de vos chantiers</span>
+        </h1>
+        <p>
+            Pilotez vos projets de construction avec précision. Planification hebdomadaire, rapports terrain en temps réel, analytics avancées et gamification pour motiver vos équipes.
+        </p>
+        <div class="hero-stats">
+            <div class="hero-stat">
+                <div class="val">3</div>
+                <div class="label">Rôles Métier</div>
+            </div>
+            <div class="hero-stat">
+                <div class="val">3</div>
+                <div class="label">Langues</div>
+            </div>
+            <div class="hero-stat">
+                <div class="val">∞</div>
+                <div class="label">Projets simultanés</div>
+            </div>
+            <div class="hero-stat">
+                <div class="val">24/7</div>
+                <div class="label">Accès terrain</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FEATURES OVERVIEW -->
+<section id="fonctionnalites">
+    <div class="container">
+        <div class="section-header fade-in">
+            <div class="section-badge"><span class="dot"></span> FONCTIONNALITÉS</div>
+            <h2>Tout ce qu'il faut pour piloter vos chantiers</h2>
+            <p>Une suite complète d'outils conçus pour les professionnels du BTP et de l'installation technique.</p>
+        </div>
+
+        <div class="grid-3">
+            <div class="card fade-in">
+                <div class="card-icon" style="background: rgba(34,211,238,0.1); color: var(--cyan);">📋</div>
+                <h3>Planification Multi-Semaines</h3>
+                <p>Planifiez vos tâches sur S+1, S+2 et S+3 avec un système de panier intuitif.</p>
+                <div class="card-features">
+                    <div class="card-feature"><span class="check">✓</span> Sélection par catégorie & poste</div>
+                    <div class="card-feature"><span class="check">✓</span> Localisation par zone du chantier</div>
+                    <div class="card-feature"><span class="check">✓</span> Checklist de préparation (Plans, Matériaux, Outils)</div>
+                    <div class="card-feature"><span class="check">✓</span> Objectif horaire automatique</div>
+                </div>
+            </div>
+
+            <div class="card fade-in">
+                <div class="card-icon" style="background: rgba(52,211,153,0.1); color: var(--emerald);">📊</div>
+                <h3>Rapports Quotidiens</h3>
+                <p>Le Chef de Chantier saisit chaque jour l'avancement réel, les présences et les problèmes rencontrés.</p>
+                <div class="card-features">
+                    <div class="card-feature"><span class="check">✓</span> Saisie des quantités exécutées</div>
+                    <div class="card-feature"><span class="check">✓</span> Comptage de la main-d'œuvre</div>
+                    <div class="card-feature"><span class="check">✓</span> Preuves visuelles (photos terrain)</div>
+                    <div class="card-feature"><span class="check">✓</span> Signalement de blocages (RCA)</div>
+                </div>
+            </div>
+
+            <div class="card fade-in">
+                <div class="card-icon" style="background: rgba(168,85,247,0.1); color: var(--purple);">📈</div>
+                <h3>Analytics & EVM</h3>
+                <p>Tableaux de bord interactifs avec Earned Value Management, heatmaps de productivité et analyses croisées.</p>
+                <div class="card-features">
+                    <div class="card-feature"><span class="check">✓</span> Valeur Planifiée vs Acquise vs Brûlée</div>
+                    <div class="card-feature"><span class="check">✓</span> Productivité par catégorie métier</div>
+                    <div class="card-feature"><span class="check">✓</span> Benchmarking inter-chantiers</div>
+                    <div class="card-feature"><span class="check">✓</span> Root Cause Analysis (RCA)</div>
+                </div>
+            </div>
+
+            <div class="card fade-in">
+                <div class="card-icon" style="background: rgba(59,130,246,0.1); color: var(--blue);">📁</div>
+                <h3>Import Budget Excel</h3>
+                <p>Importez votre Bordereau de Prix directement depuis un fichier Excel. Zones pré-remplies automatiquement.</p>
+                <div class="card-features">
+                    <div class="card-feature"><span class="check">✓</span> Détection automatique des colonnes</div>
+                    <div class="card-feature"><span class="check">✓</span> Catégories & sous-catégories</div>
+                    <div class="card-feature"><span class="check">✓</span> Template téléchargeable pré-rempli</div>
+                    <div class="card-feature"><span class="check">✓</span> Reprise d'historique intégrée</div>
+                </div>
+            </div>
+
+            <div class="card fade-in">
+                <div class="card-icon" style="background: rgba(251,191,36,0.1); color: var(--gold);">🏆</div>
+                <h3>Gamification RPG</h3>
+                <p>Système de niveaux, XP et badges pour motiver vos équipes terrain. Chaque objectif atteint rapporte de l'expérience.</p>
+                <div class="card-features">
+                    <div class="card-feature"><span class="check">✓</span> Personnages RPG uniques</div>
+                    <div class="card-feature"><span class="check">✓</span> Système de streaks (jours consécutifs)</div>
+                    <div class="card-feature"><span class="check">✓</span> Badges de performance</div>
+                    <div class="card-feature"><span class="check">✓</span> Classement inter-personnel</div>
+                </div>
+            </div>
+
+            <div class="card fade-in">
+                <div class="card-icon" style="background: rgba(249,115,22,0.1); color: var(--orange);">🌍</div>
+                <h3>Multilingue & Accessible</h3>
+                <p>Interface disponible en Français, Anglais et Néerlandais. Conçue pour une utilisation terrain sur mobile.</p>
+                <div class="card-features">
+                    <div class="card-feature"><span class="check">✓</span> 3 langues (FR / EN / NL)</div>
+                    <div class="card-feature"><span class="check">✓</span> Responsive mobile-first</div>
+                    <div class="card-feature"><span class="check">✓</span> Mode hors-ligne (sauvegarde locale)</div>
+                    <div class="card-feature"><span class="check">✓</span> Synchronisation automatique</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- ROLES -->
+<section id="roles">
+    <div class="container">
+        <div class="section-header fade-in">
+            <div class="section-badge"><span class="dot"></span> RÔLES & RESPONSABILITÉS</div>
+            <h2>Trois rôles, un seul objectif</h2>
+            <p>Chaque acteur du chantier dispose d'un tableau de bord adapté à ses responsabilités.</p>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 2rem;">
+            <!-- SM -->
+            <div class="card role-card role-sm fade-in">
+                <div class="role-tag">Chef de Chantier (SM)</div>
+                <h3>🔧 L'Exécutant Terrain</h3>
+                <p class="role-desc">Le Chef de Chantier est au cœur de l'action. Il planifie les semaines à venir, rapporte l'avancement quotidien et gagne de l'expérience en atteignant ses objectifs.</p>
+                <div class="cap-grid">
+                    <div class="cap-item">
+                        <span class="cap-icon">📋</span>
+                        <div><strong>Planification Hebdomadaire</strong><span>Sélection des tâches, quantités par zone, checklist de préparation (S+1 à S+3).</span></div>
+                    </div>
+                    <div class="cap-item">
+                        <span class="cap-icon">📝</span>
+                        <div><strong>Rapport Quotidien</strong><span>Quantités exécutées, main-d'œuvre présente, photos de preuve et signalements.</span></div>
+                    </div>
+                    <div class="cap-item">
+                        <span class="cap-icon">🎮</span>
+                        <div><strong>Progression RPG</strong><span>XP, niveaux, personnages et badges gagnés en atteignant les objectifs hebdomadaires.</span></div>
+                    </div>
+                    <div class="cap-item">
+                        <span class="cap-icon">📜</span>
+                        <div><strong>Historique</strong><span>Consultation des plans passés, taux de réalisation et tendances sur le temps.</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PM -->
+            <div class="card role-card role-pm fade-in">
+                <div class="role-tag">Chef de Projet (PM)</div>
+                <h3>📐 Le Stratège</h3>
+                <p class="role-desc">Le Chef de Projet supervise l'ensemble des installations, pilote les budgets et analyse la rentabilité de chaque chantier.</p>
+                <div class="cap-grid">
+                    <div class="cap-item">
+                        <span class="cap-icon">📁</span>
+                        <div><strong>Création de Projets</strong><span>Import du Bordereau de Prix, assignation du SM, définition des zones.</span></div>
+                    </div>
+                    <div class="cap-item">
+                        <span class="cap-icon">📊</span>
+                        <div><strong>Suivi Budgétaire</strong><span>Heures planifiées vs exécutées, taux de rentabilité, progression globale.</span></div>
+                    </div>
+                    <div class="cap-item">
+                        <span class="cap-icon">📈</span>
+                        <div><strong>EVM & Analytics</strong><span>Valeur acquise, valeur planifiée, heures brûlées — visualisations avancées.</span></div>
+                    </div>
+                    <div class="cap-item">
+                        <span class="cap-icon">🔍</span>
+                        <div><strong>Vue Détaillée des Plans</strong><span>Accès aux détails de chaque plan hebdomadaire avec statut et productivité.</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin -->
+            <div class="card role-card role-admin fade-in">
+                <div class="role-tag">Administrateur</div>
+                <h3>🛡️ Le Superviseur Global</h3>
+                <p class="role-desc">L'Administrateur a une vision 360° sur l'ensemble du parc de chantiers, gère les comptes utilisateurs et déclenche les clôtures hebdomadaires.</p>
+                <div class="cap-grid">
+                    <div class="cap-item">
+                        <span class="cap-icon">🌐</span>
+                        <div><strong>Tableau de Bord Global</strong><span>KPIs clés : projets actifs, taux d'objectifs, heures MO totales.</span></div>
+                    </div>
+                    <div class="cap-item">
+                        <span class="cap-icon">👤</span>
+                        <div><strong>Gestion des Comptes</strong><span>Approbation/rejet des inscriptions, gestion des rôles (SM, PM, Admin).</span></div>
+                    </div>
+                    <div class="cap-item">
+                        <span class="cap-icon">📉</span>
+                        <div><strong>Graphiques de Performance</strong><span>Courbes de valeur gagnée par projet sur le temps avec zoom interactif.</span></div>
+                    </div>
+                    <div class="cap-item">
+                        <span class="cap-icon">🏅</span>
+                        <div><strong>Classement du Personnel</strong><span>Ranking par XP et niveau avec les avatars RPG de chaque membre.</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- WORKFLOW -->
+<section id="workflow">
+    <div class="container">
+        <div class="section-header fade-in">
+            <div class="section-badge"><span class="dot"></span> WORKFLOW HEBDOMADAIRE</div>
+            <h2>Du plan à l'exécution</h2>
+            <p>Un cycle complet de gestion, de la planification à la clôture, en passant par le terrain.</p>
+        </div>
+
+        <div class="card fade-in" style="padding: 3rem;">
+            <div class="timeline">
+                <div class="timeline-step">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <div style="display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.3rem;">
+                            <h4>1. Import du Budget</h4>
+                            <span class="pill pill-blue">PM</span>
+                        </div>
+                        <p>Le Chef de Projet crée le chantier en important le Bordereau de Prix Excel. Les tâches, catégories et zones sont automatiquement générées.</p>
+                    </div>
+                </div>
+                <div class="timeline-step">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <div style="display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.3rem;">
+                            <h4>2. Planification S+1</h4>
+                            <span class="pill pill-emerald">SM</span>
+                        </div>
+                        <p>Le Chef de Chantier sélectionne les tâches à exécuter la semaine prochaine, définit les quantités par zone et valide la checklist de préparation (plans, matériaux, outils).</p>
+                    </div>
+                </div>
+                <div class="timeline-step">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <div style="display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.3rem;">
+                            <h4>3. Rapports Quotidiens</h4>
+                            <span class="pill pill-emerald">SM</span>
+                        </div>
+                        <p>Chaque jour, le SM rapporte les quantités réellement exécutées, le nombre de travailleurs présents et joint des photos de preuve si nécessaire. En cas de blocage, il catégorise la cause (RCA).</p>
+                    </div>
+                </div>
+                <div class="timeline-step">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <div style="display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.3rem;">
+                            <h4>4. Suivi & Analytics</h4>
+                            <span class="pill pill-blue">PM</span>
+                            <span class="pill pill-purple">Admin</span>
+                        </div>
+                        <p>Le PM et l'Admin suivent la progression en temps réel via les tableaux de bord : productivité par catégorie, EVM, taux d'objectifs atteints et analyses RCA.</p>
+                    </div>
+                </div>
+                <div class="timeline-step">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <div style="display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.3rem;">
+                            <h4>5. Clôture & XP</h4>
+                            <span class="pill pill-purple">Admin</span>
+                            <span class="pill pill-gold">Auto</span>
+                        </div>
+                        <p>La semaine est clôturée automatiquement (ou manuellement par l'Admin). Le système calcule si l'objectif est atteint et attribue l'XP au Chef de Chantier. Le cycle recommence.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- ANALYTICS DEEP DIVE -->
+<section id="analytics">
+    <div class="container">
+        <div class="section-header fade-in">
+            <div class="section-badge"><span class="dot"></span> ANALYTICS AVANCÉES</div>
+            <h2>Des données au service de la décision</h2>
+            <p>Visualisations interactives pour comprendre la performance de vos chantiers en un coup d'œil.</p>
+        </div>
+
+        <div class="stat-grid fade-in">
+            <div class="stat-box">
+                <div class="stat-val" style="color: var(--cyan);">EVM</div>
+                <div class="stat-label">Earned Value Management</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-val" style="color: var(--emerald);">RCA</div>
+                <div class="stat-label">Analyse de Causes</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-val" style="color: var(--purple);">🔥</div>
+                <div class="stat-label">Heatmap Productivité</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-val" style="color: var(--gold);">⚖️</div>
+                <div class="stat-label">Benchmarking</div>
+            </div>
+        </div>
+
+        <div class="grid-2" style="margin-top: 3rem;">
+            <div class="card fade-in">
+                <h3 style="color: var(--cyan); margin-bottom: 1.5rem;">📉 Earned Value Management</h3>
+                <p style="color: rgba(255,255,255,0.5); font-size: 0.9rem; margin-bottom: 1.5rem;">
+                    Suivez l'évolution cumulée de vos chantiers avec trois courbes clés :
+                </p>
+                <div style="display:flex; flex-direction:column; gap: 0.8rem;">
+                    <div style="display:flex; align-items:center; gap: 0.8rem;">
+                        <div style="width:14px;height:14px;border-radius:4px;background:var(--blue)"></div>
+                        <span style="font-size:0.85rem;"><strong>PV</strong> — Valeur Planifiée (heures prévues)</span>
+                    </div>
+                    <div style="display:flex; align-items:center; gap: 0.8rem;">
+                        <div style="width:14px;height:14px;border-radius:4px;background:var(--emerald)"></div>
+                        <span style="font-size:0.85rem;"><strong>EV</strong> — Valeur Acquise (heures valorisées)</span>
+                    </div>
+                    <div style="display:flex; align-items:center; gap: 0.8rem;">
+                        <div style="width:14px;height:14px;border-radius:4px;background:var(--red)"></div>
+                        <span style="font-size:0.85rem;"><strong>AC</strong> — Coût Réel (heures brûlées)</span>
+                    </div>
+                </div>
+                <div style="margin-top: 2rem; background:rgba(255,255,255,0.03); border-radius:16px; padding:1.5rem; height:150px; display:flex; align-items:flex-end; gap:4px;">
+                    <div style="flex:1;height:30%;background:linear-gradient(to top, var(--blue), transparent);border-radius:6px 6px 0 0;"></div>
+                    <div style="flex:1;height:45%;background:linear-gradient(to top, var(--blue), transparent);border-radius:6px 6px 0 0;"></div>
+                    <div style="flex:1;height:55%;background:linear-gradient(to top, var(--blue), transparent);border-radius:6px 6px 0 0;"></div>
+                    <div style="flex:1;height:62%;background:linear-gradient(to top, var(--emerald), transparent);border-radius:6px 6px 0 0;"></div>
+                    <div style="flex:1;height:70%;background:linear-gradient(to top, var(--emerald), transparent);border-radius:6px 6px 0 0;"></div>
+                    <div style="flex:1;height:78%;background:linear-gradient(to top, var(--emerald), transparent);border-radius:6px 6px 0 0;"></div>
+                    <div style="flex:1;height:82%;background:linear-gradient(to top, var(--cyan), transparent);border-radius:6px 6px 0 0;"></div>
+                    <div style="flex:1;height:88%;background:linear-gradient(to top, var(--cyan), transparent);border-radius:6px 6px 0 0;"></div>
+                    <div style="flex:1;height:92%;background:linear-gradient(to top, var(--cyan), transparent);border-radius:6px 6px 0 0;"></div>
+                    <div style="flex:1;height:96%;background:linear-gradient(to top, var(--purple), transparent);border-radius:6px 6px 0 0;"></div>
+                </div>
+            </div>
+
+            <div class="card fade-in">
+                <h3 style="color: var(--emerald); margin-bottom: 1.5rem;">🔍 Analyse des Causes (RCA)</h3>
+                <p style="color: rgba(255,255,255,0.5); font-size: 0.9rem; margin-bottom: 1.5rem;">
+                    Quand un objectif n'est pas atteint, le Chef de Chantier catégorise la cause du retard :
+                </p>
+                <div style="display:flex; flex-direction:column; gap: 0.8rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:0.85rem;">⏳ Retard Matériel</span>
+                        <div style="width:50%; height:10px; background:rgba(255,255,255,0.05); border-radius:100px; overflow:hidden;">
+                            <div style="width:45%; height:100%; background: var(--orange); border-radius:100px;"></div>
+                        </div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:0.85rem;">🌧️ Météo</span>
+                        <div style="width:50%; height:10px; background:rgba(255,255,255,0.05); border-radius:100px; overflow:hidden;">
+                            <div style="width:25%; height:100%; background: var(--blue); border-radius:100px;"></div>
+                        </div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:0.85rem;">🔧 Panne d'Équipement</span>
+                        <div style="width:50%; height:10px; background:rgba(255,255,255,0.05); border-radius:100px; overflow:hidden;">
+                            <div style="width:15%; height:100%; background: var(--red); border-radius:100px;"></div>
+                        </div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:0.85rem;">👷 Main-d'œuvre</span>
+                        <div style="width:50%; height:10px; background:rgba(255,255,255,0.05); border-radius:100px; overflow:hidden;">
+                            <div style="width:10%; height:100%; background: var(--purple); border-radius:100px;"></div>
+                        </div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:0.85rem;">📋 Erreur de Planification</span>
+                        <div style="width:50%; height:10px; background:rgba(255,255,255,0.05); border-radius:100px; overflow:hidden;">
+                            <div style="width:5%; height:100%; background: var(--gold); border-radius:100px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- TECH STACK -->
+<section>
+    <div class="container">
+        <div class="section-header fade-in">
+            <div class="section-badge"><span class="dot"></span> TECHNOLOGIE</div>
+            <h2>Architecture Moderne & Sécurisée</h2>
+            <p>Construite avec les technologies web les plus performantes pour garantir fiabilité et rapidité.</p>
+        </div>
+
+        <div class="grid-3 fade-in">
+            <div class="card" style="text-align:center;">
+                <div style="font-size: 2.5rem; margin-bottom: 1rem;">⚡</div>
+                <h3>Next.js 15</h3>
+                <p>Framework React full-stack avec rendu côté serveur et optimisation automatique.</p>
+            </div>
+            <div class="card" style="text-align:center;">
+                <div style="font-size: 2.5rem; margin-bottom: 1rem;">🗄️</div>
+                <h3>PostgreSQL + Prisma</h3>
+                <p>Base de données relationnelle robuste avec ORM type-safe pour la fiabilité des données.</p>
+            </div>
+            <div class="card" style="text-align:center;">
+                <div style="font-size: 2.5rem; margin-bottom: 1rem;">🔒</div>
+                <h3>Authentification JWT</h3>
+                <p>Contrôle d'accès basé sur les rôles (RBAC) avec tokens sécurisés et validation serveur.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FOOTER CTA -->
+<footer>
+    <div class="container fade-in">
+        <h2>Prêt à transformer vos chantiers ?</h2>
+        <p>Rejoignez les équipes qui optimisent leur productivité avec EEG GetPlanning.</p>
+        <a href="https://getplanning.org" class="footer-cta" target="_blank">
+            Accéder à la plateforme →
+        </a>
+        <p style="margin-top: 3rem; font-size: 0.75rem; color: rgba(255,255,255,0.2);">
+            © 2026 EEG Group — GetPlanning.org — Tous droits réservés
+        </p>
+    </div>
+</footer>
+
+<script>
+    // Intersection Observer for fade-in animations
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
