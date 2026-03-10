@@ -190,7 +190,7 @@ const dictionaries: Record<Language, Dictionary> = {
     "project_field": "Projet :",
     "no_evm_data_available": "Aucune donnée EVM disponible.",
     "upload_xls_title": "Créer un Nouveau Projet & Téléverser le Budget",
-    "upload_xls_desc": "Remplissez les détails du projet et téléversez le fichier Excel 'Meetstaat' pour générer la liste des tâches.",
+    "upload_xls_desc": "Remplissez les détails du projet et téléversez le fichier Excel 'Bordereau de prix' pour générer la liste des tâches.",
     "success_project_created": "Projet Créé avec Succès !",
     "parsing_redirect": "Données analysées, redirection vers le tableau de bord...",
     "project_name_label": "Nom du Projet *",
@@ -340,7 +340,12 @@ const dictionaries: Record<Language, Dictionary> = {
     "labor_hours": "Heures MO",
     "workload": "Charge (H)",
     "nodes_pl": "Nœuds",
-    "load": "Charge"
+    "load": "Charge",
+    "download_template": "Télécharger le Modèle Excel",
+    "add_zones_first": "Ajoutez d'abord des sous-lieux (zones) avant de télécharger le modèle.",
+    "remove": "Supprimer",
+    "continue": "Continuer",
+    "description": "Description"
   },
   en: {
     "login": "Login",
@@ -525,7 +530,7 @@ const dictionaries: Record<Language, Dictionary> = {
     "project_field": "Project:",
     "no_evm_data_available": "No EVM data available.",
     "upload_xls_title": "Create New Project & Upload Budget",
-    "upload_xls_desc": "Fill out the project details and upload the 'Meetstaat' Excel file to generate the task list.",
+    "upload_xls_desc": "Fill out the project details and upload the 'Bordereau de prix' Excel file to generate the task list.",
     "success_project_created": "Successfully Created Project!",
     "parsing_redirect": "Parsed data and redirecting back to dashboard...",
     "project_name_label": "Project Name *",
@@ -673,7 +678,12 @@ const dictionaries: Record<Language, Dictionary> = {
     "labor_hours": "Labor Hours",
     "workload": "Workload",
     "nodes_pl": "Nodes",
-    "load": "Load"
+    "load": "Load",
+    "download_template": "Download Excel Template",
+    "add_zones_first": "Add sub-locations (zones) first before downloading the template.",
+    "remove": "Remove",
+    "continue": "Continue",
+    "description": "Description"
   },
   nl: {
     "login": "Inloggen",
@@ -862,7 +872,7 @@ const dictionaries: Record<Language, Dictionary> = {
     "project_field": "Project:",
     "no_evm_data_available": "Geen EVM-gegevens beschikbaar.",
     "upload_xls_title": "Nieuw Project Aanmaken & Budget Uploaden",
-    "upload_xls_desc": "Vul de projectdetails in en upload het 'Meetstaat' Excel-bestand om de takenlijst te genereren.",
+    "upload_xls_desc": "Vul de projectdetails in en upload het 'Bordereau de prix' Excel-bestand om de takenlijst te genereren.",
     "success_project_created": "Project succesvol aangemaakt!",
     "parsing_redirect": "Gegevens verwerkt en terugkeren naar dashboard...",
     "project_name_label": "Projectnaam *",
@@ -1002,7 +1012,12 @@ const dictionaries: Record<Language, Dictionary> = {
     "labor_hours": "Arbeidsuren",
     "workload": "Werklast",
     "nodes_pl": "Knooppunten",
-    "load": "Belasting"
+    "load": "Belasting",
+    "download_template": "Excel-sjabloon Downloaden",
+    "add_zones_first": "Voeg eerst sublocaties (zones) toe voordat u het sjabloon downloadt.",
+    "remove": "Verwijderen",
+    "continue": "Doorgaan",
+    "description": "Beschrijving"
   }
 };
 

@@ -7,162 +7,185 @@ export interface MetreTask {
     unit: string;
     quantity: number;
     minutesPerUnit: number;
+    zones?: Record<string, number>; // zone name → quantity allocated to that zone
 }
 
 export interface MetreResult {
     tasks: MetreTask[];
     totalHours: number;
     projectName: string;
+    zones: string[]; // detected zone column names
 }
 
 /**
- * Herlin Excel Column Layout (Meetstaat sheet, with row 8 as header):
- * Col 0:  CODE          - Decomposition string (e.g. "20&u")
- * Col 1:  MAT           - Material cost
- * Col 2:  STRT          - External works cost
- * Col 3:  TECH (via BO) - Tech/Budget code (e.g. "EB1", "VK1") → links to BUDGETCODES
- * Col 6:  NR            - Row number
- * Col 7:  N° Article    - Article code (e.g. "00.3.01.01")
- * Col 9:  Description   - Task description
- * Col 10: Marché        - Market type (FF = forfait)
- * Col 11: Unité         - Unit (PG for forfait, SR, u, m, etc.)
- * Col 12: Qté           - Quantity (always 1 for forfaits)
- * Col 16: MO min/unité  - Installation time in minutes per unit
- * Col 30: Total minutes  - Total MO minutes (= Qté × moMin)
- * Col 31: Total heures  - Total MO hours
+ * Simplified "Bordereau de prix" Excel format parser.
  *
- * BUDGETCODES sheet (row 0 is header):
- * Col 0: Naam (Dutch name)
- * Col 1: Nom FR (French name)
- * Col 2: Code (the code, e.g. "P-DAK")
- * Col 3: Categorie ("Activité" or "Matériau")
- * Col 4: Uurtarief (hourly rate)
- * Col 5: Bedrijfseenheid
+ * Expected column layout (header auto-detected):
+ *   Poste | Désignation | Marché | Unité | Quantité | temps de pose unitaire (min) | temps total | [zone1] | [zone2] | ...
  *
- * The TECH column (col 3) in Meetstaat does NOT directly match to BUDGETCODES codes.
- * Instead, we use the Marché (col 10) field for the category grouping.
+ * Category detection:
+ *   Rows where "Poste" has a value (like "1", "1.1", "2.3") but NO Quantité/Unité → category header.
+ *   Subsequent data rows inherit the last seen category.
+ *
+ * Zone columns:
+ *   Any columns AFTER "temps total" are treated as zone columns.
+ *   Their header text = zone name, cell value = quantity for that zone.
  */
 export function parseMetre(buffer: Buffer): MetreResult {
     const workbook = XLSX.read(buffer, { type: 'buffer' });
-    const sheets = workbook.SheetNames;
-    
-    // Find sheets
-    const meetstaatName = sheets.find(s => s.toLowerCase().includes('meetstaat') || s.toLowerCase().includes('vorderstaat')) || sheets[0];
-    const boName = sheets.find(s => s === 'BO');
+    const sheetName = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[sheetName];
+    if (!sheet) throw new Error('Le fichier Excel est vide.');
 
-    const meetstaatSheet = workbook.Sheets[meetstaatName];
-    if (!meetstaatSheet) throw new Error(`Impossible de trouver la feuille Meetstaat (${meetstaatName})`);
+    const data = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' }) as unknown[][];
 
-    const meetstaatData = XLSX.utils.sheet_to_json(meetstaatSheet, { header: 1, defval: '' }) as unknown[][];
+    // ── Auto-detect header row ──
+    // Scan for the first row containing both "Désignation" and "Quantité" (accent/case insensitive)
+    const normalize = (s: string) =>
+        s.toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .trim();
 
-    // Column indices (based on Herlin file analysis — header is row 8)
-    const HEADER_ROW = 8;
-    const COL = {
-        decomp:   0,  // CODE / decomposition string
-        tech:     3,  // TECH (via BO) - tech/budget code
-        article:  7,  // N° Article
-        desc:     9,  // Description
-        marche:  10,  // Marché (FF, SR, ...)
-        unit:    11,  // Unité (PG, u, m, ...)
-        qty:     12,  // Qté
-        moMin:   16,  // MO min/unité
-        totalMin:30,  // Total minutes
-        totalHrs:31,  // Total heures
-    };
-
-    // Build category map from BO sheet
-    const categoryMap: Record<string, string> = {};
-    if (boName) {
-        const boSheet = workbook.Sheets[boName];
-        if (boSheet) {
-            const boData = XLSX.utils.sheet_to_json(boSheet, { header: 1, defval: '' }) as unknown[][];
-            // Skip headers to where lines start defining tech codes (Line >= 10 in standard Herlin)
-            boData.slice(10).forEach(row => {
-                const code = String(row[2] || '').trim(); // Index 2 is "Code"
-                const description = String(row[4] || '').trim(); // Index 4 is Description of Code line
-                if (code && description) categoryMap[code] = description;
-            });
+    let headerRowIdx = -1;
+    for (let i = 0; i < Math.min(data.length, 20); i++) {
+        const row = data[i];
+        if (!row) continue;
+        const cells = row.map(c => normalize(String(c)));
+        if (cells.some(c => c.includes('designation')) && cells.some(c => c.includes('quantite'))) {
+            headerRowIdx = i;
+            break;
         }
     }
 
+    if (headerRowIdx === -1) {
+        throw new Error(
+            "Impossible de détecter l'en-tête du fichier. " +
+            "Vérifiez que le fichier contient les colonnes 'Désignation' et 'Quantité'."
+        );
+    }
+
+    const headerRow = data[headerRowIdx].map(c => normalize(String(c)));
+
+    // ── Map columns by header name ──
+    const findCol = (keywords: string[]): number => {
+        return headerRow.findIndex(h => keywords.some(kw => h.includes(kw)));
+    };
+
+    const COL = {
+        poste: findCol(['poste', 'pos']),
+        designation: findCol(['designation']),
+        marche: findCol(['marche']),
+        unite: findCol(['unite']),
+        quantite: findCol(['quantite']),
+        tempsUnitaire: findCol(['temps de pose unitaire', 'temps unitaire', 'min/unite', 'min/u']),
+        tempsTotal: findCol(['temps total', 'total min', 'total']),
+    };
+
+    if (COL.designation === -1 || COL.quantite === -1) {
+        throw new Error("Colonnes 'Désignation' ou 'Quantité' introuvables dans l'en-tête.");
+    }
+
+    // ── Detect zone columns (everything after "temps total") ──
+    const zones: string[] = [];
+    const zoneStartCol = COL.tempsTotal !== -1 ? COL.tempsTotal + 1 : headerRow.length;
+    for (let c = zoneStartCol; c < headerRow.length; c++) {
+        const name = String(data[headerRowIdx][c] || '').trim();
+        if (name) zones.push(name);
+    }
+
+    // ── Parse data rows ──
     const tasks: MetreTask[] = [];
     let totalComputedHours = 0;
+    let currentCategory = 'Non Catégorisé';
 
-    for (let i = HEADER_ROW + 1; i < meetstaatData.length; i++) {
-        const row = meetstaatData[i] as unknown[];
-        if (!row || row.length < 17) continue;
+    for (let i = headerRowIdx + 1; i < data.length; i++) {
+        const row = data[i] as unknown[];
+        if (!row || row.length === 0) continue;
 
-        const desc = String(row[COL.desc] || '').trim();
-        const unit = String(row[COL.unit] || '').trim();
-        const marche = String(row[COL.marche] || '').trim();
-        const techCode = String(row[COL.tech] || '').trim();
-        const articleCode = String(row[COL.article] || '').trim();
-        
-        const moMin = parseFloat(String(row[COL.moMin] || '0'));
-        const totalHrs = parseFloat(String(row[COL.totalHrs] || '0'));
-        const decompStr = String(row[COL.decomp] || '').trim();
+        const poste = String(row[COL.poste] ?? '').trim();
+        const designation = String(row[COL.designation] ?? '').trim();
+        const unite = COL.unite !== -1 ? String(row[COL.unite] ?? '').trim() : '';
+        const qtyRaw = COL.quantite !== -1 ? String(row[COL.quantite] ?? '') : '';
+        const minutesRaw = COL.tempsUnitaire !== -1 ? String(row[COL.tempsUnitaire] ?? '') : '';
+        const totalRaw = COL.tempsTotal !== -1 ? String(row[COL.tempsTotal] ?? '') : '';
 
-        // Only process rows where there is actual labour time
-        if (!desc || isNaN(moMin) || moMin <= 0) continue;
+        const qty = parseFloat(qtyRaw) || 0;
+        const minutesPerUnit = parseFloat(minutesRaw) || 0;
+        const totalMinutes = parseFloat(totalRaw) || 0;
 
-        // Determine quantity
-        // For forfaits (Marché=FF or Unité=PG), the official Qté is 1.
-        // The "real" quantity is derived from the decomposition string (first number).
-        let qty = parseFloat(String(row[COL.qty] || '1'));
-        
-        if ((marche === 'FF' || unit === 'PG') && decompStr) {
-            const match = decompStr.match(/^(\d+(?:[.,]\d+)?)/);
-            if (match) {
-                qty = parseFloat(match[1].replace(',', '.'));
+        // Skip completely empty rows
+        if (!designation && !poste) continue;
+
+        // ── Category detection ──
+        // A row is a category header if it has a Poste but no valid Quantité and no Unité
+        const isCategoryRow = poste && (!qty || qty === 0) && !unite;
+        if (isCategoryRow) {
+            if (designation) {
+                currentCategory = designation;
+            } else if (poste) {
+                currentCategory = poste;
+            }
+            continue;
+        }
+
+        // ── Data row ──
+        if (!designation || qty <= 0) continue;
+
+        // Task code: use poste if available, otherwise generate from row index
+        const taskCode = poste ? `${poste}_${i}` : `TASK_${i}`;
+
+        // Compute minutesPerUnit if not provided but total is
+        let effectiveMinPerUnit = minutesPerUnit;
+        if (effectiveMinPerUnit <= 0 && totalMinutes > 0 && qty > 0) {
+            effectiveMinPerUnit = totalMinutes / qty;
+        }
+
+        // Parse zone allocations
+        const zoneAlloc: Record<string, number> = {};
+        for (let z = 0; z < zones.length; z++) {
+            const colIdx = zoneStartCol + z;
+            if (colIdx < row.length) {
+                const val = parseFloat(String(row[colIdx] || '0')) || 0;
+                if (val > 0) zoneAlloc[zones[z]] = val;
             }
         }
 
-        if (isNaN(qty) || qty <= 0) qty = 1;
-
-        // Category mapping logic from BO mapping
-        let category = 'Non Catégorisé';
-        
-        if (techCode && categoryMap[techCode]) {
-            category = categoryMap[techCode];
-        } else if (marche === 'FF' || marche === 'SR') {
-             // Keyword based refinement ONLY if we don't have a strict strict BO class OR we want subcategories.
-             // Given user priority: stick tightly to what the BO gives.
-             const lowerDesc = desc.toLowerCase();
-             if (lowerDesc.includes('éclairage') || lowerDesc.includes('luminaire')) category = 'Éclairage';
-             else if (lowerDesc.includes('incendie') || lowerDesc.includes('détection')) category = 'Détection incendie';
-             else if (lowerDesc.includes('câble') || lowerDesc.includes('cablage')) category = 'Câblage';
-             else if (lowerDesc.includes('prise') || lowerDesc.includes('interrupteur')) category = 'Appareillage';
-        }
-
-        // Use article code + row index for uniqueness
-        const taskCode = articleCode ? `${articleCode}_${i}` : `TASK_${i}`;
-
-        // Compute correct minutesPerUnit:
-        const totalMOminutes = isNaN(totalHrs) || totalHrs <= 0
-            ? moMin  // totalHrs not available, use moMin as total minutes
-            : totalHrs * 60; // convert hours to minutes
-        
-        const minutesPerUnitCorrected = qty > 0 ? totalMOminutes / qty : totalMOminutes;
-
         tasks.push({
             taskCode,
-            description: desc,
-            category,
-            unit: unit || 'u',
+            description: designation,
+            category: currentCategory,
+            unit: unite || 'u',
             quantity: qty,
-            minutesPerUnit: Math.round(minutesPerUnitCorrected * 100) / 100,
+            minutesPerUnit: Math.round(effectiveMinPerUnit * 100) / 100,
+            zones: Object.keys(zoneAlloc).length > 0 ? zoneAlloc : undefined,
         });
 
-        // Total hours: directly from totalHrs or computed
-        totalComputedHours += isNaN(totalHrs) || totalHrs <= 0
-            ? moMin / 60
-            : totalHrs;
+        // Total hours
+        const hours = totalMinutes > 0
+            ? totalMinutes / 60
+            : (qty * effectiveMinPerUnit) / 60;
+        totalComputedHours += hours;
+    }
 
+    // Try to extract project name from the first few rows
+    let projectName = 'Projet';
+    for (let i = 0; i < Math.min(headerRowIdx, 5); i++) {
+        const row = data[i];
+        if (!row) continue;
+        for (const cell of row) {
+            const val = String(cell || '').trim();
+            if (val.toLowerCase().startsWith('projet:') || val.toLowerCase().startsWith('projet :')) {
+                projectName = val.replace(/^projet\s*:\s*/i, '').trim();
+                break;
+            }
+        }
     }
 
     return {
         tasks,
         totalHours: Math.round(totalComputedHours * 100) / 100,
-        projectName: 'Herlin'
+        projectName,
+        zones,
     };
 }

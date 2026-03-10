@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { FileSpreadsheet, CheckCircle2, X, ArrowRight, Save, Edit3, Trash2 } from 'lucide-react';
+import { FileSpreadsheet, CheckCircle2, X, ArrowRight, Save, Edit3, Trash2, Download } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from "@/lib/LanguageContext";
 import T from '@/components/T';
@@ -14,23 +14,24 @@ interface TaskPreview {
     minutesPerUnit: number;
     initialQty?: number;
     initialHours?: number;
+    zones?: Record<string, number>;
 }
 
 interface UploadPreviewResponse {
     tasks: TaskPreview[];
     totalHours: number;
+    zones?: string[];
     error?: string;
 }
 
 interface FinalizeProjectResponse {
     error?: string;
-    // Add other expected fields if the success response has them
 }
 
 export default function UploadXLS() {
     const router = useRouter();
     const { t } = useTranslation();
-    const [step, setStep] = useState(1); // 1: Form, 2: Initial Progress
+    const [step, setStep] = useState(1); // 1: Form, 2: Preview
     const [file, setFile] = useState<File | null>(null);
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
@@ -46,6 +47,7 @@ export default function UploadXLS() {
     const [smList, setSmList] = useState<{id: string, name: string}[]>([]);
     const [tasks, setTasks] = useState<TaskPreview[]>([]);
     const [totalHours, setTotalHours] = useState(0);
+    const [detectedZones, setDetectedZones] = useState<string[]>([]);
 
     useEffect(() => {
         fetch('/api/users/sm').then(res => res.json()).then((data: { users?: {id: string, name: string}[] }) => {
@@ -64,6 +66,19 @@ export default function UploadXLS() {
         const newLocs = [...subLocations];
         newLocs.splice(index, 1);
         setSubLocations(newLocs);
+    };
+
+    const handleDownloadTemplate = () => {
+        // Generate a template with the sub-locations as zone columns
+        const zones = subLocations.filter(s => s.trim());
+        if (zones.length === 0) {
+            setErrorMsg(t("add_zones_first"));
+            return;
+        }
+        // Build a client-side template download via a hidden form or direct API call
+        const params = new URLSearchParams();
+        zones.forEach(z => params.append('zones', z));
+        window.open(`/api/template/generate?${params.toString()}`, '_blank');
     };
 
     const handleUploadPreview = async (e: React.FormEvent) => {
@@ -87,6 +102,7 @@ export default function UploadXLS() {
 
             setTasks(data.tasks.map((t: TaskPreview) => ({ ...t, initialQty: 0, initialHours: 0 })));
             setTotalHours(data.totalHours);
+            if (data.zones) setDetectedZones(data.zones);
             setStep(2);
         } catch (err: unknown) {
             setErrorMsg(err instanceof Error ? err.message : String(err));
@@ -228,6 +244,20 @@ export default function UploadXLS() {
                                         <button type="button" onClick={addSubLocation} className="text-xs text-blue-400 font-bold hover:underline">+ <T k="add_sub_location" /></button>
                                     </div>
                                 </div>
+
+                                {/* Download Template Button */}
+                                {subLocations.filter(s => s.trim()).length > 0 && (
+                                    <button
+                                        type="button"
+                                        title={t("download_template")}
+                                        onClick={handleDownloadTemplate}
+                                        className="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-sm hover:bg-emerald-500/20 transition-all"
+                                    >
+                                        <Download size={20} />
+                                        <T k="download_template" />
+                                    </button>
+                                )}
+
                                 <label className="text-xs font-bold uppercase tracking-widest text-blue-400 mb-0 block"><T k="budget_file_label" /></label>
                                 <div className="border-2 border-dashed border-white/10 rounded-3xl p-10 text-center bg-white/5 hover:bg-white/10 cursor-pointer transition-all flex flex-col items-center gap-4" onClick={() => document.getElementById('file-upload')?.click()}>
                                     <FileSpreadsheet size={48} className={file ? "text-emerald-400" : "text-white/20"} />
@@ -252,6 +282,11 @@ export default function UploadXLS() {
                                     <T k="initial_progress" />
                                 </h1>
                                 <p className="text-emerald-400 font-bold mt-1">{tasks.length} postes • {totalHours.toFixed(1)} <T k="labor_hours" /></p>
+                                {detectedZones.length > 0 && (
+                                    <p className="text-blue-400 text-xs mt-1 font-semibold">
+                                        Zones: {detectedZones.join(' • ')}
+                                    </p>
+                                )}
                                 <p className="text-gray-500 text-xs mt-1">Modifiez les cellules avant de finaliser</p>
                             </div>
                             <div className="flex gap-4">

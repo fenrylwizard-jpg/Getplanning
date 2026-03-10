@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { parseMetre } from "@/lib/metre-skill";
-import { getNextProjectName } from "@/lib/project-namer";
 import fs from 'fs';
 import path from 'path';
 
@@ -20,7 +19,7 @@ export async function POST(req: Request) {
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
 
-        // [INTERNAL] Save a copy for Antigravity analysis
+        // [INTERNAL] Save a copy for debugging
         try {
             const uploadDir = path.join(process.cwd(), 'public', 'uploads');
             if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
@@ -29,17 +28,15 @@ export async function POST(req: Request) {
             console.error("Failed to save debug copy:", e);
         }
 
-        // Parse using Métré Skill
+        // Parse using simplified Bordereau format
         const result = parseMetre(buffer);
-
-        // Get the next Roman name iteration
-        const iteratedName = await getNextProjectName('Herlin'); 
 
         return NextResponse.json({ 
             success: true, 
-            projectName: iteratedName,
+            projectName: result.projectName,
             tasks: result.tasks,
-            totalHours: result.totalHours
+            totalHours: result.totalHours,
+            zones: result.zones,
         });
 
     } catch (error) {
