@@ -1,0 +1,7 @@
+❌ NO PROJECT:  User: admin@eeg.be (role: ADMIN)
+✅ HAS PROJECT: User: pm1@eeg.be (role: PM) - PM for 1 projects, SM for 0 projects
+✅ HAS PROJECT: User: pm2@eeg.be (role: PM) - PM for 1 projects, SM for 0 projects
+✅ HAS PROJECT: User: pm3@eeg.be (role: PM) - PM for 1 projects, SM for 0 projects
+✅ HAS PROJECT: User: sm1@eeg.be (role: SM) - PM for 0 projects, SM for 1 projects
+✅ HAS PROJECT: User: sm2@eeg.be (role: SM) - PM for 0 projects, SM for 1 projects
+✅ HAS PROJECT: User: sm3@eeg.be (role: SM) - PM for 0 projects, SM for 1 projects

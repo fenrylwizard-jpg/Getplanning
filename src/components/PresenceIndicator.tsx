@@ -74,29 +74,27 @@ export default function PresenceIndicator({
 
     if (viewers.length === 0) return null;
 
-    const roleColors: Record<string, string> = {
-        PM: "#a78bfa",
-        SM: "#34d399",
-        ADMIN: "#f59e0b",
+    const roleClasses: Record<string, string> = {
+        PM: "border-violet-400 text-violet-400",
+        SM: "border-emerald-400 text-emerald-400",
+        ADMIN: "border-amber-500 text-amber-500",
     };
 
     return (
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}>
+        <div className="bg-white/5 border border-white/10 flex items-center gap-2 px-3 py-1.5 rounded-full">
             <div className="flex -space-x-2">
-                {viewers.slice(0, 5).map((v) => (
-                    <div
-                        key={v.userId}
-                        className="w-7 h-7 rounded-full border-2 flex items-center justify-center text-[10px] font-bold"
-                        style={{
-                            borderColor: roleColors[v.role] || "#6b7280",
-                            background: "rgba(0,0,0,0.4)",
-                            color: roleColors[v.role] || "#9ca3af",
-                        }}
-                        title={`${v.userName} (${v.role})`}
-                    >
-                        {v.userName.charAt(0).toUpperCase()}
-                    </div>
-                ))}
+                {viewers.slice(0, 5).map((v) => {
+                    const colorClass = roleClasses[v.role] || "border-gray-500 text-gray-500";
+                    return (
+                        <div
+                            key={v.userId}
+                            className={`bg-black/40 w-7 h-7 rounded-full border-2 flex items-center justify-center text-[10px] font-bold ${colorClass}`}
+                            title={`${v.userName} (${v.role})`}
+                        >
+                            {v.userName.charAt(0).toUpperCase()}
+                        </div>
+                    );
+                })}
             </div>
             <span className="text-xs text-gray-400">
                 {viewers.length === 1

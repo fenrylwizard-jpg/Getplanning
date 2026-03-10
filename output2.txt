@@ -1,0 +1,14 @@
+Total users: 7
+
+❌ NO PROJECT:  User: admin@eeg.be (role: ADMIN) name: Admin EEG
+✅ HAS PROJECT: User: pm1@eeg.be (role: PM) name: Laurent Dupont - PM for 1 projects, SM for 0 projects
+✅ HAS PROJECT: User: pm2@eeg.be (role: PM) name: Sophie Leroy - PM for 1 projects, SM for 0 projects
+✅ HAS PROJECT: User: pm3@eeg.be (role: PM) name: Marc Renard - PM for 1 projects, SM for 0 projects
+✅ HAS PROJECT: User: sm1@eeg.be (role: SM) name: Antoine Bernard - PM for 0 projects, SM for 1 projects
+✅ HAS PROJECT: User: sm2@eeg.be (role: SM) name: Nathalie Petit - PM for 0 projects, SM for 1 projects
+✅ HAS PROJECT: User: sm3@eeg.be (role: SM) name: Thomas Moreau - PM for 0 projects, SM for 1 projects
+
+Total projects: 3
+Project: Herlin - Jupiter - PM: pm1@eeg.be SM: sm1@eeg.be
+Project: Herlin - Mars - PM: pm2@eeg.be SM: sm2@eeg.be
+Project: Herlin - Neptune - PM: pm3@eeg.be SM: sm3@eeg.be

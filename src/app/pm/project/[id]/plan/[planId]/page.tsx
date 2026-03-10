@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import Image from "next/image";
 import { ArrowLeft, CheckCircle2, ShieldAlert, FileText, Users, Clock, MapPin, ClipboardCheck, Info } from "lucide-react";
 import T from "@/components/T";
 
@@ -15,8 +14,7 @@ export default async function PlanDetailsPage({ params }: { params: Promise<{ id
             },
             tasks: {
                 include: {
-                    task: true,
-                    photos: true
+                    task: true
                 }
             }
         }
@@ -24,9 +22,20 @@ export default async function PlanDetailsPage({ params }: { params: Promise<{ id
 
     if (!plan) return <div className="p-8 text-center"><T k="plan_not_found" /></div>;
 
-    const totalPlannedHours = plan.tasks.reduce((sum, pt) => sum + (pt.plannedQuantity * pt.task.minutesPerUnit) / 60, 0);
-    const totalActualHours = plan.tasks.reduce((sum, pt) => sum + (pt.actualQuantity * pt.task.minutesPerUnit) / 60, 0);
+    const totalPlannedHours = plan.tasks.reduce((sum, pt) => sum + (pt.plannedQuantity * (pt.task?.minutesPerUnit || 0)) / 60, 0);
+    const totalActualHours = plan.tasks.reduce((sum, pt) => sum + (pt.actualQuantity * (pt.task?.minutesPerUnit || 0)) / 60, 0);
     const productivity = totalPlannedHours > 0 ? (totalActualHours / totalPlannedHours) * 100 : 0;
+
+    const tryParseLocations = (loc: string | null) => {
+        if (!loc) return null;
+        try {
+            const parsed = JSON.parse(loc);
+            if (Array.isArray(parsed)) return parsed.join(' • ');
+            return String(parsed);
+        } catch {
+            return loc;
+        }
+    };
 
     return (
         <div className="aurora-page text-white">
@@ -140,18 +149,18 @@ export default async function PlanDetailsPage({ params }: { params: Promise<{ id
                                 <div className="flex flex-col md:flex-row justify-between gap-6">
                                     <div className="flex-1">
                                         <div className="flex items-center gap-3 mb-2">
-                                            <span className="px-2 py-0.5 rounded bg-white/5 text-[10px] font-black text-gray-500 border border-white/10">{pt.task.taskCode || 'N/A'}</span>
-                                            <h5 className="font-bold text-xl">{pt.task.description}</h5>
+                                            <span className="px-2 py-0.5 rounded bg-white/5 text-[10px] font-black text-gray-500 border border-white/10">{pt.task?.taskCode || 'N/A'}</span>
+                                            <h5 className="font-bold text-xl">{pt.task?.description || 'Tâche inconnue'}</h5>
                                         </div>
                                         
                                         <div className="flex flex-wrap gap-4 mt-4">
                                             <div className="flex items-center gap-2 text-sm text-gray-300">
                                                 <MapPin size={16} className="text-cyan-500/60" />
-                                                <span className="font-medium leading-relaxed">{pt.locations ? JSON.parse(pt.locations).join(' • ') : <T k="no_location" />}</span>
+                                                <span className="font-medium leading-relaxed">{tryParseLocations(pt.locations) || <T k="no_location" />}</span>
                                             </div>
                                             <div className="flex items-center gap-2 text-sm text-gray-300">
                                                 <Clock size={16} className="text-blue-500/60" />
-                                                <span className="font-medium leading-relaxed">{pt.task.minutesPerUnit} MIN / {pt.task.unit}</span>
+                                                <span className="font-medium leading-relaxed">{pt.task?.minutesPerUnit || 0} MIN / {pt.task?.unit || '-'}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -159,16 +168,16 @@ export default async function PlanDetailsPage({ params }: { params: Promise<{ id
                                     <div className="flex items-center gap-8 bg-white/5 p-6 rounded-3xl border border-white/10 min-w-[320px]">
                                         <div className="flex flex-col">
                                             <span className="text-xs font-black text-gray-500 uppercase tracking-widest mb-2"><T k="planned" /></span>
-                                            <div className="text-2xl font-black">{pt.plannedQuantity} <span className="text-xs font-normal opacity-40">{pt.task.unit}</span></div>
-                                            <div className="text-xs text-cyan-400 font-bold tracking-tight mt-1">{((pt.plannedQuantity * pt.task.minutesPerUnit) / 60).toFixed(1)}H</div>
+                                            <div className="text-2xl font-black">{pt.plannedQuantity} <span className="text-xs font-normal opacity-40">{pt.task?.unit || '-'}</span></div>
+                                            <div className="text-xs text-cyan-400 font-bold tracking-tight mt-1">{((pt.plannedQuantity * (pt.task?.minutesPerUnit || 0)) / 60).toFixed(1)}H</div>
                                         </div>
                                         
                                         <div className="w-px h-12 bg-white/10" />
 
                                         <div className="flex flex-col">
                                             <span className="text-xs font-black text-emerald-500/60 uppercase tracking-widest mb-2"><T k="completed" /></span>
-                                            <div className="text-2xl font-black text-emerald-400">{pt.actualQuantity || 0} <span className="text-xs font-normal opacity-40">{pt.task.unit}</span></div>
-                                            <div className="text-xs text-emerald-400 font-bold tracking-tight mt-1">{(((pt.actualQuantity || 0) * pt.task.minutesPerUnit) / 60).toFixed(1)}H</div>
+                                            <div className="text-2xl font-black text-emerald-400">{pt.actualQuantity || 0} <span className="text-xs font-normal opacity-40">{pt.task?.unit || '-'}</span></div>
+                                            <div className="text-xs text-emerald-400 font-bold tracking-tight mt-1">{(((pt.actualQuantity || 0) * (pt.task?.minutesPerUnit || 0)) / 60).toFixed(1)}H</div>
                                         </div>
 
                                         <div className="flex-1 flex justify-end">
@@ -180,23 +189,7 @@ export default async function PlanDetailsPage({ params }: { params: Promise<{ id
                                 </div>
 
                                 {/* Photos */}
-                                {pt.photos && pt.photos.length > 0 && (
-                                    <div className="mt-8">
-                                        <h6 className="text-xs font-black uppercase text-gray-500 mb-4 tracking-widest"><T k="visual_proof" /> ({pt.photos.length})</h6>
-                                        <div className="flex gap-4 overflow-x-auto pb-4 custom-scrollbar">
-                                            {pt.photos.map(photo => (
-                                                <div key={photo.id} className="relative group cursor-pointer min-w-[200px] h-[150px] rounded-2xl overflow-hidden border border-white/10 hover:border-cyan-500/50 transition-all">
-                                                    <Image src={photo.url} alt={photo.caption || "Proof"} fill className="object-cover transition-transform duration-500 group-hover:scale-110" sizes="200px" />
-                                                    {photo.caption && (
-                                                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-4 text-center">
-                                                            <p className="text-xs text-white">{photo.caption}</p>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
+                                {/* Photos rendering removed as it is not part of WeeklyPlanTask schema yet */}
                             </div>
                         ))}
                     </div>

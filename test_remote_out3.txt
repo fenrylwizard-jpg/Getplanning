@@ -1,0 +1,3 @@
+Email: antigravity@eeg.be -> Status: 401 | Response: {"error":"Invalid credentials"}
+Email: antigravity.pm@eeg.be -> Status: 401 | Response: {"error":"Invalid credentials"}
+Email: pm1@eeg.be -> Status: 200 | Response: {"success":true,"role":"PM"}
