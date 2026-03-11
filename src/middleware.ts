@@ -18,7 +18,14 @@ export async function middleware(req: NextRequest) {
     // ── Presentation subdomain → serve static HTML ──
     if (subdomain === 'presentation') {
         const url = req.nextUrl.clone();
-        url.pathname = '/presentation.html';
+        // Serve the requested presentation file, default to French
+        if (pathname === '/presentation-en.html') {
+            url.pathname = '/presentation-en.html';
+        } else if (pathname === '/presentation-nl.html') {
+            url.pathname = '/presentation-nl.html';
+        } else {
+            url.pathname = '/presentation.html';
+        }
         return NextResponse.rewrite(url);
     }
 
