@@ -96,16 +96,25 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
     // Computed: days of the week
     const weekDays = useMemo(() => {
         if (!weekStart) return [];
+        const now = new Date();
+        const currentHour = now.getHours();
+        // Today is available from 8 AM onwards
+        const todayAvailable = currentHour >= 8;
+
         return Array.from({ length: 7 }, (_, i) => {
             const day = addDays(weekStart, i);
+            const dayIsToday = isToday(day);
+            const dayIsPast = isBefore(startOfDay(day), startOfDay(now)) && !dayIsToday;
+            const dayIsFuture = !dayIsToday && !isBefore(startOfDay(day), startOfDay(now));
+
             return {
                 date: day,
                 dayName: format(day, 'EEE', { locale }),
                 dayNum: format(day, 'dd'),
                 monthName: format(day, 'MMM', { locale }),
-                isToday: isToday(day),
-                isFuture: !isToday(day) && !isBefore(startOfDay(day), startOfDay(new Date())),
-                isPast: isBefore(startOfDay(day), startOfDay(new Date())) && !isToday(day),
+                isToday: dayIsToday,
+                isFuture: dayIsFuture || (dayIsToday && !todayAvailable),
+                isPast: dayIsPast,
                 hasReport: existingReports.some(r => isSameDay(new Date(r.date), day)),
             };
         });
@@ -421,7 +430,7 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                     <div className="grid grid-cols-7 gap-2 sm:gap-3">
                         {weekDays.map((day) => {
                             const isSelected = selectedDate ? isSameDay(day.date, selectedDate) : false;
-                            const isDisabled = day.isFuture || day.hasReport;
+                            const isDisabled = day.isFuture;
                             
                             return (
                                 <button
