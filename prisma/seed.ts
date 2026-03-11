@@ -273,7 +273,7 @@ async function main() {
 
   // ── ADMIN ──
   await prisma.user.create({
-    data: { email: 'admin@eeg.be', name: 'Admin EEG', passwordHash: pw, role: 'ADMIN', status: 'APPROVED', xp: 0, level: 1, characterId: 1 }
+    data: { email: 'admin@eeg.be', name: 'Admin GP', passwordHash: pw, role: 'ADMIN', status: 'APPROVED', xp: 0, level: 1, characterId: 1 }
   })
 
   // ── PROJECT MANAGERS (3) — different character classes & levels ──

@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ShieldCheck, User, Mail, Lock, Briefcase, Sparkles } from 'lucide-react';
+import { ShieldCheck, User, Mail, Lock, Briefcase, Sparkles, Building2 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -20,6 +20,7 @@ export default function RegisterPage() {
     const [password, setPassword] = useState('');
     const [role, setRole] = useState('SM');
     const [characterId, setCharacterId] = useState(1);
+    const [company, setCompany] = useState('');
     const [loading, setLoading] = useState(false);
     const [errorMsg, setErrorMsg] = useState('');
     const [successMsg, setSuccessMsg] = useState(false);
@@ -34,7 +35,7 @@ export default function RegisterPage() {
             const res = await fetch('/api/auth/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, email, password, role, characterId })
+                body: JSON.stringify({ name, email, password, role, characterId, company: company || undefined })
             });
 
             const data = await res.json();
@@ -98,7 +99,7 @@ export default function RegisterPage() {
                     <h1 className="text-2xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-br from-white via-cyan-100 to-cyan-500">
                         Créer un Compte
                     </h1>
-                    <p className="text-gray-400 text-sm mt-1">Rejoignez la plateforme EEG</p>
+                    <p className="text-gray-400 text-sm mt-1">Rejoignez la plateforme GetPlanning</p>
                 </div>
 
                 {errorMsg && (
@@ -122,6 +123,21 @@ export default function RegisterPage() {
                             onChange={(e) => setName(e.target.value)}
                             required
                             placeholder="ex: Jean Dupont"
+                        />
+                    </div>
+
+                    {/* Company */}
+                    <div className="relative group">
+                        <label htmlFor="registerCompany" className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                            <Building2 size={12} className="inline mr-1" /> Entreprise
+                        </label>
+                        <input
+                            id="registerCompany"
+                            type="text"
+                            className="w-full bg-[#050810]/50 border border-white/10 text-white rounded-2xl py-3 pl-4 pr-4 outline-none transition-all duration-300 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50 shadow-inner"
+                            value={company}
+                            onChange={(e) => setCompany(e.target.value)}
+                            placeholder="ex: Mon Entreprise SA"
                         />
                     </div>
 

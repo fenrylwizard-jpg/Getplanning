@@ -4,6 +4,33 @@ import { verifyToken, signToken } from '@/lib/auth';
 
 export async function middleware(req: NextRequest) {
     const { pathname } = req.nextUrl;
+    const hostname = req.headers.get('host') || '';
+
+    // ── Subdomain routing ──
+    // Strip port for local dev
+    const host = hostname.split(':')[0];
+    const parts = host.split('.');
+    // Detect subdomain: e.g. "app.getplanning.org" → subdomain = "app"
+    // For localhost, there's no subdomain
+    const isSubdomain = parts.length > 2 || (parts.length === 2 && !['localhost', 'co', 'com', 'org', 'net', 'io'].includes(parts[1]));
+    const subdomain = isSubdomain ? parts[0] : null;
+
+    // ── Presentation subdomain → serve static HTML ──
+    if (subdomain === 'presentation') {
+        const url = req.nextUrl.clone();
+        url.pathname = '/presentation.html';
+        return NextResponse.rewrite(url);
+    }
+
+    // ── Root domain (no subdomain) → serve personal landing page ──
+    // Only redirect if it's the root domain AND the path is "/"
+    if (!subdomain && pathname === '/' && !host.startsWith('localhost') && !host.startsWith('127.0.0.1')) {
+        const url = req.nextUrl.clone();
+        url.pathname = '/landing';
+        return NextResponse.rewrite(url);
+    }
+
+    // ── App subdomain OR localhost → normal app behavior ──
 
     // Public routes that don't need protection
     if (
@@ -13,6 +40,8 @@ export async function middleware(req: NextRequest) {
         pathname.startsWith('/favicon.ico') ||
         pathname.startsWith('/characters') ||
         pathname.startsWith('/api/presence') ||
+        pathname.startsWith('/landing') ||
+        pathname.startsWith('/presentation') ||
         pathname === '/'
     ) {
         return NextResponse.next();

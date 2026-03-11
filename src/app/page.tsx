@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import EEGLogo from '@/components/EEGLogo';
+// Generic branding — no company-specific logo
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useTranslation } from '@/lib/LanguageContext';
 import { useEffect, useRef } from 'react';
@@ -58,10 +58,8 @@ export default function Home() {
         <header className="container mt-5 mb-8">
           <nav className="glass-nav flex items-center justify-between px-6 py-3">
             <Link href="/" className="flex items-center gap-3 group no-underline">
-              <div className="transition-transform duration-300 group-hover:scale-110">
-                <EEGLogo />
-              </div>
-              <span className="text-white text-xl font-bold tracking-tight">EEG</span>
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center text-white font-black text-lg transition-transform duration-300 group-hover:scale-110">G</div>
+              <span className="text-white text-xl font-bold tracking-tight">GetPlanning</span>
             </Link>
 
             <div className="flex items-center gap-2 sm:gap-6">

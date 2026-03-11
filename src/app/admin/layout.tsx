@@ -15,7 +15,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
     const user = await prisma.user.findUnique({
         where: { id: String(payload.id) },
-        select: { name: true, characterId: true, level: true, xp: true, role: true }
+        select: { name: true, characterId: true, level: true, xp: true, role: true, company: true }
     });
 
     if (!user || user.role !== 'ADMIN') redirect('/login');
@@ -28,6 +28,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                 characterId={user.characterId || 1} 
                 level={user.level || 1} 
                 xp={user.xp || 0} 
+                company={user.company || undefined}
             />
             {children}
         </>

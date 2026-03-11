@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="nl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GetPlanning — Présentation</title>
+    <title>GetPlanning — Presentatie</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -58,14 +58,13 @@
         nav {
             position: fixed; top: 0; left: 0; right: 0; z-index: 100;
             background: rgba(5,10,24,0.85);
-            -webkit-backdrop-filter: blur(20px);
             backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--border);
             padding: 1rem 0;
         }
         nav .container { display: flex; align-items: center; justify-content: space-between; }
         .logo { font-weight: 900; font-size: 1.3rem; letter-spacing: -0.02em; }
-        .logo span { background: linear-gradient(135deg, var(--cyan), var(--purple)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+        .logo span { background: linear-gradient(135deg, var(--cyan), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .nav-links { display: flex; gap: 2rem; }
         .nav-links a { color: rgba(255,255,255,0.5); text-decoration: none; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; transition: color 0.3s; }
         .nav-links a:hover { color: var(--cyan); }
@@ -100,7 +99,7 @@
         }
         .hero h1 .gradient {
             background: linear-gradient(135deg, var(--cyan), var(--purple), var(--blue));
-            -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
         .hero p { font-size: 1.15rem; color: rgba(255,255,255,0.5); max-width: 600px; margin: 0 auto 2.5rem; line-height: 1.7; }
         .hero-stats {
@@ -108,7 +107,7 @@
             padding-top: 2rem; border-top: 1px solid var(--border);
         }
         .hero-stat { text-align: center; }
-        .hero-stat .val { font-size: 2.5rem; font-weight: 900; background: linear-gradient(135deg, var(--cyan), var(--blue)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+        .hero-stat .val { font-size: 2.5rem; font-weight: 900; background: linear-gradient(135deg, var(--cyan), var(--blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .hero-stat .label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; color: rgba(255,255,255,0.35); margin-top: 0.3rem; }
 
         /* ── SECTION ── */
@@ -325,114 +324,114 @@
 <!-- HERO -->
 <section class="hero">
     <div class="hero-content fade-in">
-        <div class="hero-badge">⚡ Plateforme SaaS de Nouvelle Génération</div>
+        <div class="hero-badge">⚡ Next-Generation SaaS Platform</div>
         <h1>
-            Maîtrisez la<br>
-            <span class="gradient">planification de vos chantiers</span>
+            Beheers uw<br>
+            <span class="gradient">werfplanning</span>
         </h1>
         <p>
-            Pilotez vos projets de construction avec précision. Planification hebdomadaire, rapports terrain en temps réel, analytics avancées et gamification pour motiver vos équipes.
+            Beheer uw bouwprojecten met precisie. Wekelijkse planning, realtime veldrapporten, geavanceerde analyses en gamificatie om uw teams te motiveren.
         </p>
         <div class="hero-stats">
             <div class="hero-stat">
                 <div class="val">3</div>
-                <div class="label">Rôles Métier</div>
+                <div class="label">Bedrijfsrollen</div>
             </div>
             <div class="hero-stat">
                 <div class="val">3</div>
-                <div class="label">Langues</div>
+                <div class="label">Talen</div>
             </div>
             <div class="hero-stat">
                 <div class="val">∞</div>
-                <div class="label">Projets simultanés</div>
+                <div class="label">Gelijktijdige projecten</div>
             </div>
             <div class="hero-stat">
                 <div class="val">24/7</div>
-                <div class="label">Accès terrain</div>
+                <div class="label">Toegang terrein</div>
             </div>
         </div>
     </div>
 </section>
 
 <!-- FEATURES OVERVIEW -->
-<section id="fonctionnalites">
+<section id="functies">
     <div class="container">
         <div class="section-header fade-in">
-            <div class="section-badge"><span class="dot"></span> FONCTIONNALITÉS</div>
-            <h2>Tout ce qu'il faut pour piloter vos chantiers</h2>
-            <p>Une suite complète d'outils conçus pour les professionnels du BTP et de l'installation technique.</p>
+            <div class="section-badge"><span class="dot"></span> FUNCTIES</div>
+            <h2>Alles wat u nodig heeft om uw werven te beheren</h2>
+            <p>Een complete reeks tools ontworpen voor professionals in de bouw en technische installaties.</p>
         </div>
 
         <div class="grid-3">
             <div class="card fade-in">
                 <div class="card-icon" style="background: rgba(34,211,238,0.1); color: var(--cyan);">📋</div>
-                <h3>Planification Multi-Semaines</h3>
-                <p>Planifiez vos tâches sur S+1, S+2 et S+3 avec un système de panier intuitif.</p>
+                <h3>Meerwekenplanning</h3>
+                <p>Plan uw taken voor W+1, W+2 en W+3 met een intuïtief mandjessysteem.</p>
                 <div class="card-features">
-                    <div class="card-feature"><span class="check">✓</span> Sélection par catégorie & poste</div>
-                    <div class="card-feature"><span class="check">✓</span> Localisation par zone du chantier</div>
-                    <div class="card-feature"><span class="check">✓</span> Checklist de préparation (Plans, Matériaux, Outils)</div>
-                    <div class="card-feature"><span class="check">✓</span> Objectif horaire automatique</div>
+                    <div class="card-feature"><span class="check">✓</span> Selectie per categorie & functie</div>
+                    <div class="card-feature"><span class="check">✓</span> Lokalisatie per werfzone</div>
+                    <div class="card-feature"><span class="check">✓</span> Voorbereidingschecklist (Plannen, Materialen, Gereedschap)</div>
+                    <div class="card-feature"><span class="check">✓</span> Automatisch tijdsdoel</div>
                 </div>
             </div>
 
             <div class="card fade-in">
                 <div class="card-icon" style="background: rgba(52,211,153,0.1); color: var(--emerald);">📊</div>
-                <h3>Rapports Quotidiens</h3>
-                <p>Le Chef de Chantier saisit chaque jour l'avancement réel, les présences et les problèmes rencontrés.</p>
+                <h3>Dagelijkse Rapporten</h3>
+                <p>De werfleider voert elke dag de werkelijke voortgang, aanwezigheden en ondervonden problemen in.</p>
                 <div class="card-features">
-                    <div class="card-feature"><span class="check">✓</span> Saisie des quantités exécutées</div>
-                    <div class="card-feature"><span class="check">✓</span> Comptage de la main-d'œuvre</div>
-                    <div class="card-feature"><span class="check">✓</span> Preuves visuelles (photos terrain)</div>
-                    <div class="card-feature"><span class="check">✓</span> Signalement de blocages (RCA)</div>
+                    <div class="card-feature"><span class="check">✓</span> Invoer van uitgevoerde hoeveelheden</div>
+                    <div class="card-feature"><span class="check">✓</span> Tellen van arbeidskrachten</div>
+                    <div class="card-feature"><span class="check">✓</span> Visueel bewijs (werffoto's)</div>
+                    <div class="card-feature"><span class="check">✓</span> Rapportage van blokkades (RCA)</div>
                 </div>
             </div>
 
             <div class="card fade-in">
                 <div class="card-icon" style="background: rgba(168,85,247,0.1); color: var(--purple);">📈</div>
                 <h3>Analytics & EVM</h3>
-                <p>Tableaux de bord interactifs avec Earned Value Management, heatmaps de productivité et analyses croisées.</p>
+                <p>Interactieve dashboards met Earned Value Management, productiviteits-heatmaps en kruisanalyses.</p>
                 <div class="card-features">
-                    <div class="card-feature"><span class="check">✓</span> Valeur Planifiée vs Acquise vs Brûlée</div>
-                    <div class="card-feature"><span class="check">✓</span> Productivité par catégorie métier</div>
-                    <div class="card-feature"><span class="check">✓</span> Benchmarking inter-chantiers</div>
+                    <div class="card-feature"><span class="check">✓</span> Geplande vs Verdiende vs Verbrande Waarde</div>
+                    <div class="card-feature"><span class="check">✓</span> Productiviteit per beroepscategorie</div>
+                    <div class="card-feature"><span class="check">✓</span> Cross-site benchmarking</div>
                     <div class="card-feature"><span class="check">✓</span> Root Cause Analysis (RCA)</div>
                 </div>
             </div>
 
             <div class="card fade-in">
                 <div class="card-icon" style="background: rgba(59,130,246,0.1); color: var(--blue);">📁</div>
-                <h3>Import Budget Excel</h3>
-                <p>Importez votre Bordereau de Prix directement depuis un fichier Excel. Zones pré-remplies automatiquement.</p>
+                <h3>Excel Budget Import</h3>
+                <p>Importeer uw meetstaat rechtstreeks vanuit een Excel-bestand. Automatisch vooraf ingevulde zones.</p>
                 <div class="card-features">
-                    <div class="card-feature"><span class="check">✓</span> Détection automatique des colonnes</div>
-                    <div class="card-feature"><span class="check">✓</span> Catégories & sous-catégories</div>
-                    <div class="card-feature"><span class="check">✓</span> Template téléchargeable pré-rempli</div>
-                    <div class="card-feature"><span class="check">✓</span> Reprise d'historique intégrée</div>
+                    <div class="card-feature"><span class="check">✓</span> Automatische kolomdetectie</div>
+                    <div class="card-feature"><span class="check">✓</span> Categorieën & subcategorieën</div>
+                    <div class="card-feature"><span class="check">✓</span> Downloadbare vooraf ingevulde sjabloon</div>
+                    <div class="card-feature"><span class="check">✓</span> Geïntegreerd historisch herstel</div>
                 </div>
             </div>
 
             <div class="card fade-in">
                 <div class="card-icon" style="background: rgba(251,191,36,0.1); color: var(--gold);">🏆</div>
-                <h3>Gamification RPG</h3>
-                <p>Système de niveaux, XP et badges pour motiver vos équipes terrain. Chaque objectif atteint rapporte de l'expérience.</p>
+                <h3>RPG Gamificatie</h3>
+                <p>Niveau-, XP- en badgesysteem om uw veldteams te motiveren. Elk behaald doel levert ervaring op.</p>
                 <div class="card-features">
-                    <div class="card-feature"><span class="check">✓</span> Personnages RPG uniques</div>
-                    <div class="card-feature"><span class="check">✓</span> Système de streaks (jours consécutifs)</div>
-                    <div class="card-feature"><span class="check">✓</span> Badges de performance</div>
-                    <div class="card-feature"><span class="check">✓</span> Classement inter-personnel</div>
+                    <div class="card-feature"><span class="check">✓</span> Unieke RPG-personages</div>
+                    <div class="card-feature"><span class="check">✓</span> Streaks-systeem (opeenvolgende dagen)</div>
+                    <div class="card-feature"><span class="check">✓</span> Prestatiebadges</div>
+                    <div class="card-feature"><span class="check">✓</span> Onderlinge ranking personeel</div>
                 </div>
             </div>
 
             <div class="card fade-in">
                 <div class="card-icon" style="background: rgba(249,115,22,0.1); color: var(--orange);">🌍</div>
-                <h3>Multilingue & Accessible</h3>
-                <p>Interface disponible en Français, Anglais et Néerlandais. Conçue pour une utilisation terrain sur mobile.</p>
+                <h3>Meertalig & Toegankelijk</h3>
+                <p>Interface beschikbaar in het Frans, Engels en Nederlands. Ontworpen voor gebruik op het terrein via mobiel.</p>
                 <div class="card-features">
-                    <div class="card-feature"><span class="check">✓</span> 3 langues (FR / EN / NL)</div>
-                    <div class="card-feature"><span class="check">✓</span> Responsive mobile-first</div>
-                    <div class="card-feature"><span class="check">✓</span> Mode hors-ligne (sauvegarde locale)</div>
-                    <div class="card-feature"><span class="check">✓</span> Synchronisation automatique</div>
+                    <div class="card-feature"><span class="check">✓</span> 3 talen (FR / EN / NL)</div>
+                    <div class="card-feature"><span class="check">✓</span> Responsief mobile-first</div>
+                    <div class="card-feature"><span class="check">✓</span> Offline modus (lokale opslag)</div>
+                    <div class="card-feature"><span class="check">✓</span> Automatische synchronisatie</div>
                 </div>
             </div>
         </div>
@@ -445,83 +444,83 @@
 <section id="roles">
     <div class="container">
         <div class="section-header fade-in">
-            <div class="section-badge"><span class="dot"></span> RÔLES & RESPONSABILITÉS</div>
-            <h2>Trois rôles, un seul objectif</h2>
-            <p>Chaque acteur du chantier dispose d'un tableau de bord adapté à ses responsabilités.</p>
+            <div class="section-badge"><span class="dot"></span> ROLLEN & VERANTWOORDELIJKHEDEN</div>
+            <h2>Drie rollen, één enkel doel</h2>
+            <p>Elke actor op de bouwplaats heeft een dashboard aangepast aan zijn verantwoordelijkheden.</p>
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 2rem;">
             <!-- SM -->
             <div class="card role-card role-sm fade-in">
-                <div class="role-tag">Chef de Chantier (SM)</div>
-                <h3>🔧 L'Exécutant Terrain</h3>
-                <p class="role-desc">Le Chef de Chantier est au cœur de l'action. Il planifie les semaines à venir, rapporte l'avancement quotidien et gagne de l'expérience en atteignant ses objectifs.</p>
+                <div class="role-tag">Werfleider (SM)</div>
+                <h3>🔧 De Uitvoerder op het Terrein</h3>
+                <p class="role-desc">De Werfleider bevindt zich in het hart van de actie. Hij plant de komende weken, rapporteert de dagelijkse voortgang en doet ervaring op door zijn doelen te bereiken.</p>
                 <div class="cap-grid">
                     <div class="cap-item">
                         <span class="cap-icon">📋</span>
-                        <div><strong>Planification Hebdomadaire</strong><span>Sélection des tâches, quantités par zone, checklist de préparation (S+1 à S+3).</span></div>
+                        <div><strong>Wekelijkse Planning</strong><span>Taakselectie, hoeveelheden per zone, voorbereidingschecklist (W+1 tot W+3).</span></div>
                     </div>
                     <div class="cap-item">
                         <span class="cap-icon">📝</span>
-                        <div><strong>Rapport Quotidien</strong><span>Quantités exécutées, main-d'œuvre présente, photos de preuve et signalements.</span></div>
+                        <div><strong>Dagelijks Rapport</strong><span>Uitgevoerde hoeveelheden, aanwezige arbeidskrachten, bewijsfoto's en meldingen.</span></div>
                     </div>
                     <div class="cap-item">
                         <span class="cap-icon">🎮</span>
-                        <div><strong>Progression RPG</strong><span>XP, niveaux, personnages et badges gagnés en atteignant les objectifs hebdomadaires.</span></div>
+                        <div><strong>RPG Progressie</strong><span>XP, niveaus, personages en badges verdiend door het bereiken van wekelijkse doelen.</span></div>
                     </div>
                     <div class="cap-item">
                         <span class="cap-icon">📜</span>
-                        <div><strong>Historique</strong><span>Consultation des plans passés, taux de réalisation et tendances sur le temps.</span></div>
+                        <div><strong>Geschiedenis</strong><span>Raadpleging van eerdere plannen, voltooiingspercentages en trends over tijd.</span></div>
                     </div>
                 </div>
             </div>
 
             <!-- PM -->
             <div class="card role-card role-pm fade-in">
-                <div class="role-tag">Chef de Projet (PM)</div>
-                <h3>📐 Le Stratège</h3>
-                <p class="role-desc">Le Chef de Projet supervise l'ensemble des installations, pilote les budgets et analyse la rentabilité de chaque chantier.</p>
+                <div class="role-tag">Projectleider (PM)</div>
+                <h3>📐 De Strateeg</h3>
+                <p class="role-desc">De Projectleider houdt toezicht op alle installaties, beheert budgetten en analyseert de winstgevendheid van elke bouwplaats.</p>
                 <div class="cap-grid">
                     <div class="cap-item">
                         <span class="cap-icon">📁</span>
-                        <div><strong>Création de Projets</strong><span>Import du Bordereau de Prix, assignation du SM, définition des zones.</span></div>
+                        <div><strong>Projectcreatie</strong><span>Import van de meetstaat, toewijzing van de SM, definitie van zones.</span></div>
                     </div>
                     <div class="cap-item">
                         <span class="cap-icon">📊</span>
-                        <div><strong>Suivi Budgétaire</strong><span>Heures planifiées vs exécutées, taux de rentabilité, progression globale.</span></div>
+                        <div><strong>Budgetopvolging</strong><span>Geplande vs uitgevoerde uren, winstgevendheidspercentage, algemene progressie.</span></div>
                     </div>
                     <div class="cap-item">
                         <span class="cap-icon">📈</span>
-                        <div><strong>EVM & Analytics</strong><span>Valeur acquise, valeur planifiée, heures brûlées — visualisations avancées.</span></div>
+                        <div><strong>EVM & Analytics</strong><span>Verdiende waarde, geplande waarde, verbrande uren — geavanceerde visualisaties.</span></div>
                     </div>
                     <div class="cap-item">
                         <span class="cap-icon">🔍</span>
-                        <div><strong>Vue Détaillée des Plans</strong><span>Accès aux détails de chaque plan hebdomadaire avec statut et productivité.</span></div>
+                        <div><strong>Gedetailleerde Weergave Plannen</strong><span>Toegang tot de details van elk wekelijks plan met status en productiviteit.</span></div>
                     </div>
                 </div>
             </div>
 
             <!-- Admin -->
             <div class="card role-card role-admin fade-in">
-                <div class="role-tag">Administrateur</div>
-                <h3>🛡️ Le Superviseur Global</h3>
-                <p class="role-desc">L'Administrateur a une vision 360° sur l'ensemble du parc de chantiers, gère les comptes utilisateurs et déclenche les clôtures hebdomadaires.</p>
+                <div class="role-tag">Beheerder</div>
+                <h3>🛡️ De Globale Supervisor</h3>
+                <p class="role-desc">L'Beheerder a une vision 360° sur l'ensemble du parc de chantiers, gère les comptes utilisateurs et déclenche les clôtures hebdomadaires.</p>
                 <div class="cap-grid">
                     <div class="cap-item">
                         <span class="cap-icon">🌐</span>
-                        <div><strong>Tableau de Bord Global</strong><span>KPIs clés : projets actifs, taux d'objectifs, heures MO totales.</span></div>
+                        <div><strong>Globaal Dashboard</strong><span>Belangrijkste KPI's: actieve projecten, doelpercentages, totale arbeidsuren.</span></div>
                     </div>
                     <div class="cap-item">
                         <span class="cap-icon">👤</span>
-                        <div><strong>Gestion des Comptes</strong><span>Approbation/rejet des inscriptions, gestion des rôles (SM, PM, Admin).</span></div>
+                        <div><strong>Accountbeheer</strong><span>Goedkeuring/afwijzing van registraties, rolbeheer (SM, PM, Admin).</span></div>
                     </div>
                     <div class="cap-item">
                         <span class="cap-icon">📉</span>
-                        <div><strong>Graphiques de Performance</strong><span>Courbes de valeur gagnée par projet sur le temps avec zoom interactif.</span></div>
+                        <div><strong>Prestatiegrafieken</strong><span>Verdiende waarde curven per project in de tijd met interactieve zoom.</span></div>
                     </div>
                     <div class="cap-item">
                         <span class="cap-icon">🏅</span>
-                        <div><strong>Classement du Personnel</strong><span>Ranking par XP et niveau avec les avatars RPG de chaque membre.</span></div>
+                        <div><strong>Personeelsrangschikking</strong><span>Rangschikking op XP en niveau met de RPG-avatars van elk lid.</span></div>
                     </div>
                 </div>
             </div>
@@ -535,9 +534,9 @@
 <section id="workflow">
     <div class="container">
         <div class="section-header fade-in">
-            <div class="section-badge"><span class="dot"></span> WORKFLOW HEBDOMADAIRE</div>
-            <h2>Du plan à l'exécution</h2>
-            <p>Un cycle complet de gestion, de la planification à la clôture, en passant par le terrain.</p>
+            <div class="section-badge"><span class="dot"></span> WEKELIJKSE WORKFLOW</div>
+            <h2>Van plan tot uitvoering</h2>
+            <p>Een complete beheeringscyclus, van planning tot afsluiting, via het veld.</p>
         </div>
 
         <div class="card fade-in" style="padding: 3rem;">
@@ -546,52 +545,52 @@
                     <div class="timeline-dot"></div>
                     <div class="timeline-content">
                         <div style="display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.3rem;">
-                            <h4>1. Import du Budget</h4>
+                            <h4>1. Budget Import</h4>
                             <span class="pill pill-blue">PM</span>
                         </div>
-                        <p>Le Chef de Projet crée le chantier en important le Bordereau de Prix Excel. Les tâches, catégories et zones sont automatiquement générées.</p>
+                        <p>De Projectleider creëert de bouwplaats door de Excel-meetstaat te importeren. Taken, categorieën en zones worden automatisch gegenereerd.</p>
                     </div>
                 </div>
                 <div class="timeline-step">
                     <div class="timeline-dot"></div>
                     <div class="timeline-content">
                         <div style="display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.3rem;">
-                            <h4>2. Planification S+1</h4>
+                            <h4>2. W+1 Planning</h4>
                             <span class="pill pill-emerald">SM</span>
                         </div>
-                        <p>Le Chef de Chantier sélectionne les tâches à exécuter la semaine prochaine, définit les quantités par zone et valide la checklist de préparation (plans, matériaux, outils).</p>
+                        <p>De Werfleider selecteert de uit te voeren taken voor de komende week, bepaalt de hoeveelheden per zone en valideert de voorbereidingschecklist (plannen, materialen, gereedschappen).</p>
                     </div>
                 </div>
                 <div class="timeline-step">
                     <div class="timeline-dot"></div>
                     <div class="timeline-content">
                         <div style="display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.3rem;">
-                            <h4>3. Rapports Quotidiens</h4>
+                            <h4>3. Dagelijkse Rapporten</h4>
                             <span class="pill pill-emerald">SM</span>
                         </div>
-                        <p>Chaque jour, le SM rapporte les quantités réellement exécutées, le nombre de travailleurs présents et joint des photos de preuve si nécessaire. En cas de blocage, il catégorise la cause (RCA).</p>
+                        <p>Elke dag rapporteert de SM de werkelijk uitgevoerde hoeveelheden, het aantal aanwezige werknemers, en voegt indien nodig bewijsfoto's toe. Bij een blokkade categoriseert hij de oorzaak (RCA).</p>
                     </div>
                 </div>
                 <div class="timeline-step">
                     <div class="timeline-dot"></div>
                     <div class="timeline-content">
                         <div style="display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.3rem;">
-                            <h4>4. Suivi & Analytics</h4>
+                            <h4>4. Tracking & Analytics</h4>
                             <span class="pill pill-blue">PM</span>
                             <span class="pill pill-purple">Admin</span>
                         </div>
-                        <p>Le PM et l'Admin suivent la progression en temps réel via les tableaux de bord : productivité par catégorie, EVM, taux d'objectifs atteints et analyses RCA.</p>
+                        <p>De PM en Admin volgen de voortgang in real-time via dashboards: productiviteit per categorie, EVM, doelrealisatiepercentages en RCA-analyses.</p>
                     </div>
                 </div>
                 <div class="timeline-step">
                     <div class="timeline-dot"></div>
                     <div class="timeline-content">
                         <div style="display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.3rem;">
-                            <h4>5. Clôture & XP</h4>
+                            <h4>5. Afsluiting & XP</h4>
                             <span class="pill pill-purple">Admin</span>
                             <span class="pill pill-gold">Auto</span>
                         </div>
-                        <p>La semaine est clôturée automatiquement (ou manuellement par l'Admin). Le système calcule si l'objectif est atteint et attribue l'XP au Chef de Chantier. Le cycle recommence.</p>
+                        <p>De week wordt automatisch afgesloten (of handmatig door de Admin). Het systeem berekent of het doel is bereikt en kent de XP toe aan de Werfleider. De cyclus begint opnieuw.</p>
                     </div>
                 </div>
             </div>
@@ -605,9 +604,9 @@
 <section id="analytics">
     <div class="container">
         <div class="section-header fade-in">
-            <div class="section-badge"><span class="dot"></span> ANALYTICS AVANCÉES</div>
-            <h2>Des données au service de la décision</h2>
-            <p>Visualisations interactives pour comprendre la performance de vos chantiers en un coup d'œil.</p>
+            <div class="section-badge"><span class="dot"></span> GEAVANCEERDE ANALYTICS</div>
+            <h2>Gegevens ten dienste van besluitvorming</h2>
+            <p>Interactieve visualisaties om de prestaties van uw werven in één oogopslag te begrijpen.</p>
         </div>
 
         <div class="stat-grid fade-in">
@@ -617,11 +616,11 @@
             </div>
             <div class="stat-box">
                 <div class="stat-val" style="color: var(--emerald);">RCA</div>
-                <div class="stat-label">Analyse de Causes</div>
+                <div class="stat-label">Oorzaakanalyse</div>
             </div>
             <div class="stat-box">
                 <div class="stat-val" style="color: var(--purple);">🔥</div>
-                <div class="stat-label">Heatmap Productivité</div>
+                <div class="stat-label">Productiviteitsheatmap</div>
             </div>
             <div class="stat-box">
                 <div class="stat-val" style="color: var(--gold);">⚖️</div>
@@ -633,20 +632,20 @@
             <div class="card fade-in">
                 <h3 style="color: var(--cyan); margin-bottom: 1.5rem;">📉 Earned Value Management</h3>
                 <p style="color: rgba(255,255,255,0.5); font-size: 0.9rem; margin-bottom: 1.5rem;">
-                    Suivez l'évolution cumulée de vos chantiers avec trois courbes clés :
+                    Volg de cumulatieve evolutie van uw werven met drie belangrijke curves:
                 </p>
                 <div style="display:flex; flex-direction:column; gap: 0.8rem;">
                     <div style="display:flex; align-items:center; gap: 0.8rem;">
                         <div style="width:14px;height:14px;border-radius:4px;background:var(--blue)"></div>
-                        <span style="font-size:0.85rem;"><strong>PV</strong> — Valeur Planifiée (heures prévues)</span>
+                        <span style="font-size:0.85rem;"><strong>PV</strong> — Geplande Waarde (verwachte uren)</span>
                     </div>
                     <div style="display:flex; align-items:center; gap: 0.8rem;">
                         <div style="width:14px;height:14px;border-radius:4px;background:var(--emerald)"></div>
-                        <span style="font-size:0.85rem;"><strong>EV</strong> — Valeur Acquise (heures valorisées)</span>
+                        <span style="font-size:0.85rem;"><strong>EV</strong> — Verdiende Waarde (gewaardeerde uren)</span>
                     </div>
                     <div style="display:flex; align-items:center; gap: 0.8rem;">
                         <div style="width:14px;height:14px;border-radius:4px;background:var(--red)"></div>
-                        <span style="font-size:0.85rem;"><strong>AC</strong> — Coût Réel (heures brûlées)</span>
+                        <span style="font-size:0.85rem;"><strong>AC</strong> — Werkelijke Kosten (verbrande uren)</span>
                     </div>
                 </div>
                 <div style="margin-top: 2rem; background:rgba(255,255,255,0.03); border-radius:16px; padding:1.5rem; height:150px; display:flex; align-items:flex-end; gap:4px;">
@@ -664,37 +663,37 @@
             </div>
 
             <div class="card fade-in">
-                <h3 style="color: var(--emerald); margin-bottom: 1.5rem;">🔍 Analyse des Causes (RCA)</h3>
+                <h3 style="color: var(--emerald); margin-bottom: 1.5rem;">🔍 Oorzaakanalyse (RCA)</h3>
                 <p style="color: rgba(255,255,255,0.5); font-size: 0.9rem; margin-bottom: 1.5rem;">
-                    Quand un objectif n'est pas atteint, le Chef de Chantier catégorise la cause du retard :
+                    Wanneer een doel niet wordt bereikt, categoriseert de Werfleider de oorzaak van de vertraging:
                 </p>
                 <div style="display:flex; flex-direction:column; gap: 0.8rem;">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-size:0.85rem;">⏳ Retard Matériel</span>
+                        <span style="font-size:0.85rem;">⏳ Materiaalvertraging</span>
                         <div style="width:50%; height:10px; background:rgba(255,255,255,0.05); border-radius:100px; overflow:hidden;">
                             <div style="width:45%; height:100%; background: var(--orange); border-radius:100px;"></div>
                         </div>
                     </div>
                     <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-size:0.85rem;">🌧️ Météo</span>
+                        <span style="font-size:0.85rem;">🌧️ Weer</span>
                         <div style="width:50%; height:10px; background:rgba(255,255,255,0.05); border-radius:100px; overflow:hidden;">
                             <div style="width:25%; height:100%; background: var(--blue); border-radius:100px;"></div>
                         </div>
                     </div>
                     <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-size:0.85rem;">🔧 Panne d'Équipement</span>
+                        <span style="font-size:0.85rem;">🔧 Defect Materieel</span>
                         <div style="width:50%; height:10px; background:rgba(255,255,255,0.05); border-radius:100px; overflow:hidden;">
                             <div style="width:15%; height:100%; background: var(--red); border-radius:100px;"></div>
                         </div>
                     </div>
                     <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-size:0.85rem;">👷 Main-d'œuvre</span>
+                        <span style="font-size:0.85rem;">👷 Arbeidskrachten</span>
                         <div style="width:50%; height:10px; background:rgba(255,255,255,0.05); border-radius:100px; overflow:hidden;">
                             <div style="width:10%; height:100%; background: var(--purple); border-radius:100px;"></div>
                         </div>
                     </div>
                     <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-size:0.85rem;">📋 Erreur de Planification</span>
+                        <span style="font-size:0.85rem;">📋 Planningsfout</span>
                         <div style="width:50%; height:10px; background:rgba(255,255,255,0.05); border-radius:100px; overflow:hidden;">
                             <div style="width:5%; height:100%; background: var(--gold); border-radius:100px;"></div>
                         </div>
@@ -712,25 +711,25 @@
     <div class="container">
         <div class="section-header fade-in">
             <div class="section-badge"><span class="dot"></span> TECHNOLOGIE</div>
-            <h2>Architecture Moderne & Sécurisée</h2>
-            <p>Construite avec les technologies web les plus performantes pour garantir fiabilité et rapidité.</p>
+            <h2>Moderne & Veilige Architectuur</h2>
+            <p>Gebouwd met de best presterende webtechnologieën om betrouwbaarheid en snelheid te garanderen.</p>
         </div>
 
         <div class="grid-3 fade-in">
             <div class="card" style="text-align:center;">
                 <div style="font-size: 2.5rem; margin-bottom: 1rem;">⚡</div>
                 <h3>Next.js 15</h3>
-                <p>Framework React full-stack avec rendu côté serveur et optimisation automatique.</p>
+                <p>Full-stack React-framework met server-side rendering en automatische optimalisatie.</p>
             </div>
             <div class="card" style="text-align:center;">
                 <div style="font-size: 2.5rem; margin-bottom: 1rem;">🗄️</div>
                 <h3>PostgreSQL + Prisma</h3>
-                <p>Base de données relationnelle robuste avec ORM type-safe pour la fiabilité des données.</p>
+                <p>Robuuste relationele database met type-safe ORM voor gegevensbetrouwbaarheid.</p>
             </div>
             <div class="card" style="text-align:center;">
                 <div style="font-size: 2.5rem; margin-bottom: 1rem;">🔒</div>
                 <h3>Authentification JWT</h3>
-                <p>Contrôle d'accès basé sur les rôles (RBAC) avec tokens sécurisés et validation serveur.</p>
+                <p>Role-Based Access Control (RBAC) met veilige tokens en servervalidatie.</p>
             </div>
         </div>
     </div>
@@ -739,13 +738,13 @@
 <!-- FOOTER CTA -->
 <footer>
     <div class="container fade-in">
-        <h2>Prêt à transformer vos chantiers ?</h2>
-        <p>Rejoignez les équipes qui optimisent leur productivité avec GetPlanning.</p>
-        <a href="https://getplanning.org" class="footer-cta" target="_blank" rel="noopener">
-            Accéder à la plateforme →
+        <h2>Klaar om uw werven te transformeren?</h2>
+        <p>Sluit u aan bij de teams die hun productiviteit optimaliseren met GetPlanning.</p>
+        <a href="https://getplanning.org" class="footer-cta" target="_blank">
+            Toegang tot platform →
         </a>
         <p style="margin-top: 3rem; font-size: 0.75rem; color: rgba(255,255,255,0.2);">
-            © 2026 GetPlanning.org — Tous droits réservés
+            © 2026 GetPlanning.org — Alle rechten voorbehouden
         </p>
     </div>
 </footer>

@@ -9,14 +9,14 @@ export async function POST(req: Request) {
         const { secret } = await req.json();
         
         // Simple secret to prevent unauthorized seeding
-        if (secret !== 'seed-eeg-2024') {
+        if (secret !== 'seed-gp-2024') {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
         const pw = await bcrypt.hash('password', 10);
 
         const users = [
-            { email: 'admin@eeg.be', name: 'Admin EEG', passwordHash: pw, role: 'ADMIN', status: 'APPROVED', xp: 0, level: 1, characterId: 1 },
+            { email: 'admin@eeg.be', name: 'Admin GP', passwordHash: pw, role: 'ADMIN', status: 'APPROVED', xp: 0, level: 1, characterId: 1 },
             { email: 'pm1@eeg.be', name: 'Laurent Dupont', passwordHash: pw, role: 'PM', status: 'APPROVED', xp: 2500, level: 8, characterId: 1 },
             { email: 'pm2@eeg.be', name: 'Sophie Leroy', passwordHash: pw, role: 'PM', status: 'APPROVED', xp: 14000, level: 18, characterId: 2 },
             { email: 'pm3@eeg.be', name: 'Marc Renard', passwordHash: pw, role: 'PM', status: 'APPROVED', xp: 28000, level: 28, characterId: 3 },

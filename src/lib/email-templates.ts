@@ -115,7 +115,7 @@ export function buildWeeklySummaryHtml(summary: ProjectSummary): string {
                 <tr>
                     <td style="padding: 20px 30px; border-top: 1px solid #334155;">
                         <p style="color: #64748b; font-size: 11px; margin: 0; text-align: center;">
-                            Généré automatiquement par EEG Management — getplanning.org
+                            Généré automatiquement par GetPlanning — getplanning.org
                         </p>
                     </td>
                 </tr>

@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import EEGLogo from "./EEGLogo";
 import LanguageSwitcher from "./LanguageSwitcher";
 import T from "./T";
 import AvatarDisplay from "./AvatarDisplay";
@@ -14,9 +13,10 @@ interface NavbarProps {
     characterId?: number;
     level?: number;
     xp?: number;
+    company?: string;
 }
 
-export default function Navbar({ userName, userRole, characterId, level }: NavbarProps) {
+export default function Navbar({ userName, userRole, characterId, level, company }: NavbarProps) {
     const router = useRouter();
     const { theme, toggleTheme } = useTheme();
 
@@ -30,6 +30,8 @@ export default function Navbar({ userName, userRole, characterId, level }: Navba
         }
     };
 
+    const brandName = company || 'GetPlanning';
+
     return (
         <nav className="sticky top-0 z-[100] w-full px-4 sm:px-8 py-4 flex items-center justify-between border-b border-white/5 bg-[#050810]/80 backdrop-blur-xl shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
             <div className="flex items-center gap-4">
@@ -41,9 +43,11 @@ export default function Navbar({ userName, userRole, characterId, level }: Navba
                     <span className="material-symbols-outlined text-white/70 group-hover:text-white transition-colors">arrow_back</span>
                 </button>
                 <div className="flex items-center gap-3 group">
-                    <EEGLogo className="w-10 h-10 text-purple-400 drop-shadow-[0_0_15px_rgba(168,85,247,0.6)] group-hover:scale-110 transition-transform" />
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center text-white font-black text-lg group-hover:scale-110 transition-transform">
+                        {brandName.charAt(0)}
+                    </div>
                     <span className="hidden sm:inline-block text-2xl font-black tracking-tighter text-white drop-shadow-md">
-                        EEG <span className="text-purple-400 font-light">Management</span>
+                        {brandName} <span className="text-purple-400 font-light">Management</span>
                     </span>
                 </div>
             </div>

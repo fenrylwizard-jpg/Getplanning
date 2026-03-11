@@ -42,7 +42,7 @@ export function generateWeeklyPDF(data: PdfReportData) {
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(22);
     doc.setFont('helvetica', 'bold');
-    doc.text('EEG Management', 14, 20);
+    doc.text('GetPlanning', 14, 20);
     
     doc.setFontSize(11);
     doc.setFont('helvetica', 'normal');
@@ -134,7 +134,7 @@ export function generateWeeklyPDF(data: PdfReportData) {
         doc.setFontSize(8);
         doc.setTextColor(148, 163, 184);
         doc.text(
-            `EEG Management — ${data.projectName} — Page ${i}/${pageCount}`,
+            `GetPlanning — ${data.projectName} — Page ${i}/${pageCount}`,
             pageWidth / 2, 
             doc.internal.pageSize.getHeight() - 10,
             { align: 'center' }

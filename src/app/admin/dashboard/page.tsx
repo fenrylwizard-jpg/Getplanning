@@ -94,7 +94,7 @@ export default function AdminDashboard() {
         setCronRunning(true);
         setCronResult(null);
         try {
-            const res = await fetch('/api/cron/weekly-close?secret=eeg-internal');
+            const res = await fetch('/api/cron/weekly-close?secret=gp-internal');
             const data = await res.json();
             setCronResult(data.message || t('week_closed'));
             fetchData();

@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Lock, Mail, KeyRound } from 'lucide-react';
-import EEGLogo from '@/components/EEGLogo';
+
 import Link from 'next/link';
 
 export default function LoginPage() {
@@ -59,7 +59,7 @@ export default function LoginPage() {
             <div className="w-full max-w-[440px] relative z-10 glass-card bg-[#080d1a]/80 backdrop-blur-3xl border border-white/10 rounded-[40px] p-8 sm:p-12 shadow-[0_20px_50px_rgba(0,0,0,0.5),_inset_0_2px_10px_rgba(255,255,255,0.05)] hover:border-cyan-500/30 transition-all duration-500 hover:shadow-[0_20px_60px_rgba(19,200,236,0.1)]">
                 
                 <div className="flex flex-col items-center mb-10">
-                    <EEGLogo className="w-12 h-12 text-cyan-400 mb-6 drop-shadow-[0_0_15px_rgba(19,200,236,0.6)]" />
+                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center text-white font-black text-2xl mb-6 drop-shadow-[0_0_15px_rgba(19,200,236,0.6)]">G</div>
                     <h1 className="text-3xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-br from-white via-cyan-100 to-cyan-500 drop-shadow-[0_0_10px_rgba(19,200,236,0.4)]">
                         Connexion
                     </h1>

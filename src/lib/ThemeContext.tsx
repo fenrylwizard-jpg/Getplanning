@@ -21,7 +21,7 @@ export function useTheme() {
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const [theme, setTheme] = useState<Theme>(() => {
         if (typeof window !== 'undefined') {
-            return (localStorage.getItem('eeg-theme') as Theme) || 'dark';
+            return (localStorage.getItem('gp-theme') as Theme) || 'dark';
         }
         return 'dark';
     });
@@ -34,7 +34,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         const next = theme === 'dark' ? 'light' : 'dark';
         setTheme(next);
         document.documentElement.setAttribute('data-theme', next);
-        localStorage.setItem('eeg-theme', next);
+        localStorage.setItem('gp-theme', next);
     };
 
     return (

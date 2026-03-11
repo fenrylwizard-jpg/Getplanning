@@ -14,7 +14,7 @@ interface EmailOptions {
  * Uses onboarding@resend.dev as sender for unverified domains.
  */
 export async function sendEmail({ to, subject, html }: EmailOptions) {
-    const from = process.env.EMAIL_FROM || 'EEG Management <onboarding@resend.dev>';
+    const from = process.env.EMAIL_FROM || 'GetPlanning <onboarding@resend.dev>';
 
     try {
         const result = await resend.emails.send({

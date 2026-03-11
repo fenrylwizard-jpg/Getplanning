@@ -1,5 +1,5 @@
 /**
- * XP Engine — EEG Worksite Tracker RPG System
+ * XP Engine — Worksite Tracker RPG System
  *
  * XP Rules:
  * - Base: 20 XP per daily report submission

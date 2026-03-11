@@ -8,13 +8,13 @@ import { Toaster } from "sonner";
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], weight: ["300", "400", "500", "600", "700"] });
 
 export const metadata: Metadata = {
-  title: "EEG — Worksite Tracker",
+  title: "GetPlanning — Worksite Management",
   description: "Plateforme SaaS de gestion de projet de construction de nouvelle génération",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "EEG Worksite Tracker",
+    title: "GetPlanning",
   },
   formatDetection: {
     telephone: false,

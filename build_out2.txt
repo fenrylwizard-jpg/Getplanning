@@ -1,0 +1,82 @@
+﻿Ôû▓ Next.js 16.1.6 (Turbopack)
+- Environments: .env
+
+node.exe : ÔÜá The 
+"middleware" file 
+convention is deprecated. 
+Please use "proxy" 
+instead. Learn more: https:
+//nextjs.org/docs/messages/
+middleware-to-proxy
+Au caractère Ligne:1 : 1
++ & "C:\Program 
+Files\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
+    + CategoryInfo         
+     : NotSpecified: (ÔÜá  
+   The "middle...leware-   
+ to-proxy:String) [], R    
+emoteException
+    + FullyQualifiedErrorI 
+   d : NativeCommandError
+ 
+  Creating an optimized production build ...
+Ô£ô Compiled successfully in 3.7s
+  Skipping validation of types
+  Collecting page data using 15 workers ...
+Error: Missing API key. 
+Pass it to the constructor 
+`new Resend("re_123")`
+    at new <anonymous> (C:\
+Users\Imam\.gemini\antigrav
+ity\scratch\worksite-tracke
+r\.next\server\chunks\[root
+-of-the-server]__b07ac953._
+.js:6:28224)
+    at module evaluation (C
+:\Users\Imam\.gemini\antigr
+avity\scratch\worksite-trac
+ker\.next\server\chunks\[ro
+ot-of-the-server]__b07ac953
+._.js:6:27765)
+    at instantiateModule (C
+:\Users\Imam\.gemini\antigr
+avity\scratch\worksite-trac
+ker\.next\server\chunks\[tu
+rbopack]_runtime.js:740:9)
+    at 
+instantiateRuntimeModule (C
+:\Users\Imam\.gemini\antigr
+avity\scratch\worksite-trac
+ker\.next\server\chunks\[tu
+rbopack]_runtime.js:768:12)
+    at getOrInstantiateRunt
+imeModule (C:\Users\Imam\.g
+emini\antigravity\scratch\w
+orksite-tracker\.next\serve
+r\chunks\[turbopack]_runtim
+e.js:781:12)
+    at Object.m (C:\Users\I
+mam\.gemini\antigravity\scr
+atch\worksite-tracker\.next
+\server\chunks\[turbopack]_
+runtime.js:790:18)
+    at Object.<anonymous> (
+C:\Users\Imam\.gemini\antig
+ravity\scratch\worksite-tra
+cker\.next\server\app\api\c
+ron\weekly-summary\route.js
+:6:3)
+
+> Build error occurred
+Error: Failed to collect 
+page data for 
+/api/cron/weekly-summary
+    at ignore-listed 
+frames {
+  type: 'Error'
+}
