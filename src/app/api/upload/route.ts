@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { parseMetre } from "@/lib/metre-skill";
-import fs from 'fs';
-import path from 'path';
+// No fs or path needed in production
 
 export async function POST(req: Request) {
     try {
@@ -19,14 +18,7 @@ export async function POST(req: Request) {
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
 
-        // [INTERNAL] Save a copy for debugging
-        try {
-            const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-            if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-            fs.writeFileSync(path.join(uploadDir, 'last_metre.xlsx'), buffer);
-        } catch (e) {
-            console.error("Failed to save debug copy:", e);
-        }
+        // No debug saving in production to prevent read-only filesystem errors or container crashes
 
         // Parse using simplified Bordereau format
         const result = parseMetre(buffer);
