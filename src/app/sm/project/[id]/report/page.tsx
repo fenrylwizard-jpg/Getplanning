@@ -1,10 +1,12 @@
 "use client";
-import React, { useState, useEffect, use } from "react";
+import React, { useState, useEffect, use, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { Camera, AlertCircle, WifiOff, AlertTriangle } from "lucide-react";
+import { Camera, AlertCircle, WifiOff, AlertTriangle, Calendar, Clock, Users, ChevronLeft, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "@/lib/LanguageContext";
 import T from "@/components/T";
+import { format, addDays, isToday, isBefore, startOfDay, isSameDay } from 'date-fns';
+import { fr, enUS, nl } from 'date-fns/locale';
 
 import { saveOfflineReport, getOfflineReports, clearOfflineReports, OfflineReport } from "@/lib/indexedDB";
 
@@ -25,7 +27,16 @@ interface PlanWithTasks {
     id: string;
     targetHoursCapacity: number;
     workersCount?: number;
+    weekNumber: number;
+    year: number;
     tasks: PlanTask[];
+}
+
+interface ExistingReport {
+    id: string;
+    date: string;
+    status: string;
+    workersCount: number | null;
 }
 
 const CameraInput = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>((props, ref) => {
@@ -39,11 +50,15 @@ const CameraInput = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes
 });
 CameraInput.displayName = 'CameraInput';
 
+const HOURS_PER_WORKER_PER_DAY = 8;
+
 export default function ReportWeek({ params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = use(params);
     const id = resolvedParams.id;
     const router = useRouter();
-    const { t } = useTranslation();
+    const { t, language } = useTranslation();
+    const locale = language === 'fr' ? fr : language === 'nl' ? nl : enUS;
+
     const [activePlan, setActivePlan] = useState<PlanWithTasks | null>(null);
     const [actuals, setActuals] = useState<Record<string, number>>({});
     const [taskPhotos, setTaskPhotos] = useState<Record<string, string>>({});
@@ -53,7 +68,7 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
     const [loading, setLoading] = useState(true);
     const [isOffline, setIsOffline] = useState(false);
 
-    const [workersCount, setWorkersCount] = useState<number | ''>('');
+    const [workersCount, setWorkersCount] = useState<number | ''>(0);
     const [projectTasks, setProjectTasks] = useState<any[]>([]);
     const [taskCategories, setTaskCategories] = useState<string[]>([]);
     const [selectedCategory, setSelectedCategory] = useState<string>("");
@@ -62,8 +77,44 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
     const [taskLocations, setTaskLocations] = useState<Record<string, string[]>>({});
     const [subLocations, setSubLocations] = useState<string[]>([]);
 
+    // Date/week state
+    const [weekStart, setWeekStart] = useState<Date | null>(null);
+    const [weekEnd, setWeekEnd] = useState<Date | null>(null);
+    const [existingReports, setExistingReports] = useState<ExistingReport[]>([]);
+    const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
+    // Late/backfill state
+    const [lateReason, setLateReason] = useState("");
+    const [lateDescription, setLateDescription] = useState("");
+
     // Blockage exception state
     const [blockageLogs, setBlockageLogs] = useState<Record<string, { reason: string, description: string }>>({});
+
+    // Computed: is this a backfill (past day)?
+    const isBackfill = selectedDate ? isBefore(startOfDay(selectedDate), startOfDay(new Date())) && !isToday(selectedDate) : false;
+
+    // Computed: days of the week
+    const weekDays = useMemo(() => {
+        if (!weekStart) return [];
+        return Array.from({ length: 7 }, (_, i) => {
+            const day = addDays(weekStart, i);
+            return {
+                date: day,
+                dayName: format(day, 'EEE', { locale }),
+                dayNum: format(day, 'dd'),
+                monthName: format(day, 'MMM', { locale }),
+                isToday: isToday(day),
+                isFuture: !isToday(day) && !isBefore(startOfDay(day), startOfDay(new Date())),
+                isPast: isBefore(startOfDay(day), startOfDay(new Date())) && !isToday(day),
+                hasReport: existingReports.some(r => isSameDay(new Date(r.date), day)),
+            };
+        });
+    }, [weekStart, existingReports, locale]);
+
+    // Daily target hours
+    const dailyTargetHours = typeof workersCount === 'number' && workersCount > 0
+        ? workersCount * HOURS_PER_WORKER_PER_DAY
+        : 0;
 
     useEffect(() => {
         Promise.all([
@@ -87,6 +138,13 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                 setActuals(initActuals);
                 setTaskLocations(initLocs);
             }
+            if (planData.weekStart) setWeekStart(new Date(planData.weekStart));
+            if (planData.weekEnd) setWeekEnd(new Date(planData.weekEnd));
+            if (planData.existingReports) setExistingReports(planData.existingReports);
+
+            // Default selected date to today
+            setSelectedDate(startOfDay(new Date()));
+
             if (tasksData.tasks) {
                 setProjectTasks(tasksData.tasks);
                 const categories = Array.from(new Set(tasksData.tasks.map((t: any) => t.category || 'Uncategorized'))) as string[];
@@ -199,6 +257,18 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
     };
 
     const submitReport = async () => {
+        // Validate backfill reason
+        if (isBackfill && !lateReason) {
+            toast.error(t("late_reason_required") || "Please select a reason for the late report.");
+            return;
+        }
+
+        // Check if this date already has a report
+        if (selectedDate && existingReports.some(r => isSameDay(new Date(r.date), selectedDate))) {
+            toast.error(t("report_exists_for_date") || "A report already exists for this date.");
+            return;
+        }
+
         const adHocTasksPayload = activePlan?.tasks
             .filter(t => t.isAdHoc)
             .map(t => ({
@@ -217,7 +287,10 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
             emptyDrumsCount,
             workersCount: typeof workersCount === 'number' ? workersCount : undefined,
             adHocTasks: adHocTasksPayload,
-            blockageLogs
+            blockageLogs,
+            reportDate: selectedDate ? selectedDate.toISOString() : undefined,
+            lateReason: isBackfill ? lateReason : undefined,
+            lateDescription: isBackfill ? lateDescription : undefined,
         };
 
         if (isOffline || (typeof navigator !== 'undefined' && !navigator.onLine)) {
@@ -247,7 +320,7 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
             for (const [tId, base64Photo] of Object.entries(taskPhotos)) {
                 if (!base64Photo) continue;
                 
-                const realTaskId = mapping[tId] || tId; // Use real DB ID if it was an ad-hoc temp task
+                const realTaskId = mapping[tId] || tId;
 
                 try {
                     await fetch(`/api/project/${id}/report/upload-photo`, {
@@ -263,7 +336,11 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                     console.error("Photo upload failed:", e);
                 }
             }
+            toast.success(t("report_submitted") || "Report submitted!");
             router.push('/sm/dashboard');
+        } else {
+            const errData = await res.json();
+            toast.error(errData.error || t("error_submitting_report") || "Error submitting report");
         }
     };
 
@@ -290,19 +367,42 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
         totalAchievedMins += (qty * t.task.minutesPerUnit);
     });
     const totalAchievedHours = totalAchievedMins / 60;
-    const targetHours = activePlan.targetHoursCapacity;
-    const hitTarget = totalAchievedHours >= targetHours;
+    const hitTarget = dailyTargetHours > 0 ? totalAchievedHours >= dailyTargetHours : false;
+
+    // Week label
+    const weekLabel = weekStart && weekEnd
+        ? `S${activePlan.weekNumber} · ${format(weekStart, 'dd MMM', { locale })} → ${format(weekEnd, 'dd MMM', { locale })}`
+        : `S${activePlan.weekNumber || '?'}`;
 
     return (
         <div className="aurora-page text-white p-4 sm:p-8 pb-32 selection:bg-orange-500/30 font-sans">
-            <div className="max-w-7xl mx-auto flex flex-col gap-8">
+            <div className="max-w-7xl mx-auto flex flex-col gap-6">
                 
-                {/* Header Sub-section */}
+                {/* Header with Week Context */}
                 <div className="flex flex-col gap-2">
+                    <button
+                        onClick={() => router.push('/sm/dashboard')}
+                        className="flex items-center gap-2 text-cyan-400/60 hover:text-cyan-400 transition-colors mb-2 group w-fit"
+                    >
+                        <ChevronLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+                        <span className="text-xs font-black uppercase tracking-widest"><T k="back_to_dashboard" /></span>
+                    </button>
                     <div className="flex justify-between items-center">
-                        <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-yellow-300 drop-shadow-[0_0_15px_rgba(249,115,22,0.4)]">
-                            <T k="daily_report_title" />
-                        </h2>
+                        <div>
+                            <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-yellow-300 drop-shadow-[0_0_15px_rgba(249,115,22,0.4)]">
+                                <T k="daily_report_title" />
+                            </h2>
+                            <div className="flex items-center gap-3 mt-2">
+                                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20">
+                                    <Calendar size={14} className="text-cyan-400" />
+                                    <span className="text-sm font-bold text-cyan-400">{weekLabel}</span>
+                                </div>
+                                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20">
+                                    <Clock size={14} className="text-purple-400" />
+                                    <span className="text-sm font-bold text-purple-400">{activePlan.targetHoursCapacity.toFixed(0)}h <T k="weekly_planned" /></span>
+                                </div>
+                            </div>
+                        </div>
                         {isOffline && (
                             <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-500/10 border border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]">
                                 <WifiOff size={16} className="text-red-400" />
@@ -310,36 +410,155 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                             </div>
                         )}
                     </div>
-                    <p className="text-gray-400 text-sm font-medium tracking-wide"><T k="daily_report_desc" /></p>
                 </div>
 
-                {/* Workforce Input */}
+                {/* ═══════════════ DAY PICKER ═══════════════ */}
+                <div className="mechanical-panel p-4 sm:p-6">
+                    <div className="text-xs font-black uppercase tracking-[0.2em] text-gray-400 mb-4 flex items-center gap-2">
+                        <Calendar size={14} className="text-orange-400" />
+                        <T k="select_day" />
+                    </div>
+                    <div className="grid grid-cols-7 gap-2 sm:gap-3">
+                        {weekDays.map((day) => {
+                            const isSelected = selectedDate ? isSameDay(day.date, selectedDate) : false;
+                            const isDisabled = day.isFuture || day.hasReport;
+                            
+                            return (
+                                <button
+                                    key={day.date.toISOString()}
+                                    onClick={() => !isDisabled && setSelectedDate(startOfDay(day.date))}
+                                    disabled={isDisabled}
+                                    className={`
+                                        relative flex flex-col items-center py-3 px-1 sm:px-3 rounded-2xl border transition-all duration-200
+                                        ${isSelected
+                                            ? 'bg-orange-500/20 border-orange-500/50 text-orange-400 shadow-[0_0_20px_rgba(249,115,22,0.2)] scale-105'
+                                            : day.isToday
+                                                ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20'
+                                                : day.hasReport
+                                                    ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 cursor-default opacity-80'
+                                                    : day.isPast
+                                                        ? 'bg-amber-500/5 border-amber-500/20 text-amber-400/80 hover:bg-amber-500/10 hover:border-amber-500/40'
+                                                        : 'bg-white/5 border-white/10 text-gray-600 cursor-not-allowed opacity-40'
+                                        }
+                                    `}
+                                >
+                                    <span className="text-[10px] font-black uppercase tracking-widest">{day.dayName}</span>
+                                    <span className="text-xl sm:text-2xl font-black leading-none mt-1">{day.dayNum}</span>
+                                    <span className="text-[10px] font-bold opacity-60 mt-0.5">{day.monthName}</span>
+                                    
+                                    {/* Status badges */}
+                                    {day.hasReport && (
+                                        <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg">
+                                            <CheckCircle2 size={12} className="text-white" />
+                                        </div>
+                                    )}
+                                    {day.isPast && !day.hasReport && (
+                                        <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center shadow-lg animate-pulse">
+                                            <AlertTriangle size={10} className="text-white" />
+                                        </div>
+                                    )}
+                                    {day.isToday && !day.hasReport && (
+                                        <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 px-1.5 py-0.5 rounded-full bg-cyan-500 text-[8px] font-black text-white uppercase tracking-wider shadow-lg">
+                                            {t("today") || "Today"}
+                                        </div>
+                                    )}
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    {/* Selected date summary */}
+                    {selectedDate && (
+                        <div className="mt-4 pt-4 border-t border-white/5 flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm font-bold text-white">
+                                    {format(selectedDate, 'EEEE d MMMM yyyy', { locale })}
+                                </span>
+                                {isBackfill && (
+                                    <span className="px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/30 text-amber-400 text-[10px] font-black uppercase">
+                                        <T k="late_report" />
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* ═══════════════ LATE REPORT REASON (Backfill only) ═══════════════ */}
+                {isBackfill && (
+                    <div className="mechanical-panel p-6 border-l-4 border-amber-500">
+                        <h3 className="text-lg font-bold text-amber-400 mb-3 flex items-center gap-2">
+                            <AlertTriangle size={18} />
+                            <T k="late_report_reason_title" />
+                        </h3>
+                        <p className="text-gray-400 text-sm mb-4"><T k="late_report_reason_desc" /></p>
+                        <select 
+                            aria-label="Late report reason"
+                            className="w-full bg-[#050810]/80 border border-amber-500/40 text-white rounded-2xl py-4 px-4 outline-none focus:ring-1 focus:ring-amber-500 appearance-none font-bold mb-3"
+                            value={lateReason}
+                            onChange={(e) => setLateReason(e.target.value)}
+                        >
+                            <option value="">{t("select_late_reason") || "-- Select a reason --"}</option>
+                            <option value="ABSENT">{t("late_absent") || "Absent from site"}</option>
+                            <option value="FORGOT">{t("late_forgot") || "Forgot to submit"}</option>
+                            <option value="NO_CONNECTIVITY">{t("late_no_connectivity") || "No internet connection"}</option>
+                            <option value="OTHER">{t("late_other") || "Other"}</option>
+                        </select>
+                        {lateReason === 'OTHER' && (
+                            <textarea
+                                className="w-full bg-[#050810]/60 border border-amber-500/20 text-white rounded-2xl py-3 px-4 outline-none focus:border-amber-500 resize-none placeholder:text-gray-600"
+                                rows={2}
+                                placeholder={t("describe_reason") || "Describe the reason..."}
+                                value={lateDescription}
+                                onChange={(e) => setLateDescription(e.target.value)}
+                            />
+                        )}
+                    </div>
+                )}
+
+                {/* ═══════════════ WORKFORCE + DAILY TARGET ═══════════════ */}
                 <div className="mechanical-panel p-6 flex flex-col sm:flex-row gap-6 justify-between items-center focus-within:ring-2 focus-within:ring-cyan-500/50 transition-all">
                     <div className="flex flex-col flex-1 pr-4">
-                        <label htmlFor="workersCount" className="font-bold text-white/90 text-xl mb-1 leading-tight"><T k="workforce_count_label" /></label>
+                        <label htmlFor="workersCount" className="font-bold text-white/90 text-xl mb-1 leading-tight flex items-center gap-2">
+                            <Users size={20} className="text-cyan-400" />
+                            <T k="workforce_count_label" />
+                        </label>
                         <div className="text-gray-400 text-sm font-medium tracking-wide"><T k="workforce_count_desc" /></div>
                     </div>
-                    <div className="relative flex-1 sm:w-[150px]">
-                        <input
-                            id="workersCount"
-                            type="number"
-                            className="w-full bg-[#050810]/50 border border-white/10 text-white text-2xl font-black rounded-2xl py-4 px-4 outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 transition-all text-center"
-                            placeholder="0"
-                            min="0"
-                            value={workersCount}
-                            onChange={(e) => setWorkersCount(e.target.value === '' ? '' : parseInt(e.target.value) || 0)}
-                        />
+                    <div className="flex items-center gap-6">
+                        <div className="relative sm:w-[150px]">
+                            <input
+                                id="workersCount"
+                                type="number"
+                                className="w-full bg-[#050810]/50 border border-white/10 text-white text-2xl font-black rounded-2xl py-4 px-4 outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 transition-all text-center"
+                                placeholder="0"
+                                min="0"
+                                value={workersCount}
+                                onChange={(e) => setWorkersCount(e.target.value === '' ? '' : parseInt(e.target.value) || 0)}
+                            />
+                        </div>
+                        <div className="text-center">
+                            <div className="text-[10px] font-black uppercase tracking-widest text-orange-400 mb-1">
+                                <T k="daily_target" />
+                            </div>
+                            <div className="text-3xl font-black text-white">
+                                {dailyTargetHours}<span className="text-sm font-medium text-gray-400">h</span>
+                            </div>
+                            <div className="text-[10px] text-gray-500">
+                                {typeof workersCount === 'number' ? workersCount : 0} × {HOURS_PER_WORKER_PER_DAY}h
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                {/* Progress Rings Replacement (Variant 3 Style) */}
+                {/* ═══════════════ PROGRESS DISPLAY (Daily) ═══════════════ */}
                 <div className="mechanical-panel flex p-8 items-center divide-x divide-white/10 relative overflow-hidden group">
                     <div className="shape-container right-1/2 top-[-50px] translate-x-1/2 scale-150 opacity-20 z-0">
                         <div className="css-radar-plate"></div>
                     </div>
                     <div className="px-6 text-center flex-1 relative z-10">
-                        <div className="text-pink-400 text-xs font-bold uppercase tracking-widest mb-3 drop-shadow-md"><T k="planned_target" /></div>
-                        <div className="text-4xl font-black text-white drop-shadow-lg">{targetHours.toFixed(1)} <span className="text-lg font-medium text-gray-400"><T k="hours" /></span></div>
+                        <div className="text-pink-400 text-xs font-bold uppercase tracking-widest mb-3 drop-shadow-md"><T k="daily_target" /></div>
+                        <div className="text-4xl font-black text-white drop-shadow-lg">{dailyTargetHours.toFixed(1)} <span className="text-lg font-medium text-gray-400"><T k="hours" /></span></div>
                     </div>
                     <div className="px-6 text-center flex-1 relative z-10">
                         <div className="text-cyan-400 text-xs font-bold uppercase tracking-widest mb-3 drop-shadow-md"><T k="achieved" /></div>
@@ -418,7 +637,7 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                                 <div className="w-full mt-4 pt-4 border-t border-amber-500/20">
                                     <div className="flex items-center gap-2 text-amber-400 text-xs font-bold mb-3">
                                         <AlertTriangle size={14} className="animate-pulse" />
-                                        <span>Quantité ({actuals[pt.id]}) dépasse le prévu ({pt.plannedQuantity}). Justification requise :</span>
+                                        <span><T k="qty_exceeds_planned" /> ({actuals[pt.id]}) / ({pt.plannedQuantity})</span>
                                     </div>
                                     <select
                                         aria-label="Raison du dépassement"
@@ -426,16 +645,16 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                                         value={blockageLogs[pt.id]?.reason || ''}
                                         onChange={(e) => setBlockageLogs(prev => ({ ...prev, [pt.id]: { ...prev[pt.id], reason: e.target.value, description: prev[pt.id]?.description || '' } }))}
                                     >
-                                        <option value="">-- Sélectionner une raison --</option>
-                                        <option value="SCOPE_CHANGE">Changement de périmètre</option>
-                                        <option value="REWORK">Reprise / Refaire</option>
-                                        <option value="EMERGENCY">Urgence</option>
-                                        <option value="OTHER">Autre</option>
+                                        <option value="">-- <T k="select_reason" /> --</option>
+                                        <option value="SCOPE_CHANGE"><T k="scope_change" /></option>
+                                        <option value="REWORK"><T k="rework" /></option>
+                                        <option value="EMERGENCY"><T k="emergency" /></option>
+                                        <option value="OTHER"><T k="other_reason" /></option>
                                     </select>
                                     <textarea
                                         className="w-full bg-amber-950/20 border border-amber-500/20 text-white text-sm py-2.5 px-4 rounded-xl outline-none focus:border-amber-400 placeholder:text-amber-800 resize-none"
                                         rows={2}
-                                        placeholder="Décrivez brièvement la raison du dépassement..."
+                                        placeholder={t("describe_overrun") || "Describe the reason for exceeding planned quantity..."}
                                         value={blockageLogs[pt.id]?.description || ''}
                                         onChange={(e) => setBlockageLogs(prev => ({ ...prev, [pt.id]: { ...prev[pt.id], reason: prev[pt.id]?.reason || 'OTHER', description: e.target.value } }))}
                                     />
@@ -488,7 +707,7 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                 </div>
 
                 {/* Issues section */}
-                <div className="mechanical-panel p-8 mt-8 relative overflow-hidden group">
+                <div className="mechanical-panel p-8 mt-4 relative overflow-hidden group">
                     <div className="shape-container left-[-50px] bottom-[-50px] scale-100 opacity-20 z-0">
                         <div className="css-holo-core"></div>
                     </div>
@@ -557,11 +776,12 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                             <T k="cancel" />
                         </button>
                         <button 
-                            className={`flex-[2] py-4 sm:py-5 rounded-full font-black tracking-wider uppercase text-sm text-white shadow-[0_0_20px_rgba(249,115,22,0.4)] hover:shadow-[0_0_30px_rgba(249,115,22,0.6)] transition-all hover:scale-[1.02] ${isOffline ? 'bg-yellow-600' : 'bg-gradient-to-r from-orange-500 to-red-500'}`} 
+                            className={`flex-[2] py-4 sm:py-5 rounded-full font-black tracking-wider uppercase text-sm text-white shadow-[0_0_20px_rgba(249,115,22,0.4)] hover:shadow-[0_0_30px_rgba(249,115,22,0.6)] transition-all hover:scale-[1.02] ${isOffline ? 'bg-yellow-600' : isBackfill ? 'bg-gradient-to-r from-amber-500 to-orange-500' : 'bg-gradient-to-r from-orange-500 to-red-500'}`} 
                             onClick={submitReport}
-                            title={isOffline ? t("save_locally") : t("submit_report")}
+                            disabled={isBackfill && !lateReason}
+                            title={isOffline ? t("save_locally") : isBackfill ? (t("submit_late_report") || "Submit Late Report") : t("submit_report")}
                         >
-                            {isOffline ? <T k="save_locally" /> : <T k="submit_report" />}
+                            {isOffline ? <T k="save_locally" /> : isBackfill ? (t("submit_late_report") || "Submit Late Report") : <T k="submit_report" />}
                         </button>
                     </div>
                 </div>

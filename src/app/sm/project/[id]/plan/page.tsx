@@ -5,13 +5,15 @@ import { ChevronRight, Folder, ArrowLeft, Trash2, PlusCircle, ShoppingBag, Loade
 import { toast } from "sonner";
 import { useTranslation } from "@/lib/LanguageContext";
 import T from "@/components/T";
-import { getISOWeek, getYear, addWeeks, startOfISOWeek } from 'date-fns';
+import { getISOWeek, getYear, addWeeks, startOfISOWeek, endOfISOWeek, format } from 'date-fns';
+import { fr, enUS, nl } from 'date-fns/locale';
 
 export default function PlanNextWeek({ params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = use(params);
     const id = resolvedParams.id;
     const router = useRouter();
-    const { t } = useTranslation();
+    const { t, language } = useTranslation();
+    const locale = language === 'fr' ? fr : language === 'nl' ? nl : enUS;
     
     const [workers, setWorkers] = useState(5);
     const [tasks, setTasks] = useState<{ id: string; description: string; quantity: number; completedQuantity: number; category: string; minutesPerUnit: number; unit: string; taskCode?: string }[]>([]);
@@ -26,15 +28,17 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
             const w = getISOWeek(d);
             const y = getYear(d);
             const start = startOfISOWeek(d);
+            const end = endOfISOWeek(d);
             return { 
                 offset, 
                 week: w, 
                 year: y, 
                 label: offset === 0 ? "current" : `future_week_${offset}`,
-                dateRange: `${start.toLocaleDateString(undefined, { day: '2-digit', month: '2-digit' })}`
+                dateRange: `${format(start, 'dd MMM', { locale })} → ${format(end, 'dd MMM', { locale })}`
             };
         });
-    }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [locale]);
 
     const activeWeek = weekOptions.find(o => o.offset === selectedWeekOffset)!;
 
@@ -268,7 +272,8 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
                             <span className="text-xs font-black uppercase tracking-widest"><T k="back_to_dashboard" /></span>
                         </Link>
                         <h1 className="text-4xl font-black tracking-tighter mb-2">
-                            <T k="plan_for_week" /> <span className="text-cyan-400">S{activeWeek.week}</span> ({activeWeek.year})
+                            <T k="plan_for_week" /> <span className="text-cyan-400">S{activeWeek.week}</span>
+                            <span className="text-lg font-medium text-gray-400 ml-3">{activeWeek.dateRange}</span>
                         </h1>
                         <p className="text-gray-400 max-w-xl"><T k="plan_next_week_desc" /></p>
                     </div>

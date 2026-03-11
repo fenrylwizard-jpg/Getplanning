@@ -345,7 +345,32 @@ const dictionaries: Record<Language, Dictionary> = {
     "add_zones_first": "Ajoutez d'abord des sous-lieux (zones) avant de télécharger le modèle.",
     "remove": "Supprimer",
     "continue": "Continuer",
-    "description": "Description"
+    "description": "Description",
+    "select_day": "Sélectionnez un jour",
+    "today": "Aujourd'hui",
+    "late_report": "Rapport tardif",
+    "late_report_reason_title": "Raison du rapport tardif",
+    "late_report_reason_desc": "Ce rapport est soumis pour un jour passé. Veuillez indiquer la raison.",
+    "select_late_reason": "-- Sélectionner une raison --",
+    "late_absent": "Absent du chantier",
+    "late_forgot": "Oubli de soumettre",
+    "late_no_connectivity": "Pas de connexion internet",
+    "late_other": "Autre",
+    "describe_reason": "Décrivez la raison...",
+    "daily_target": "Objectif du Jour",
+    "weekly_planned": "planifiées/sem",
+    "late_reason_required": "Veuillez sélectionner une raison pour le rapport tardif.",
+    "report_exists_for_date": "Un rapport existe déjà pour cette date.",
+    "report_submitted": "Rapport soumis avec succès !",
+    "error_submitting_report": "Erreur lors de la soumission du rapport.",
+    "submit_late_report": "Soumettre le Rapport Tardif",
+    "qty_exceeds_planned": "Quantité dépasse le prévu",
+    "select_reason": "Sélectionner une raison",
+    "scope_change": "Changement de périmètre",
+    "rework": "Reprise / Refaire",
+    "emergency": "Urgence",
+    "other_reason": "Autre",
+    "describe_overrun": "Décrivez brièvement la raison du dépassement..."
   },
   en: {
     "login": "Login",
@@ -683,7 +708,32 @@ const dictionaries: Record<Language, Dictionary> = {
     "add_zones_first": "Add sub-locations (zones) first before downloading the template.",
     "remove": "Remove",
     "continue": "Continue",
-    "description": "Description"
+    "description": "Description",
+    "select_day": "Select a day",
+    "today": "Today",
+    "late_report": "Late report",
+    "late_report_reason_title": "Late Report Reason",
+    "late_report_reason_desc": "This report is being submitted for a past day. Please indicate the reason.",
+    "select_late_reason": "-- Select a reason --",
+    "late_absent": "Absent from site",
+    "late_forgot": "Forgot to submit",
+    "late_no_connectivity": "No internet connection",
+    "late_other": "Other",
+    "describe_reason": "Describe the reason...",
+    "daily_target": "Daily Target",
+    "weekly_planned": "planned/week",
+    "late_reason_required": "Please select a reason for the late report.",
+    "report_exists_for_date": "A report already exists for this date.",
+    "report_submitted": "Report submitted successfully!",
+    "error_submitting_report": "Error submitting report.",
+    "submit_late_report": "Submit Late Report",
+    "qty_exceeds_planned": "Quantity exceeds planned",
+    "select_reason": "Select a reason",
+    "scope_change": "Scope change",
+    "rework": "Rework",
+    "emergency": "Emergency",
+    "other_reason": "Other",
+    "describe_overrun": "Briefly describe the reason for exceeding planned quantity..."
   },
   nl: {
     "login": "Inloggen",
@@ -1017,7 +1067,32 @@ const dictionaries: Record<Language, Dictionary> = {
     "add_zones_first": "Voeg eerst sublocaties (zones) toe voordat u het sjabloon downloadt.",
     "remove": "Verwijderen",
     "continue": "Doorgaan",
-    "description": "Beschrijving"
+    "description": "Beschrijving",
+    "select_day": "Selecteer een dag",
+    "today": "Vandaag",
+    "late_report": "Laat rapport",
+    "late_report_reason_title": "Reden laat rapport",
+    "late_report_reason_desc": "Dit rapport wordt ingediend voor een voorbije dag. Gelieve de reden aan te geven.",
+    "select_late_reason": "-- Selecteer een reden --",
+    "late_absent": "Afwezig van de werf",
+    "late_forgot": "Vergeten in te dienen",
+    "late_no_connectivity": "Geen internetverbinding",
+    "late_other": "Ander",
+    "describe_reason": "Beschrijf de reden...",
+    "daily_target": "Dagelijks Doel",
+    "weekly_planned": "gepland/week",
+    "late_reason_required": "Selecteer een reden voor het late rapport.",
+    "report_exists_for_date": "Er bestaat al een rapport voor deze datum.",
+    "report_submitted": "Rapport succesvol ingediend!",
+    "error_submitting_report": "Fout bij het indienen van het rapport.",
+    "submit_late_report": "Laat Rapport Indienen",
+    "qty_exceeds_planned": "Hoeveelheid overschrijdt gepland",
+    "select_reason": "Selecteer een reden",
+    "scope_change": "Scopewijziging",
+    "rework": "Herwerk",
+    "emergency": "Noodgeval",
+    "other_reason": "Ander",
+    "describe_overrun": "Beschrijf kort de reden van de overschrijding..."
   }
 };
 
@@ -1053,6 +1128,7 @@ const dataTranslations: Record<Language, Record<string, string>> = {
 
 interface LanguageContextProps {
   lang: Language;
+  language: Language;
   setLang: (l: Language) => void;
   t: (key: string) => string;
   tData: (text: string) => string;
@@ -1060,6 +1136,7 @@ interface LanguageContextProps {
 
 const LanguageContext = createContext<LanguageContextProps>({
   lang: "fr",
+  language: "fr",
   setLang: () => {},
   t: (k) => k,
   tData: (k) => k
@@ -1090,7 +1167,7 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <LanguageContext.Provider value={{ lang, setLang: handleSetLang, t, tData }}>
+    <LanguageContext.Provider value={{ lang, language: lang, setLang: handleSetLang, t, tData }}>
       {children}
     </LanguageContext.Provider>
   );

@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { Prisma } from '@prisma/client';
 import { calculateXpAward, getLevelFromXp } from '@/lib/xp-engine';
 import { getConsecutiveDaysReported, getConsecutiveWeeksTargetReached } from '@/lib/streak-utils';
+import { startOfDay } from 'date-fns';
 
 export async function POST(req: Request) {
     try {
@@ -17,8 +18,11 @@ export async function POST(req: Request) {
             workersCount?: number,
             blockageLogs?: Record<string, { reason: string, description: string }>,
             emptyDrumsCount?: number,
+            reportDate?: string,         // ISO date string for backfill
+            lateReason?: string,         // ABSENT, FORGOT, NO_CONNECTIVITY, OTHER
+            lateDescription?: string,
         } = await req.json();
-        const { planId, actuals, locations, issues, missedTargetReason, adHocTasks, siteManagerId, workersCount, blockageLogs } = body;
+        const { planId, actuals, locations, issues, missedTargetReason, adHocTasks, siteManagerId, workersCount, blockageLogs, reportDate, lateReason, lateDescription } = body;
 
         const plan = await prisma.weeklyPlan.findUnique({
             where: { id: planId },
@@ -29,17 +33,34 @@ export async function POST(req: Request) {
         });
         if (!plan) return NextResponse.json({ error: "Plan not found" }, { status: 404 });
 
+        // Determine the date for this report
+        const effectiveDate = reportDate ? startOfDay(new Date(reportDate)) : startOfDay(new Date());
+
+        // Check for existing report on this date
+        const existingReport = await prisma.dailyReport.findFirst({
+            where: {
+                projectId: plan.projectId,
+                date: effectiveDate,
+            }
+        });
+        if (existingReport) {
+            return NextResponse.json({ error: "A report already exists for this date. Select a different day." }, { status: 409 });
+        }
+
         let achievedMins = 0;
 
         const transactionResult = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-            // First, create a proper DailyReport record
+            // Create the DailyReport record
             const dailyReport = await tx.dailyReport.create({
                 data: {
                     projectId: plan.projectId,
                     siteManagerId: siteManagerId || plan.project.siteManagerId || '',
-                    date: new Date(),
+                    date: effectiveDate,
                     status: 'SUBMITTED',
                     remarks: issues || null,
+                    workersCount: typeof workersCount === 'number' ? workersCount : null,
+                    lateReason: lateReason || null,
+                    lateDescription: lateDescription || null,
                 }
             });
 
@@ -51,7 +72,7 @@ export async function POST(req: Request) {
                 await tx.weeklyPlanTask.update({
                     where: { id: pt.id },
                     data: { 
-                        actualQuantity: actualQty,
+                        actualQuantity: { increment: actualQty },
                         ...(locs && locs.length > 0 ? { locations: JSON.stringify(locs) } : {})
                     }
                 });
@@ -113,22 +134,17 @@ export async function POST(req: Request) {
                 }
             }
 
-            const achievedHours = achievedMins / 60;
-            const targetReached = achievedHours >= plan.targetHoursCapacity;
-
+            // Update weekly plan workers count (keep most recent value)
             await tx.weeklyPlan.update({
                 where: { id: planId },
                 data: {
-                    isSubmitted: true,
-                    isClosed: true,
-                    targetReached,
                     issuesReported: issues,
                     missedTargetReason: missedTargetReason || null,
                     workersCount: workersCount || null,
                 }
             });
 
-            // Award XP to SM
+            // Award XP to SM (reduced for late backfills)
             if (siteManagerId) {
                 const sm = await tx.user.findUnique({ where: { id: siteManagerId } });
                 if (sm) {
@@ -136,30 +152,22 @@ export async function POST(req: Request) {
                     const weeklyStreak = await getConsecutiveWeeksTargetReached(plan.projectId);
 
                     const xpResult = calculateXpAward({
-                        achievedHours,
+                        achievedHours: achievedMins / 60,
                         targetHoursCapacity: plan.targetHoursCapacity,
                         consecutiveDaysReported: dailyStreak,
                         consecutiveWeeksTargetReached: weeklyStreak,
-                        isWeeklySubmission: true,
+                        isWeeklySubmission: false, // Daily submission, not weekly close
                     });
 
-                    const newSmXp = sm.xp + xpResult.totalXp;
+                    // Late reports get NO XP
+                    const xpMultiplier = lateReason ? 0 : 1.0;
+                    const finalXp = Math.round(xpResult.totalXp * xpMultiplier);
+
+                    const newSmXp = sm.xp + finalXp;
                     await tx.user.update({
                         where: { id: siteManagerId },
                         data: { xp: newSmXp, level: getLevelFromXp(newSmXp) }
                     });
-
-                    // Passive XP for PM if target reached
-                    if (targetReached && plan.project.projectManagerId) {
-                        const pm = await tx.user.findUnique({ where: { id: plan.project.projectManagerId } });
-                        if (pm) {
-                            const newPmXp = pm.xp + 50;
-                            await tx.user.update({
-                                where: { id: plan.project.projectManagerId },
-                                data: { xp: newPmXp, level: getLevelFromXp(newPmXp) }
-                            });
-                        }
-                    }
                 }
             }
             return { success: true, adHocIdsMapping };

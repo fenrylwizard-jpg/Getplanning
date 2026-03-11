@@ -149,6 +149,10 @@ model DailyReport {
   remarks             String?
   status              String    @default("DRAFT") // DRAFT, SUBMITTED, APPROVED
   
+  lateReason          String?   // ABSENT, FORGOT, NO_CONNECTIVITY, OTHER
+  lateDescription     String?
+  workersCount        Int?      // Number of workers present that day
+  
   projectId           String
   project             Project   @relation(fields: [projectId], references: [id])
   
@@ -159,6 +163,8 @@ model DailyReport {
 
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
+
+  @@unique([projectId, date])
 }
 
 model Attendance {
