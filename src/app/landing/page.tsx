@@ -4,86 +4,38 @@ import Link from 'next/link';
 
 export default function LandingPage() {
     return (
-        <div style={{
-            minHeight: '100vh',
-            background: '#050a18',
-            color: '#e2e8f0',
-            fontFamily: "'Inter', 'Space Grotesk', sans-serif",
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            textAlign: 'center',
-            padding: '2rem',
-            position: 'relative',
-            overflow: 'hidden',
-        }}>
+        <div className="min-h-screen bg-[#050a18] text-slate-200 font-sans flex flex-col items-center justify-center text-center p-8 relative overflow-hidden">
             {/* Background glow */}
-            <div style={{
-                position: 'absolute', top: '-150px', left: '-100px',
-                width: '500px', height: '500px', borderRadius: '50%',
-                background: '#22d3ee', filter: 'blur(150px)', opacity: 0.1,
-            }} />
-            <div style={{
-                position: 'absolute', bottom: '-100px', right: '-100px',
-                width: '400px', height: '400px', borderRadius: '50%',
-                background: '#a855f7', filter: 'blur(150px)', opacity: 0.1,
-            }} />
+            <div className="absolute -top-[150px] -left-[100px] w-[500px] h-[500px] rounded-full bg-cyan-400 blur-[150px] opacity-10" />
+            <div className="absolute -bottom-[100px] -right-[100px] w-[400px] h-[400px] rounded-full bg-purple-500 blur-[150px] opacity-10" />
 
-            <div style={{ position: 'relative', zIndex: 1, maxWidth: '700px' }}>
+            <div className="relative z-10 max-w-[700px]">
                 {/* Logo */}
-                <div style={{
-                    fontSize: '4rem', fontWeight: 900, letterSpacing: '-0.04em',
-                    marginBottom: '1.5rem', lineHeight: 1.1,
-                }}>
-                    <span style={{
-                        background: 'linear-gradient(135deg, #22d3ee, #a855f7)',
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                    }}>Get</span>Planning
+                <div className="text-6xl font-black tracking-tighter mb-6 leading-tight">
+                    <span className="bg-gradient-to-br from-cyan-400 to-purple-500 bg-clip-text text-transparent">Get</span>Planning
                 </div>
 
-                <p style={{
-                    fontSize: '1.2rem', color: 'rgba(255,255,255,0.45)',
-                    lineHeight: 1.7, marginBottom: '3rem', maxWidth: '500px', margin: '0 auto 3rem',
-                }}>
+                <p className="text-xl text-white/45 leading-relaxed max-w-[500px] mx-auto mb-12">
                     Plateforme SaaS de gestion de projet de construction.<br />
                     Planification, suivi terrain et analytics avancées.
                 </p>
 
-                <div style={{ display: 'flex', gap: '1.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                <div className="flex gap-6 justify-center flex-wrap">
                     <Link
                         href="https://app.getplanning.org"
-                        style={{
-                            display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
-                            padding: '1rem 2.5rem', borderRadius: '16px',
-                            background: 'linear-gradient(135deg, #22d3ee, #3b82f6)',
-                            color: '#000', fontWeight: 800, fontSize: '1rem',
-                            textDecoration: 'none', transition: 'all 0.3s',
-                            boxShadow: '0 0 30px rgba(34,211,238,0.2)',
-                        }}
+                        className="inline-flex items-center gap-2 px-10 py-4 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-500 text-black font-extrabold text-base decoration-transparent transition-all duration-300 shadow-[0_0_30px_rgba(34,211,238,0.2)] hover:-translate-y-1 hover:shadow-[0_0_40px_rgba(34,211,238,0.3)]"
                     >
                         Accéder à l&apos;application →
                     </Link>
                     <Link
                         href="https://presentation.getplanning.org"
-                        style={{
-                            display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
-                            padding: '1rem 2.5rem', borderRadius: '16px',
-                            background: 'rgba(255,255,255,0.05)',
-                            border: '1px solid rgba(255,255,255,0.1)',
-                            color: '#e2e8f0', fontWeight: 700, fontSize: '1rem',
-                            textDecoration: 'none', transition: 'all 0.3s',
-                        }}
+                        className="inline-flex items-center gap-2 px-10 py-4 rounded-2xl bg-white/5 border border-white/10 text-slate-200 font-bold text-base transition-all duration-300 hover:bg-white/10"
                     >
                         Voir la présentation
                     </Link>
                 </div>
 
-                <p style={{
-                    marginTop: '5rem', fontSize: '0.75rem',
-                    color: 'rgba(255,255,255,0.15)',
-                }}>
+                <p className="mt-20 text-xs text-white/15">
                     © 2026 GetPlanning.org — Tous droits réservés
                 </p>
             </div>
