@@ -6,9 +6,13 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   const resolvedParams = await params;
   const id = resolvedParams.id;
     try {
-        // Find latest unsubmitted plan
-        const plan = await prisma.weeklyPlan.findFirst({
-            where: { projectId: id, isSubmitted: false },
+        const now = new Date();
+        const currentWeek = getISOWeek(now);
+        const currentYear = getYear(now);
+
+        // Find the plan for the current week (regardless of submission status)
+        let plan = await prisma.weeklyPlan.findFirst({
+            where: { projectId: id, weekNumber: currentWeek, year: currentYear },
             orderBy: { createdAt: 'desc' },
             include: {
                 tasks: {
@@ -16,6 +20,19 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
                 }
             }
         });
+
+        // Fallback: if no plan for current week, find the most recent plan
+        if (!plan) {
+            plan = await prisma.weeklyPlan.findFirst({
+                where: { projectId: id },
+                orderBy: [{ year: 'desc' }, { weekNumber: 'desc' }, { createdAt: 'desc' }],
+                include: {
+                    tasks: {
+                        include: { task: true }
+                    }
+                }
+            });
+        }
 
         if (!plan) {
             return NextResponse.json({ plan: null });
@@ -42,7 +59,6 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
                 id: true,
                 date: true,
                 status: true,
-                workersCount: true,
             },
             orderBy: { date: 'asc' },
         });
@@ -50,12 +66,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
         // Get sub-locations for the project
         const project = await prisma.project.findUnique({
             where: { id },
-            select: { subLocations: true },
+            include: { subLocations: true },
         });
 
-        const subLocations = project?.subLocations
-            ? JSON.parse(project.subLocations)
-            : [];
+        const subLocations = project?.subLocations?.map((sl: { name: string }) => sl.name) || [];
 
         return NextResponse.json({
             plan,
@@ -67,7 +81,6 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
                 id: r.id,
                 date: r.date.toISOString(),
                 status: r.status,
-                workersCount: r.workersCount,
             })),
             subLocations,
         });
