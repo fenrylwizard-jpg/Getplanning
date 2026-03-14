@@ -44,21 +44,22 @@ export default async function PMDashboard() {
 
     const user = await prisma.user.findUnique({
         where: { id: String(payload.id) },
-        include: {
-            projectsAsPM: {
-                include: {
-                    weeklyPlans: true,
-                    siteManager: true,
-                    tasks: { select: { id: true, quantity: true, completedQuantity: true, minutesPerUnit: true } },
-                    revisions: {
-                        orderBy: { uploadedAt: 'desc' }
-                    }
-                },
-            },
-        },
     });
 
     if (!user) return <div><T k="user_not_found" /></div>;
+
+    // All PMs and Admins see ALL projects
+    const allProjects = await prisma.project.findMany({
+        include: {
+            weeklyPlans: true,
+            siteManager: true,
+            tasks: { select: { id: true, quantity: true, completedQuantity: true, minutesPerUnit: true } },
+            revisions: {
+                orderBy: { uploadedAt: 'desc' as const }
+            }
+        },
+        orderBy: { createdAt: 'desc' as const }
+    });
     
     interface UIUser {
         name: string;
@@ -68,7 +69,7 @@ export default async function PMDashboard() {
     }
     const u = user as unknown as UIUser;
 
-    const totalPlans = user.projectsAsPM.reduce((acc, proj) => acc + proj.weeklyPlans.length, 0);
+    const totalPlans = allProjects.reduce((acc, proj) => acc + proj.weeklyPlans.length, 0);
 
     const getProgressWidth = (xp: number) => {
         const pct = Math.floor(((xp % 1000) / 10) / 5) * 5;
@@ -123,7 +124,7 @@ export default async function PMDashboard() {
                         <Folder size={48} className="text-purple-400 opacity-80 shrink-0" />
                         <div>
                             <h4 className="mb-1 text-gray-400 font-bold uppercase tracking-widest text-sm"><T k="active_projects" /></h4>
-                            <div className="text-7xl font-black text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.3)] leading-none">{user.projectsAsPM.length}</div>
+                            <div className="text-7xl font-black text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.3)] leading-none">{allProjects.length}</div>
                         </div>
                     </div>
                     <div className="w-full glass-card flex items-center gap-8 p-10 bg-[#080d1a]/80 backdrop-blur-md rounded-[32px] border border-white/5 shadow-[0_10px_40px_rgba(0,0,0,0.5)] relative overflow-hidden group hover:border-blue-500/30 transition-all">
@@ -143,7 +144,7 @@ export default async function PMDashboard() {
                     </h3>
                     
                     <div className="flex flex-col gap-8">
-                        {user.projectsAsPM.map((proj) => {
+                        {allProjects.map((proj) => {
                             const hasFeedback = proj.weeklyPlans.length > 0;
                             const planCount = proj.weeklyPlans.length;
                             const planningStatus: 'good' | 'average' | 'poor' = planCount >= 3 ? 'good' : planCount >= 1 ? 'average' : 'poor';
@@ -223,7 +224,7 @@ export default async function PMDashboard() {
                             </div>
                         );
                         })}
-                        {user.projectsAsPM.length === 0 && (
+                        {allProjects.length === 0 && (
                             <div className="glass-card bg-[#0a1020]/90 border border-white/5 text-center py-20 text-gray-400 text-lg rounded-[32px]">
                                 <T k="no_projects" />
                             </div>

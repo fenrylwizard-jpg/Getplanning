@@ -33,25 +33,29 @@ export default function AvatarDisplay({ characterId, level, size = 120, classNam
     const imageUrl = `/characters/${role}_t${tier}.png`;
 
     const sizeClasses: Record<number, string> = {
+        40: "w-[40px] h-[40px]",
+        60: "w-[60px] h-[60px]",
+        80: "w-[80px] h-[80px]",
         100: "w-[100px] h-[100px]",
         120: "w-[120px] h-[120px]"
     };
-    const sizeClass = sizeClasses[size] || "w-[120px] h-[120px]";
+    const sizeClass = sizeClasses[size] || `w-[${size}px] h-[${size}px]`;
+    const isSmall = size <= 60;
 
     return (
-        <div className={`relative overflow-hidden rounded-2xl border border-white/10 bg-[#0a1020] shadow-2xl ${sizeClass} ${className}`}>
-            <div className="absolute inset-0 p-1">
+        <div className={`relative flex-shrink-0 ${sizeClass} ${className}`}>
+            <div className="absolute inset-0">
                 <Image 
                     src={imageUrl} 
                     alt={`${role} Tier ${tier + 1}`}
                     fill
                     unoptimized
-                    className="object-contain p-2"
+                    className="object-contain"
                 />
             </div>
             
             {/* Level Badge */}
-            <div className="absolute bottom-1 right-1 px-2 py-0.5 rounded-md bg-purple-600/80 backdrop-blur-sm text-[10px] font-black text-white border border-purple-400/50">
+            <div className={`absolute ${isSmall ? '-bottom-1 -right-1 px-1 py-0 text-[7px]' : 'bottom-1 right-1 px-2 py-0.5 text-[10px]'} rounded-md bg-purple-600/80 backdrop-blur-sm font-black text-white border border-purple-400/50`}>
                 LVL {level}
             </div>
 
