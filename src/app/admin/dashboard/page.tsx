@@ -350,7 +350,7 @@ export default function AdminDashboard() {
                                         <tr key={user.id} className="border-b border-white/5 hover:bg-white/3 transition-colors group">
                                             <td className="py-3 pr-4 pl-2 text-center text-xl font-black text-white/50 group-hover:text-white transition-colors">#{index + 1}</td>
                                             <td className="py-3 pr-4 pl-4 pt-4">
-                                                <AvatarDisplay characterId={user.characterId || 1} level={user.level || 1} size={100} className="w-16 h-16 rounded-xl border border-white/10" />
+                                                <AvatarDisplay characterId={user.characterId || 1} level={user.level || 1} size={100} />
                                             </td>
                                             <td className="py-3 pr-4">
                                                 <div className="font-bold text-lg text-white mb-1 group-hover:text-purple-300 transition-colors drop-shadow-sm">{user.name || '—'}</div>

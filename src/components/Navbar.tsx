@@ -77,12 +77,11 @@ export default function Navbar({ userName, userRole, characterId, level, company
                                     <T k={userRole || "dashboard"} />
                                 </span>
                             </div>
-                            <div className="p-0.5 rounded-2xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 border border-white/10">
+                            <div>
                                 <AvatarDisplay 
                                     characterId={characterId || 1} 
                                     level={level || 1} 
                                     size={40} 
-                                    className="rounded-xl"
                                 />
                             </div>
                         </div>

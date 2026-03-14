@@ -75,7 +75,7 @@ export default function RegisterPage() {
                     
                     {/* Show selected character */}
                     <div className="flex justify-center mb-8">
-                        <div className={`w-24 h-24 rounded-2xl border-2 ${selectedChar.border} bg-[#0a1020] overflow-hidden relative`}>
+                        <div className={`w-24 h-24 rounded-2xl border-2 ${selectedChar.border} overflow-hidden relative`}>
                             <Image src={`/characters/${selectedChar.role}_t0.png`} alt={selectedChar.name} fill unoptimized className="object-contain p-2" />
                         </div>
                     </div>
@@ -207,8 +207,8 @@ export default function RegisterPage() {
                                         onClick={() => setCharacterId(char.id)}
                                         className={`relative rounded-2xl p-1 transition-all duration-300 border-2 aspect-square flex flex-col items-center justify-center gap-1 group ${
                                             isSelected
-                                                ? `${char.border} bg-white/10 scale-105 shadow-lg ${char.shadow}`
-                                                : 'border-white/10 bg-[#050810]/50 hover:border-white/30 hover:bg-white/5'
+                                                ? `${char.border} bg-white/5 scale-105 shadow-lg ${char.shadow}`
+                                                : 'border-white/5 hover:border-white/20 hover:bg-white/5'
                                         }`}
                                         aria-label={`Sélectionner ${char.name}`}
                                     >
