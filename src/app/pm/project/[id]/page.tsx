@@ -73,20 +73,30 @@ export default async function ProjectHub({ params, searchParams }: { params: Pro
                 </div>
             </div>
 
-            {/* Tab Navigation */}
-            <Suspense fallback={<div className="h-12" />}>
-                <ProjectHubTabs projectId={id} />
-            </Suspense>
-
-            {/* Tab Content */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-8 py-8">
-                {activeTab === "overview" && <OverviewTab project={project} />}
-                {activeTab === "finances" && <FinancesTab project={project} />}
-                {activeTab === "achats" && <AchatsTab />}
-                {activeTab === "production" && <ProductionTab project={project} />}
-                {activeTab === "technique" && <DossierTechniqueTab project={project} />}
-                {activeTab === "planning" && <PlanningTab project={project} />}
-            </div>
+            {/* Tab Navigation — full grid on overview, compact bar on sub-tabs */}
+            {activeTab === "overview" ? (
+                <>
+                    <Suspense fallback={<div className="h-12" />}>
+                        <ProjectHubTabs projectId={id} />
+                    </Suspense>
+                    <div className="max-w-7xl mx-auto px-4 sm:px-8 py-8">
+                        <OverviewTab project={project} />
+                    </div>
+                </>
+            ) : (
+                <>
+                    <Suspense fallback={<div className="h-12" />}>
+                        <ProjectHubTabs projectId={id} compact />
+                    </Suspense>
+                    <div className="max-w-7xl mx-auto px-4 sm:px-8 py-8">
+                        {activeTab === "finances" && <FinancesTab project={project} />}
+                        {activeTab === "achats" && <AchatsTab />}
+                        {activeTab === "production" && <ProductionTab project={project} />}
+                        {activeTab === "technique" && <DossierTechniqueTab project={project} />}
+                        {activeTab === "planning" && <PlanningTab project={project} />}
+                    </div>
+                </>
+            )}
         </div>
     );
 }
