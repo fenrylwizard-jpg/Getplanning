@@ -1,0 +1,797 @@
+/* ═══════════════════════════════════════════════════
+   COOKING APP — "Saveur" Design System
+   Warm, playful, premium cooking webapp
+   ═══════════════════════════════════════════════════ */
+
+/* ── Design Tokens ── */
+:root {
+  --ck-cream: #FFF8F0;
+  --ck-warm-white: #FFFDF7;
+  --ck-peach: #FFECD2;
+  --ck-peach-deep: #FFD4A3;
+  --ck-coral: #FF6B6B;
+  --ck-coral-soft: #FF8E8E;
+  --ck-orange: #F58A3D;
+  --ck-orange-deep: #E07422;
+  --ck-sage: #7CB98B;
+  --ck-sage-deep: #5A9A6A;
+  --ck-lavender: #C4A7E7;
+  --ck-lavender-deep: #A67DD8;
+  --ck-sky: #87CEEB;
+  --ck-teal: #5CB8B2;
+  --ck-plum: #8B5CF6;
+  --ck-rose: #F472B6;
+  --ck-rose-deep: #EC4899;
+  --ck-text: #3D2C2E;
+  --ck-text-soft: #6B5B5E;
+  --ck-text-muted: #9B8B8E;
+  --ck-glass-bg: rgba(255, 255, 255, 0.65);
+  --ck-glass-border: rgba(255, 255, 255, 0.8);
+  --ck-shadow: 0 8px 32px rgba(139, 92, 246, 0.08);
+  --ck-shadow-lg: 0 20px 60px rgba(139, 92, 246, 0.12);
+  --ck-radius: 1.5rem;
+  --ck-radius-lg: 2rem;
+  --ck-radius-xl: 2.5rem;
+}
+
+/* ── Base Layout ── */
+.ck-app {
+  min-height: 100vh;
+  background: linear-gradient(145deg, #FFF0E6 0%, #FFF8F0 25%, #F5F0FF 50%, #FFEEF5 75%, #FFF8F0 100%);
+  color: var(--ck-text);
+  font-family: 'Space Grotesk', 'Inter', system-ui, -apple-system, sans-serif;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* ── Ambient Background Blobs ── */
+.ck-app::before {
+  content: '';
+  position: fixed;
+  top: -20%;
+  right: -10%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(244, 114, 182, 0.15) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  animation: ckBlobFloat 12s ease-in-out infinite alternate;
+}
+
+.ck-app::after {
+  content: '';
+  position: fixed;
+  bottom: -15%;
+  left: -10%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(124, 185, 139, 0.12) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  animation: ckBlobFloat 15s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes ckBlobFloat {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(30px, -20px) scale(1.05); }
+  100% { transform: translate(-20px, 15px) scale(0.95); }
+}
+
+/* ── Content Layer ── */
+.ck-content {
+  position: relative;
+  z-index: 10;
+}
+
+/* ── Navbar ── */
+.ck-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  padding: 1rem 0;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  background: rgba(255, 248, 240, 0.75);
+  border-bottom: 1px solid rgba(245, 138, 61, 0.08);
+}
+
+.ck-navbar-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ck-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+  color: var(--ck-text);
+}
+
+.ck-logo-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--ck-orange), var(--ck-coral));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  box-shadow: 0 4px 15px rgba(245, 138, 61, 0.3);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.ck-logo:hover .ck-logo-icon {
+  transform: scale(1.1) rotate(-5deg);
+}
+
+.ck-logo-text {
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--ck-orange), var(--ck-coral));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.ck-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ck-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--ck-text-soft);
+  text-decoration: none;
+  transition: all 0.25s ease;
+}
+
+.ck-nav-link:hover {
+  background: rgba(245, 138, 61, 0.08);
+  color: var(--ck-orange);
+  transform: translateY(-1px);
+}
+
+.ck-nav-link.active {
+  background: rgba(245, 138, 61, 0.12);
+  color: var(--ck-orange);
+}
+
+/* ── Hero Section ── */
+.ck-hero {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 4rem 1.5rem 3rem;
+  text-align: center;
+}
+
+.ck-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.25rem;
+  background: linear-gradient(135deg, rgba(245, 138, 61, 0.1), rgba(244, 114, 182, 0.1));
+  border: 1px solid rgba(245, 138, 61, 0.15);
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--ck-orange);
+  margin-bottom: 1.5rem;
+  animation: ckFadeUp 0.6s ease-out;
+}
+
+.ck-hero h1 {
+  font-size: clamp(2.5rem, 7vw, 4.5rem);
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: var(--ck-text);
+  margin-bottom: 1rem;
+  animation: ckFadeUp 0.8s ease-out;
+}
+
+.ck-hero h1 span {
+  background: linear-gradient(135deg, var(--ck-orange), var(--ck-coral), var(--ck-rose));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.ck-hero-subtitle {
+  font-size: 1.15rem;
+  color: var(--ck-text-soft);
+  max-width: 550px;
+  margin: 0 auto 2rem;
+  line-height: 1.7;
+  font-weight: 500;
+  animation: ckFadeUp 1s ease-out;
+}
+
+/* ── Feature Cards Grid ── */
+.ck-features-grid {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem 4rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem;
+  animation: ckFadeUp 1.2s ease-out;
+}
+
+.ck-feature-card {
+  background: var(--ck-glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--ck-glass-border);
+  border-radius: var(--ck-radius-lg);
+  padding: 2rem;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  text-decoration: none;
+  color: var(--ck-text);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.ck-feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  border-radius: var(--ck-radius-lg) var(--ck-radius-lg) 0 0;
+  transition: height 0.3s ease;
+}
+
+.ck-feature-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: var(--ck-shadow-lg);
+  border-color: transparent;
+}
+
+.ck-feature-card:hover::before {
+  height: 5px;
+}
+
+.ck-feature-card.card-coral::before { background: linear-gradient(90deg, var(--ck-coral), var(--ck-rose)); }
+.ck-feature-card.card-sage::before { background: linear-gradient(90deg, var(--ck-sage), var(--ck-teal)); }
+.ck-feature-card.card-lavender::before { background: linear-gradient(90deg, var(--ck-lavender), var(--ck-plum)); }
+.ck-feature-card.card-orange::before { background: linear-gradient(90deg, var(--ck-orange), var(--ck-peach-deep)); }
+.ck-feature-card.card-rose::before { background: linear-gradient(90deg, var(--ck-rose), var(--ck-coral)); }
+
+.ck-feature-card:hover.card-coral { box-shadow: 0 20px 60px rgba(255, 107, 107, 0.15); }
+.ck-feature-card:hover.card-sage { box-shadow: 0 20px 60px rgba(124, 185, 139, 0.15); }
+.ck-feature-card:hover.card-lavender { box-shadow: 0 20px 60px rgba(196, 167, 231, 0.2); }
+.ck-feature-card:hover.card-orange { box-shadow: 0 20px 60px rgba(245, 138, 61, 0.15); }
+.ck-feature-card:hover.card-rose { box-shadow: 0 20px 60px rgba(244, 114, 182, 0.15); }
+
+.ck-card-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.ck-feature-card:hover .ck-card-icon {
+  transform: scale(1.15) rotate(-5deg);
+}
+
+.icon-bg-coral { background: linear-gradient(135deg, #FFE5E5, #FFDADA); }
+.icon-bg-sage { background: linear-gradient(135deg, #E8F5E9, #D5ECD6); }
+.icon-bg-lavender { background: linear-gradient(135deg, #EDE7F6, #E0D4F5); }
+.icon-bg-orange { background: linear-gradient(135deg, #FFF3E0, #FFE8CC); }
+.icon-bg-rose { background: linear-gradient(135deg, #FCE4EC, #F9D0E0); }
+.icon-bg-sky { background: linear-gradient(135deg, #E1F5FE, #D0ECFA); }
+
+.ck-card-title {
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.ck-card-desc {
+  font-size: 0.9rem;
+  color: var(--ck-text-soft);
+  line-height: 1.6;
+}
+
+.ck-card-arrow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  transition: gap 0.3s ease;
+}
+
+.ck-feature-card:hover .ck-card-arrow {
+  gap: 0.75rem;
+}
+
+.arrow-coral { color: var(--ck-coral); }
+.arrow-sage { color: var(--ck-sage-deep); }
+.arrow-lavender { color: var(--ck-lavender-deep); }
+.arrow-orange { color: var(--ck-orange); }
+.arrow-rose { color: var(--ck-rose-deep); }
+
+/* ── Page Headers ── */
+.ck-page-header {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem 2rem;
+}
+
+.ck-page-header h1 {
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  margin-bottom: 0.5rem;
+}
+
+.ck-page-header p {
+  font-size: 1.05rem;
+  color: var(--ck-text-soft);
+  max-width: 600px;
+}
+
+/* ── Glass Sections ── */
+.ck-glass-section {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem 3rem;
+}
+
+.ck-glass-card {
+  background: var(--ck-glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--ck-glass-border);
+  border-radius: var(--ck-radius-lg);
+  padding: 2rem;
+  transition: all 0.3s ease;
+}
+
+.ck-glass-card:hover {
+  border-color: rgba(245, 138, 61, 0.2);
+}
+
+/* ── Buttons ── */
+.ck-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.75rem;
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border: none;
+  text-decoration: none;
+}
+
+.ck-btn-primary {
+  background: linear-gradient(135deg, var(--ck-orange), var(--ck-coral));
+  color: white;
+  box-shadow: 0 4px 20px rgba(245, 138, 61, 0.3);
+}
+
+.ck-btn-primary:hover {
+  transform: scale(1.05) translateY(-2px);
+  box-shadow: 0 8px 30px rgba(245, 138, 61, 0.4);
+}
+
+.ck-btn-secondary {
+  background: rgba(245, 138, 61, 0.08);
+  color: var(--ck-orange);
+  border: 1px solid rgba(245, 138, 61, 0.15);
+}
+
+.ck-btn-secondary:hover {
+  background: rgba(245, 138, 61, 0.15);
+  transform: translateY(-1px);
+}
+
+.ck-btn-sage {
+  background: linear-gradient(135deg, var(--ck-sage), var(--ck-teal));
+  color: white;
+  box-shadow: 0 4px 20px rgba(124, 185, 139, 0.3);
+}
+
+.ck-btn-sage:hover {
+  transform: scale(1.05) translateY(-2px);
+  box-shadow: 0 8px 30px rgba(124, 185, 139, 0.4);
+}
+
+.ck-btn-rose {
+  background: linear-gradient(135deg, var(--ck-rose), var(--ck-coral));
+  color: white;
+  box-shadow: 0 4px 20px rgba(244, 114, 182, 0.3);
+}
+
+.ck-btn-rose:hover {
+  transform: scale(1.05) translateY(-2px);
+  box-shadow: 0 8px 30px rgba(244, 114, 182, 0.4);
+}
+
+/* ── Input Fields ── */
+.ck-input {
+  width: 100%;
+  padding: 0.875rem 1.25rem;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1.5px solid rgba(0, 0, 0, 0.06);
+  border-radius: 1rem;
+  font-size: 0.95rem;
+  color: var(--ck-text);
+  outline: none;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.ck-input:focus {
+  border-color: var(--ck-orange);
+  box-shadow: 0 0 0 3px rgba(245, 138, 61, 0.12);
+  background: white;
+}
+
+.ck-input::placeholder {
+  color: var(--ck-text-muted);
+}
+
+/* ── Tags / Pills ── */
+.ck-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+}
+
+.ck-tag:hover {
+  transform: scale(1.05);
+}
+
+.ck-tag-coral {
+  background: rgba(255, 107, 107, 0.1);
+  color: var(--ck-coral);
+  border-color: rgba(255, 107, 107, 0.2);
+}
+
+.ck-tag-sage {
+  background: rgba(124, 185, 139, 0.1);
+  color: var(--ck-sage-deep);
+  border-color: rgba(124, 185, 139, 0.2);
+}
+
+.ck-tag-lavender {
+  background: rgba(196, 167, 231, 0.1);
+  color: var(--ck-lavender-deep);
+  border-color: rgba(196, 167, 231, 0.2);
+}
+
+.ck-tag-orange {
+  background: rgba(245, 138, 61, 0.1);
+  color: var(--ck-orange);
+  border-color: rgba(245, 138, 61, 0.2);
+}
+
+/* ── List Items ── */
+.ck-list-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 1rem;
+  transition: all 0.25s ease;
+}
+
+.ck-list-item:hover {
+  background: rgba(255, 255, 255, 0.75);
+  transform: translateX(4px);
+  border-color: rgba(245, 138, 61, 0.15);
+}
+
+.ck-list-item.checked {
+  opacity: 0.6;
+  text-decoration: line-through;
+}
+
+/* ── Phase/Step Cards ── */
+.ck-phase-card {
+  background: var(--ck-glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--ck-glass-border);
+  border-radius: var(--ck-radius-lg);
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.ck-phase-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--ck-shadow);
+}
+
+.ck-phase-number {
+  position: absolute;
+  top: -10px;
+  right: 20px;
+  font-size: 5rem;
+  font-weight: 900;
+  opacity: 0.05;
+  line-height: 1;
+}
+
+/* ── Calendar Grid ── */
+.ck-calendar {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.75rem;
+}
+
+.ck-calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1.5px solid rgba(0, 0, 0, 0.04);
+  transition: all 0.25s ease;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.ck-calendar-day:hover {
+  background: rgba(245, 138, 61, 0.08);
+  border-color: rgba(245, 138, 61, 0.2);
+  transform: scale(1.05);
+}
+
+.ck-calendar-day.filled {
+  background: linear-gradient(135deg, rgba(245, 138, 61, 0.1), rgba(244, 114, 182, 0.1));
+  border-color: rgba(245, 138, 61, 0.2);
+}
+
+/* ── Recipe Cards ── */
+.ck-recipe-card {
+  background: var(--ck-glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--ck-glass-border);
+  border-radius: var(--ck-radius-lg);
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  cursor: pointer;
+}
+
+.ck-recipe-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--ck-shadow-lg);
+}
+
+.ck-recipe-img {
+  height: 180px;
+  width: 100%;
+  object-fit: cover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 4rem;
+}
+
+.ck-recipe-body {
+  padding: 1.5rem;
+}
+
+/* ── Stat Cards ── */
+.ck-stat-card {
+  background: var(--ck-glass-bg);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--ck-glass-border);
+  border-radius: var(--ck-radius);
+  padding: 1.5rem;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.ck-stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--ck-shadow);
+}
+
+.ck-stat-value {
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.ck-stat-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ck-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 0.25rem;
+}
+
+/* ── Dividers ── */
+.ck-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(245, 138, 61, 0.15), transparent);
+  margin: 2rem 0;
+}
+
+/* ── Animations ── */
+@keyframes ckFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes ckPop {
+  0% { transform: scale(0.8); opacity: 0; }
+  60% { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes ckShimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.ck-fade-up { animation: ckFadeUp 0.6s ease-out both; }
+.ck-fade-up-1 { animation: ckFadeUp 0.6s ease-out 0.1s both; }
+.ck-fade-up-2 { animation: ckFadeUp 0.6s ease-out 0.2s both; }
+.ck-fade-up-3 { animation: ckFadeUp 0.6s ease-out 0.3s both; }
+.ck-fade-up-4 { animation: ckFadeUp 0.6s ease-out 0.4s both; }
+.ck-fade-up-5 { animation: ckFadeUp 0.6s ease-out 0.5s both; }
+
+.ck-pop { animation: ckPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
+/* ── Bottom Nav (Mobile) ── */
+.ck-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  background: rgba(255, 248, 240, 0.85);
+  border-top: 1px solid rgba(245, 138, 61, 0.1);
+  padding: 0.5rem 0;
+  padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0));
+}
+
+.ck-bottom-nav-inner {
+  display: flex;
+  justify-content: space-around;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.ck-bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 12px;
+  text-decoration: none;
+  color: var(--ck-text-muted);
+  font-size: 0.65rem;
+  font-weight: 700;
+  transition: all 0.25s ease;
+}
+
+.ck-bottom-nav-item:hover,
+.ck-bottom-nav-item.active {
+  color: var(--ck-orange);
+  background: rgba(245, 138, 61, 0.08);
+}
+
+.ck-bottom-nav-item span:first-child {
+  font-size: 1.35rem;
+}
+
+/* ── Empty States ── */
+.ck-empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.ck-empty-state-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  animation: ckPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* ── Checkbox Custom ── */
+.ck-checkbox {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 2px solid rgba(0, 0, 0, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.ck-checkbox.checked {
+  background: linear-gradient(135deg, var(--ck-sage), var(--ck-teal));
+  border-color: transparent;
+  color: white;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .ck-features-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ck-calendar {
+    gap: 0.35rem;
+  }
+
+  .ck-nav-links {
+    display: none;
+  }
+
+  .ck-hero h1 {
+    font-size: 2.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .ck-feature-card {
+    padding: 1.5rem;
+  }
+
+  .ck-glass-card {
+    padding: 1.25rem;
+  }
+}

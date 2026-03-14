@@ -1,0 +1,93 @@
+import { GoogleGenAI } from '@google/genai';
+import { NextRequest, NextResponse } from 'next/server';
+
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
+
+export async function POST(req: NextRequest) {
+    try {
+        const body = await req.json();
+        const {
+            protocol,         // 'low-fodmap' | 'none'
+            protocolPhase,    // 1 | 2 | 3
+            pantryItems,      // string[] - items user has
+            usePantryOnly,    // boolean - use only pantry items?
+            mealPrepMode,     // boolean - optimize for batch cooking?
+            servings,         // number
+            mealType,         // 'petit-déj' | 'déjeuner' | 'dîner' | 'collation'
+            preferences,      // string - free text (optional)
+        } = body;
+
+        const pantryList = (pantryItems || []).join(', ');
+        
+        const prompt = `Tu es un chef cuisinier expert et diététicien spécialisé dans les régimes alimentaires. Génère 5 recettes en français qui respectent TOUS les critères suivants:
+
+RÉGIME: ${protocol === 'low-fodmap'
+    ? `Low-FODMAP Phase ${protocolPhase} — ${
+        protocolPhase === 1
+            ? 'Phase d\'élimination stricte. AUCUN aliment riche en FODMAP (pas d\'ail, oignon, blé, seigle, lait, pommes, poires, haricots, lentilles, champignons, avocat, miel). Utilise uniquement des aliments pauvres en FODMAP.'
+            : protocolPhase === 2
+            ? 'Phase de réintroduction. Les recettes peuvent inclure UN groupe FODMAP à tester à la fois.'
+            : 'Phase de personnalisation. Régime principalement Low-FODMAP avec quelques flexibilités.'
+    }`
+    : 'Aucun régime spécifique'
+}
+
+${usePantryOnly && pantryList
+    ? `INGRÉDIENTS DISPONIBLES: ${pantryList}. Utilise UNIQUEMENT ces ingrédients (+ épices et condiments de base).`
+    : pantryList
+    ? `INGRÉDIENTS EN STOCK: ${pantryList}. Privilégie ces ingrédients mais d'autres sont acceptés.`
+    : ''
+}
+
+TYPE DE REPAS: ${mealType || 'tous types'}
+NOMBRE DE PORTIONS: ${servings || 2}
+${mealPrepMode ? 'MODE MEAL PREP: Oui — les recettes doivent se conserver facilement 3-5 jours au frigo, être faciles à réchauffer, et idéales pour la préparation en batch.' : ''}
+${preferences ? `PRÉFÉRENCES SUPPLÉMENTAIRES: ${preferences}` : ''}
+
+IMPORTANT: Réponds UNIQUEMENT avec un JSON valide, sans markdown, sans backticks. Utilise ce format:
+[
+  {
+    "name": "Nom de la recette",
+    "emoji": "emoji représentatif",
+    "time": "temps de préparation",
+    "difficulty": "Facile/Moyen/Difficile",
+    "servings": nombre,
+    "tags": ["tag1", "tag2"],
+    "ingredients": ["ingrédient 1 (quantité)", "ingrédient 2 (quantité)"],
+    "steps": ["Étape 1", "Étape 2"],
+    "tips": "Conseil de conservation ou variante",
+    "fodmapSafe": true/false
+  }
+]`;
+
+        if (!process.env.GEMINI_API_KEY) {
+            return NextResponse.json({ error: 'GEMINI_API_KEY not configured' }, { status: 500 });
+        }
+
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.0-flash',
+            contents: prompt,
+        });
+
+        const text = response.text || '';
+
+        // Try to parse the JSON response
+        let recipes;
+        try {
+            // Clean up potential markdown wrapping
+            const cleaned = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+            recipes = JSON.parse(cleaned);
+        } catch {
+            // If parsing fails, return the raw text
+            return NextResponse.json({ recipes: [], rawText: text, error: 'Failed to parse recipes' });
+        }
+
+        return NextResponse.json({ recipes });
+    } catch (error) {
+        console.error('Gemini API error:', error);
+        return NextResponse.json(
+            { error: 'Failed to generate recipes', details: String(error) },
+            { status: 500 }
+        );
+    }
+}
