@@ -82,7 +82,7 @@ export default async function ProjectHub({ params, searchParams }: { params: Pro
             <div className="max-w-7xl w-full px-4 sm:px-8 py-8">
                 {activeTab === "overview" && <OverviewTab project={project} />}
                 {activeTab === "finances" && <FinancesTab project={project} />}
-                {activeTab === "achats" && <AchatsTab />}
+                {activeTab === "achats" && <AchatsTab project={project} />}
                 {activeTab === "production" && <ProductionTab project={project} />}
                 {activeTab === "technique" && <DossierTechniqueTab project={project} />}
                 {activeTab === "planning" && <PlanningTab project={project} />}

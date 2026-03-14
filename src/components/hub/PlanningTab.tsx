@@ -1,148 +1,203 @@
+"use client";
+
+import { useState } from "react";
+import { CalendarRange, Target, Flag, Clock, ChevronRight } from "lucide-react";
 import T from "@/components/T";
-import Link from "next/link";
-import { CalendarRange, CalendarDays, Clock, CheckCircle2, ShieldAlert, ArrowRight, ListOrdered } from "lucide-react";
+import FileUploadZone from "@/components/hub/FileUploadZone";
 
 interface PlanningTabProps {
     project: {
         id: string;
-        startDate: Date | null;
-        endDate: Date | null;
         weeklyPlans: {
             id: string;
             weekNumber: number;
             year: number;
-            isSubmitted: boolean;
             isClosed: boolean;
-            numberOfWorkers: number;
-            targetHoursCapacity: number;
+            isSubmitted: boolean;
             targetReached: boolean | null;
         }[];
     };
 }
 
+// Demo milestones to showcase the timeline design
+const DEMO_MILESTONES = [
+    { name: "Terrassement & Fondations", category: "Gros Œuvre", startDate: "2025-09-01", endDate: "2025-11-15", progress: 1.0, color: "emerald" },
+    { name: "Élévation Murs Porteurs", category: "Gros Œuvre", startDate: "2025-11-01", endDate: "2026-02-28", progress: 0.85, color: "emerald" },
+    { name: "Dalle & Planchers", category: "Gros Œuvre", startDate: "2026-01-15", endDate: "2026-04-30", progress: 0.45, color: "blue" },
+    { name: "Charpente & Toiture", category: "Gros Œuvre", startDate: "2026-03-01", endDate: "2026-06-15", progress: 0.15, color: "blue" },
+    { name: "Menuiseries Extérieures", category: "Second Œuvre", startDate: "2026-04-01", endDate: "2026-07-30", progress: 0, color: "amber" },
+    { name: "Plomberie & Électricité", category: "Second Œuvre", startDate: "2026-05-15", endDate: "2026-09-30", progress: 0, color: "amber" },
+    { name: "Revêtements & Finitions", category: "Finitions", startDate: "2026-08-01", endDate: "2026-11-30", progress: 0, color: "purple" },
+    { name: "Réception & Livraison", category: "Livraison", startDate: "2026-11-15", endDate: "2026-12-31", progress: 0, color: "rose" },
+];
+
+const colorClasses: Record<string, { bg: string; bar: string; text: string; border: string }> = {
+    emerald: { bg: "bg-emerald-500/10", bar: "bg-gradient-to-r from-emerald-500 to-green-400", text: "text-emerald-400", border: "border-emerald-500/30" },
+    blue: { bg: "bg-blue-500/10", bar: "bg-gradient-to-r from-blue-500 to-cyan-400", text: "text-blue-400", border: "border-blue-500/30" },
+    amber: { bg: "bg-amber-500/10", bar: "bg-gradient-to-r from-amber-500 to-orange-400", text: "text-amber-400", border: "border-amber-500/30" },
+    purple: { bg: "bg-purple-500/10", bar: "bg-gradient-to-r from-purple-500 to-indigo-400", text: "text-purple-400", border: "border-purple-500/30" },
+    rose: { bg: "bg-rose-500/10", bar: "bg-gradient-to-r from-rose-500 to-pink-400", text: "text-rose-400", border: "border-rose-500/30" },
+};
+
 export default function PlanningTab({ project }: PlanningTabProps) {
-    const activePlans = project.weeklyPlans.filter(p => !p.isClosed);
-    const closedPlans = project.weeklyPlans.filter(p => p.isClosed);
-    const hitPlans = closedPlans.filter(p => p.targetReached === true);
-    const hitRate = closedPlans.length > 0 ? Math.round((hitPlans.length / closedPlans.length) * 100) : 0;
+    const [showDemo] = useState(true);
+
+    // Calculate timeline bounds for demo
+    const allDates = DEMO_MILESTONES.flatMap(m => [new Date(m.startDate).getTime(), new Date(m.endDate).getTime()]);
+    const minDate = Math.min(...allDates);
+    const maxDate = Math.max(...allDates);
+    const totalSpan = maxDate - minDate;
+    const today = new Date().getTime();
+    const todayPct = Math.max(0, Math.min(100, ((today - minDate) / totalSpan) * 100));
+
+    const completedCount = DEMO_MILESTONES.filter(m => m.progress >= 1).length;
+    const inProgressCount = DEMO_MILESTONES.filter(m => m.progress > 0 && m.progress < 1).length;
+    const upcomingCount = DEMO_MILESTONES.filter(m => m.progress === 0).length;
 
     return (
         <div className="flex flex-col gap-8">
-            {/* Planning Summary */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-2xl p-5 flex items-center gap-4">
-                    <CalendarDays size={24} className="text-cyan-400" />
-                    <div>
-                        <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider"><T k="hub_total_weeks" /></div>
-                        <div className="text-lg font-black text-cyan-400">{project.weeklyPlans.length}</div>
-                    </div>
-                </div>
-                <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-5 flex items-center gap-4">
-                    <Clock size={24} className="text-blue-400" />
-                    <div>
-                        <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider"><T k="hub_active_plans" /></div>
-                        <div className="text-lg font-black text-blue-400">{activePlans.length}</div>
-                    </div>
-                </div>
-                <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-5 flex items-center gap-4">
-                    <CheckCircle2 size={24} className="text-emerald-400" />
-                    <div>
-                        <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider"><T k="hub_closed_weeks" /></div>
-                        <div className="text-lg font-black text-emerald-400">{closedPlans.length}</div>
-                    </div>
-                </div>
-                <div className="bg-purple-500/10 border border-purple-500/20 rounded-2xl p-5 flex items-center gap-4">
-                    <ShieldAlert size={24} className="text-purple-400" />
-                    <div>
-                        <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider"><T k="target_rate" /></div>
-                        <div className="text-lg font-black text-purple-400">{hitRate}%</div>
-                    </div>
-                </div>
-            </div>
+            {/* Upload Zone */}
+            <FileUploadZone
+                projectId={project.id}
+                module="planning"
+                acceptTypes=".pdf,.xlsx,.xls"
+                title="Importer le Planning"
+                subtitle="Glissez un PDF ou fichier Excel du planning projet pour extraire les jalons"
+                accentColor="purple"
+                icon={<CalendarRange size={36} className="text-purple-400" />}
+            />
 
-            {/* Project Timeline */}
-            {(project.startDate || project.endDate) && (
-                <div className="bg-[#080d1a]/80 border border-white/5 rounded-2xl p-6">
-                    <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 mb-4 flex items-center gap-2">
-                        <CalendarRange size={16} className="text-cyan-400" /> <T k="hub_project_timeline" />
-                    </h3>
-                    <div className="flex items-center gap-4">
-                        <div className="flex-1 bg-white/5 border border-white/10 rounded-xl p-4 text-center">
-                            <div className="text-[10px] text-gray-500 uppercase font-black tracking-wider mb-1"><T k="start_date_label" /></div>
-                            <div className="text-lg font-bold text-white">
-                                {project.startDate ? new Date(project.startDate).toLocaleDateString() : 'N/A'}
+            {/* Demo Timeline Section */}
+            {showDemo && (
+                <>
+                    {/* KPI Summary */}
+                    <div className="grid grid-cols-3 gap-4">
+                        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-5 flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center">
+                                <Flag size={22} className="text-emerald-400" />
+                            </div>
+                            <div>
+                                <div className="text-[10px] uppercase tracking-widest text-emerald-400 font-black"><T k="hub_milestones_completed" /></div>
+                                <div className="text-2xl font-black text-emerald-400">{completedCount}</div>
                             </div>
                         </div>
-                        <div className="w-8 h-0.5 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-full" />
-                        <div className="flex-1 bg-white/5 border border-white/10 rounded-xl p-4 text-center">
-                            <div className="text-[10px] text-gray-500 uppercase font-black tracking-wider mb-1"><T k="end_date_label" /></div>
-                            <div className="text-lg font-bold text-white">
-                                {project.endDate ? new Date(project.endDate).toLocaleDateString() : 'N/A'}
+                        <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-5 flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center">
+                                <Clock size={22} className="text-blue-400" />
+                            </div>
+                            <div>
+                                <div className="text-[10px] uppercase tracking-widest text-blue-400 font-black"><T k="hub_in_progress" /></div>
+                                <div className="text-2xl font-black text-blue-400">{inProgressCount}</div>
+                            </div>
+                        </div>
+                        <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-5 flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center">
+                                <Target size={22} className="text-amber-400" />
+                            </div>
+                            <div>
+                                <div className="text-[10px] uppercase tracking-widest text-amber-400 font-black"><T k="hub_upcoming" /></div>
+                                <div className="text-2xl font-black text-amber-400">{upcomingCount}</div>
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
 
-            {/* Weekly Plans Timeline */}
-            <div className="bg-[#080d1a]/80 border border-white/5 rounded-2xl p-6">
-                <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 mb-4 flex items-center gap-2">
-                    <ListOrdered size={16} className="text-purple-400" /> <T k="hub_planning_timeline" />
-                </h3>
+                    {/* Gantt Timeline */}
+                    <div className="bg-[#080d1a]/80 border border-white/5 rounded-2xl p-6 overflow-x-auto">
+                        <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 mb-6 flex items-center gap-2">
+                            <CalendarRange size={16} className="text-purple-400" />
+                            <T k="hub_project_timeline" />
+                        </h3>
 
-                {project.weeklyPlans.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-12 opacity-40">
-                        <CalendarRange size={48} className="mb-3 text-gray-600" />
-                        <p className="text-gray-500 text-sm font-bold"><T k="no_weekly_reports" /></p>
-                    </div>
-                ) : (
-                    <div className="flex flex-col gap-2">
-                        {project.weeklyPlans.map((plan) => (
-                            <Link
-                                key={plan.id}
-                                href={`/pm/project/${project.id}/plan/${plan.id}`}
-                                className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:border-purple-500/30 hover:bg-white/[0.07] transition-all group"
-                            >
-                                <div className="flex items-center gap-4">
-                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xs font-black ${
-                                        !plan.isClosed
-                                            ? 'bg-cyan-500/15 text-cyan-400 border border-cyan-500/30'
-                                            : plan.targetReached
-                                                ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                                                : 'bg-red-500/15 text-red-400 border border-red-500/30'
-                                    }`}>
-                                        S{plan.weekNumber}
-                                    </div>
-                                    <div>
-                                        <div className="font-bold text-white text-sm"><T k="week" /> {plan.weekNumber}, {plan.year}</div>
-                                        <div className="text-xs text-gray-500">
-                                            {plan.numberOfWorkers} <T k="persons" /> • {plan.targetHoursCapacity} <T k="total_hrs" />
+                        {/* Timeline header with months */}
+                        <div className="relative min-w-[800px]">
+                            {/* Month markers */}
+                            <div className="flex mb-4 ml-[220px]">
+                                {Array.from({ length: 16 }, (_, i) => {
+                                    const d = new Date(2025, 8 + i, 1);
+                                    return (
+                                        <div key={i} className="flex-1 text-center">
+                                            <span className="text-[9px] uppercase tracking-widest text-gray-500 font-bold">
+                                                {d.toLocaleString("fr", { month: "short" })}
+                                            </span>
+                                            <span className="text-[8px] text-gray-600 ml-1">{d.getFullYear().toString().slice(2)}</span>
                                         </div>
-                                    </div>
+                                    );
+                                })}
+                            </div>
+
+                            {/* Today marker */}
+                            <div
+                                className="absolute top-0 bottom-0 w-0.5 bg-red-500/60 z-20"
+                                style={{ left: `calc(220px + ${todayPct}% * (100% - 220px) / 100)` }}
+                            >
+                                <div className="absolute -top-1 -left-3 px-1.5 py-0.5 rounded bg-red-500 text-[8px] font-black text-white uppercase tracking-wider whitespace-nowrap">
+                                    Aujourd&apos;hui
                                 </div>
-                                <div className="flex items-center gap-3">
-                                    {!plan.isClosed && (
-                                        <span className="text-xs px-2 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 font-bold animate-pulse">
-                                            <T k="in_progress" />
-                                        </span>
-                                    )}
-                                    {plan.isClosed && plan.targetReached && (
-                                        <span className="text-xs px-2 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold flex items-center gap-1">
-                                            <CheckCircle2 size={12} /> <T k="target_hit" />
-                                        </span>
-                                    )}
-                                    {plan.isClosed && !plan.targetReached && (
-                                        <span className="text-xs px-2 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 font-bold flex items-center gap-1">
-                                            <ShieldAlert size={12} /> <T k="target_missed" />
-                                        </span>
-                                    )}
-                                    <ArrowRight size={16} className="text-gray-600 group-hover:text-purple-400 transition-colors" />
-                                </div>
-                            </Link>
-                        ))}
+                            </div>
+
+                            {/* Gantt bars */}
+                            <div className="flex flex-col gap-2">
+                                {DEMO_MILESTONES.map((milestone, idx) => {
+                                    const startPct = ((new Date(milestone.startDate).getTime() - minDate) / totalSpan) * 100;
+                                    const widthPct = ((new Date(milestone.endDate).getTime() - new Date(milestone.startDate).getTime()) / totalSpan) * 100;
+                                    const c = colorClasses[milestone.color] || colorClasses.blue;
+
+                                    return (
+                                        <div key={idx} className="flex items-center gap-4 group hover:bg-white/5 rounded-xl p-1.5 transition-colors">
+                                            {/* Label */}
+                                            <div className="w-[200px] flex-shrink-0">
+                                                <div className="text-xs font-bold text-gray-200 truncate">{milestone.name}</div>
+                                                <div className={`text-[9px] uppercase tracking-widest ${c.text} font-bold`}>{milestone.category}</div>
+                                            </div>
+                                            {/* Bar area */}
+                                            <div className="flex-1 relative h-8">
+                                                {/* Background track */}
+                                                <div
+                                                    className={`absolute top-1 h-6 rounded-lg ${c.bg} border ${c.border} overflow-hidden transition-all`}
+                                                    style={{ left: `${startPct}%`, width: `${widthPct}%` }}
+                                                >
+                                                    {/* Progress fill */}
+                                                    <div
+                                                        className={`h-full ${c.bar} rounded-lg transition-all duration-700`}
+                                                        style={{ width: `${milestone.progress * 100}%` }}
+                                                    />
+                                                    {/* Progress label */}
+                                                    <div className="absolute inset-0 flex items-center justify-center">
+                                                        <span className="text-[9px] font-black text-white/80 drop-shadow">
+                                                            {Math.round(milestone.progress * 100)}%
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {/* Status icon */}
+                                            <div className="w-6 flex-shrink-0 flex justify-center">
+                                                {milestone.progress >= 1 ? (
+                                                    <div className="w-5 h-5 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center">
+                                                        <ChevronRight size={10} className="text-emerald-400" />
+                                                    </div>
+                                                ) : milestone.progress > 0 ? (
+                                                    <div className="w-5 h-5 rounded-full bg-blue-500/20 border border-blue-500/40 flex items-center justify-center animate-pulse">
+                                                        <div className="w-2 h-2 rounded-full bg-blue-400" />
+                                                    </div>
+                                                ) : (
+                                                    <div className="w-5 h-5 rounded-full bg-white/5 border border-white/10" />
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
                     </div>
-                )}
-            </div>
+
+                    {/* Info banner */}
+                    <div className="bg-purple-500/5 border border-purple-500/20 rounded-2xl p-4 text-center">
+                        <p className="text-xs text-purple-300">
+                            <T k="hub_demo_data_notice" /> — <T k="hub_upload_to_replace" />
+                        </p>
+                    </div>
+                </>
+            )}
         </div>
     );
 }

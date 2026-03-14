@@ -52,8 +52,76 @@ model Project {
   dailyReports     DailyReport[]
   planTemplates    PlanTemplate[]
   
+  // Hub module data
+  planningMilestones PlanningMilestone[]
+  purchases          Purchase[]
+  technicalDocuments TechnicalDocument[]
+  financeData        FinanceData[]
+  
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
+}
+
+// ── Hub Module: Planning ──
+model PlanningMilestone {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  name        String
+  category    String?
+  startDate   DateTime
+  endDate     DateTime
+  progress    Float    @default(0)
+  isComplete  Boolean  @default(false)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+}
+
+// ── Hub Module: Purchases / Achats ──
+model Purchase {
+  id            String    @id @default(cuid())
+  projectId     String
+  project       Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  category      String
+  description   String?
+  supplier      String
+  amount        Float?
+  currency      String    @default("EUR")
+  status        String    @default("pending")
+  orderDate     DateTime?
+  deliveryDate  DateTime?
+  createdAt     DateTime  @default(now())
+}
+
+// ── Hub Module: Dossier Technique ──
+model TechnicalDocument {
+  id            String    @id @default(cuid())
+  projectId     String
+  project       Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  docType       String
+  reference     String
+  title         String
+  submittedDate DateTime?
+  status        String
+  remarks       String?
+  lot           String?
+  revision      Int       @default(0)
+  createdAt     DateTime  @default(now())
+}
+
+// ── Hub Module: Finances ──
+model FinanceData {
+  id              String   @id @default(cuid())
+  projectId       String
+  project         Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  category        String
+  label           String
+  budgetAmount    Float?
+  actualAmount    Float?
+  forecastAmount  Float?
+  unit            String?
+  period          String?
+  createdAt       DateTime @default(now())
 }
 
 model SubLocation {
