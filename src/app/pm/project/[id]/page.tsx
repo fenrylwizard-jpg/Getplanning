@@ -39,10 +39,10 @@ export default async function ProjectHub({ params, searchParams }: { params: Pro
     if (!project) return <div className="p-8 text-center text-red-400 font-bold"><T k="project_not_found" /></div>;
 
     return (
-        <div className="aurora-page min-h-screen text-white">
+        <div className="aurora-page min-h-screen text-white flex flex-col items-center w-full">
             {/* Project Header */}
-            <div className="bg-[#060b18]/90 border-b border-white/5 px-4 sm:px-8 py-6">
-                <div className="max-w-7xl mx-auto">
+            <div className="bg-[#060b18]/90 border-b border-white/5 w-full flex justify-center">
+                <div className="max-w-7xl mx-auto px-4 sm:px-8 py-6">
                     <Link href="/pm/dashboard" className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-4 group w-fit">
                         <div className="p-1.5 rounded-lg bg-white/5 group-hover:bg-white/10 border border-white/5 transition-colors">
                             <ArrowLeft size={16} />
@@ -79,7 +79,7 @@ export default async function ProjectHub({ params, searchParams }: { params: Pro
             </Suspense>
 
             {/* Tab Content */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-8 py-8">
+            <div className="max-w-7xl w-full px-4 sm:px-8 py-8">
                 {activeTab === "overview" && <OverviewTab project={project} />}
                 {activeTab === "finances" && <FinancesTab project={project} />}
                 {activeTab === "achats" && <AchatsTab />}

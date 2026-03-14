@@ -93,7 +93,7 @@ export default function ProjectHubTabs({ projectId, activeTab }: ProjectHubTabsP
     return (
         <div
             className={`
-                w-full transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]
+                w-full flex justify-center transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]
                 ${isExpanded
                     ? "py-6 sm:py-10"
                     : "py-0 border-b border-white/5 bg-[#070c1a]/80 backdrop-blur-md sticky top-[73px] z-50"
