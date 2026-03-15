@@ -16,6 +16,7 @@ interface AIRecipe {
     steps: string[];
     tips: string;
     fodmapSafe: boolean;
+    kcalPerServing?: number;
 }
 
 export default function RecipesPage() {
@@ -54,7 +55,7 @@ export default function RecipesPage() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    protocol: user?.protocol || 'none',
+                    protocols: user?.protocols || [],
                     protocolPhase: user?.protocolPhase || 1,
                     pantryItems: user?.pantryItems?.map(i => i.name) || [],
                     usePantryOnly,
@@ -185,6 +186,7 @@ export default function RecipesPage() {
                                             <span>⏱ {recipe.time}</span>
                                             <span>📊 {recipe.difficulty}</span>
                                             <span style={{ opacity: 0.6 }}>{recipe.category}</span>
+                                            <span style={{ fontWeight: 600, color: 'var(--ck-orange)' }}>🔥 {recipe.kcal} kcal</span>
                                         </div>
                                         <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
                                             {recipe.tags.slice(0, 3).map(tag => (
@@ -254,9 +256,16 @@ export default function RecipesPage() {
                                             Votre profil
                                         </div>
                                         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                                            <span className="ck-tag ck-tag-coral">
-                                                {user.protocol === 'low-fodmap' ? `🥦 Low-FODMAP Phase ${user.protocolPhase}` : '🍽️ Aucun régime'}
-                                            </span>
+                                            {user.protocols.length > 0 ? user.protocols.map(p => (
+                                                <span key={p} className="ck-tag ck-tag-coral" style={{ textTransform: 'capitalize' }}>
+                                                    {p.replace('-', ' ')} {p === 'low-fodmap' && `Phase ${user.protocolPhase}`}
+                                                </span>
+                                            )) : (
+                                                <span className="ck-tag ck-tag-coral">🍽️ Aucun régime</span>
+                                            )}
+                                            {user.personalParams?.dailyKcalTarget && (
+                                                <span className="ck-tag ck-tag-orange">🔥 Objectif: {user.personalParams.dailyKcalTarget} kcal</span>
+                                            )}
                                             <span className="ck-tag ck-tag-sage">🥫 {user.pantryItems.length} ingrédients en stock</span>
                                             {user.mealPrepEnabled && <span className="ck-tag ck-tag-lavender">🍱 Meal Prep actif</span>}
                                         </div>
@@ -390,6 +399,7 @@ export default function RecipesPage() {
                                                                 <span>⏱ {recipe.time}</span>
                                                                 <span>📊 {recipe.difficulty}</span>
                                                                 <span>🍽️ {recipe.servings} portions</span>
+                                                                {recipe.kcalPerServing && <span style={{ fontWeight: 600, color: 'var(--ck-orange)' }}>🔥 {recipe.kcalPerServing} kcal</span>}
                                                             </div>
                                                         </div>
                                                         <span style={{ fontSize: '1.25rem', transition: 'transform 0.3s', transform: expandedRecipe === i ? 'rotate(180deg)' : 'rotate(0)' }}>

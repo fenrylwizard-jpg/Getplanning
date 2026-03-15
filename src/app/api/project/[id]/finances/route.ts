@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
     try {
-        const data = await prisma.financeData.findMany({
+        const data = await prisma.financeSnapshot.findMany({
             where: { projectId: id },
             orderBy: { createdAt: "desc" },
         });
@@ -17,7 +17,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
     try {
-        await prisma.financeData.deleteMany({ where: { projectId: id } });
+        await prisma.financeSnapshot.deleteMany({ where: { projectId: id } });
         return NextResponse.json({ success: true });
     } catch {
         return NextResponse.json({ error: "Failed to clear" }, { status: 500 });

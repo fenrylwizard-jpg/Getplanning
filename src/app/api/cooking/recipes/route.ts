@@ -7,30 +7,36 @@ export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
         const {
-            protocol,         // 'low-fodmap' | 'none'
-            protocolPhase,    // 1 | 2 | 3
-            pantryItems,      // string[] - items user has
+            protocols = [],   // string[] - 'low-fodmap' | 'perte-de-poids' | 'sans-gluten' etc.
+            protocolPhase,    // 1 | 2 | 3 (usually for low-fodmap)
+            pantryItems = [], // string[] - items user has
             usePantryOnly,    // boolean - use only pantry items?
             mealPrepMode,     // boolean - optimize for batch cooking?
-            servings,         // number
+            servings = 2,     // number
             mealType,         // 'petit-déj' | 'déjeuner' | 'dîner' | 'collation'
             preferences,      // string - free text (optional)
         } = body;
 
-        const pantryList = (pantryItems || []).join(', ');
+        const pantryList = pantryItems.join(', ');
+        const protocolsList = protocols.length > 0 ? protocols.join(', ') : 'Aucun régime spécifique';
         
+        let protocolInstructions = `RÉGIMES ET PROTOCOLES: ${protocolsList}`;
+        if (protocols.includes('low-fodmap')) {
+            protocolInstructions += `\n- Spécificité Low-FODMAP (Phase ${protocolPhase}): ${
+                protocolPhase === 1 
+                    ? 'Phase d\'élimination stricte. AUCUN aliment riche en FODMAP (pas d\'ail, oignon, blé, seigle, lait, pommes, poires, haricots, lentilles, champignons, avocat, miel). Utilise uniquement des aliments pauvres en FODMAP.'
+                    : protocolPhase === 2
+                    ? 'Phase de réintroduction. Les recettes peuvent inclure UN groupe FODMAP à tester à la fois.'
+                    : 'Phase de personnalisation. Régime principalement Low-FODMAP avec quelques flexibilités.'
+            }`;
+        }
+        if (protocols.includes('perte-de-poids')) {
+            protocolInstructions += `\n- Spécificité Perte de poids: Privilégier les aliments rassasiants, riches en fibres et en protéines, modérés en matières grasses et en sucres ajoutés. Garder les calories raisonnables par portion.`;
+        }
+
         const prompt = `Tu es un chef cuisinier expert et diététicien spécialisé dans les régimes alimentaires. Génère 5 recettes en français qui respectent TOUS les critères suivants:
 
-RÉGIME: ${protocol === 'low-fodmap'
-    ? `Low-FODMAP Phase ${protocolPhase} — ${
-        protocolPhase === 1
-            ? 'Phase d\'élimination stricte. AUCUN aliment riche en FODMAP (pas d\'ail, oignon, blé, seigle, lait, pommes, poires, haricots, lentilles, champignons, avocat, miel). Utilise uniquement des aliments pauvres en FODMAP.'
-            : protocolPhase === 2
-            ? 'Phase de réintroduction. Les recettes peuvent inclure UN groupe FODMAP à tester à la fois.'
-            : 'Phase de personnalisation. Régime principalement Low-FODMAP avec quelques flexibilités.'
-    }`
-    : 'Aucun régime spécifique'
-}
+${protocolInstructions}
 
 ${usePantryOnly && pantryList
     ? `INGRÉDIENTS DISPONIBLES: ${pantryList}. Utilise UNIQUEMENT ces ingrédients (+ épices et condiments de base).`
@@ -40,11 +46,12 @@ ${usePantryOnly && pantryList
 }
 
 TYPE DE REPAS: ${mealType || 'tous types'}
-NOMBRE DE PORTIONS: ${servings || 2}
+NOMBRE DE PORTIONS: ${servings}
 ${mealPrepMode ? 'MODE MEAL PREP: Oui — les recettes doivent se conserver facilement 3-5 jours au frigo, être faciles à réchauffer, et idéales pour la préparation en batch.' : ''}
 ${preferences ? `PRÉFÉRENCES SUPPLÉMENTAIRES: ${preferences}` : ''}
 
-IMPORTANT: Réponds UNIQUEMENT avec un JSON valide, sans markdown, sans backticks. Utilise ce format:
+IMPORTANT: Tu dois OBLIGATOIREMENT estimer les calories (kcal) par portion.
+Réponds UNIQUEMENT avec un JSON valide, sans markdown, sans backticks. Utilise ce format:
 [
   {
     "name": "Nom de la recette",
@@ -52,6 +59,7 @@ IMPORTANT: Réponds UNIQUEMENT avec un JSON valide, sans markdown, sans backtick
     "time": "temps de préparation",
     "difficulty": "Facile/Moyen/Difficile",
     "servings": nombre,
+    "kcalPerServing": nombre_entier,
     "tags": ["tag1", "tag2"],
     "ingredients": ["ingrédient 1 (quantité)", "ingrédient 2 (quantité)"],
     "steps": ["Étape 1", "Étape 2"],

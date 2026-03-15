@@ -8,6 +8,7 @@ export interface StaticRecipe {
   category: string;
   fodmap: boolean;
   tags: string[];
+  kcal: number;
 }
 
 export const staticRecipes: StaticRecipe[] = [
@@ -23,7 +24,8 @@ export const staticRecipes: StaticRecipe[] = [
       "Sans gluten",
       "Low-FODMAP",
       "Rapide"
-    ]
+    ],
+    "kcal": 419
   },
   {
     "id": 2,
@@ -37,7 +39,8 @@ export const staticRecipes: StaticRecipe[] = [
       "Protéiné",
       "Keto",
       "Rapide"
-    ]
+    ],
+    "kcal": 489
   },
   {
     "id": 3,
@@ -50,7 +53,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Sucré",
       "Végétarien"
-    ]
+    ],
+    "kcal": 413
   },
   {
     "id": 4,
@@ -64,7 +68,8 @@ export const staticRecipes: StaticRecipe[] = [
       "Vegan",
       "Détox",
       "Rapide"
-    ]
+    ],
+    "kcal": 455
   },
   {
     "id": 5,
@@ -77,7 +82,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Protéiné",
       "Tendance"
-    ]
+    ],
+    "kcal": 477
   },
   {
     "id": 6,
@@ -90,7 +96,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Meal Prep",
       "Low-FODMAP"
-    ]
+    ],
+    "kcal": 477
   },
   {
     "id": 7,
@@ -103,7 +110,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Classique",
       "Végétarien"
-    ]
+    ],
+    "kcal": 497
   },
   {
     "id": 8,
@@ -116,7 +124,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Superaliment",
       "Vegan"
-    ]
+    ],
+    "kcal": 447
   },
   {
     "id": 9,
@@ -129,7 +138,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Protéiné",
       "Keto"
-    ]
+    ],
+    "kcal": 423
   },
   {
     "id": 10,
@@ -142,7 +152,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Rapide",
       "Protéiné"
-    ]
+    ],
+    "kcal": 495
   },
   {
     "id": 11,
@@ -155,7 +166,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Meal Prep",
       "Low-FODMAP"
-    ]
+    ],
+    "kcal": 430
   },
   {
     "id": 12,
@@ -168,7 +180,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Sucré",
       "Classique"
-    ]
+    ],
+    "kcal": 445
   },
   {
     "id": 13,
@@ -181,7 +194,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Vegan",
       "Meal Prep"
-    ]
+    ],
+    "kcal": 480
   },
   {
     "id": 14,
@@ -194,7 +208,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Sucré",
       "Végétarien"
-    ]
+    ],
+    "kcal": 456
   },
   {
     "id": 15,
@@ -207,7 +222,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Méditerranéen",
       "Protéiné"
-    ]
+    ],
+    "kcal": 491
   },
   {
     "id": 16,
@@ -220,7 +236,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Meal Prep",
       "Vegan"
-    ]
+    ],
+    "kcal": 452
   },
   {
     "id": 17,
@@ -233,7 +250,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Oméga-3",
       "Rapide"
-    ]
+    ],
+    "kcal": 445
   },
   {
     "id": 18,
@@ -246,7 +264,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Protéiné",
       "Sport"
-    ]
+    ],
+    "kcal": 486
   },
   {
     "id": 19,
@@ -259,7 +278,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Vegan",
       "Superaliment"
-    ]
+    ],
+    "kcal": 400
   },
   {
     "id": 20,
@@ -272,7 +292,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Sans gluten",
       "Breton"
-    ]
+    ],
+    "kcal": 383
   },
   {
     "id": 21,
@@ -285,7 +306,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Classique",
       "Protéiné"
-    ]
+    ],
+    "kcal": 239
   },
   {
     "id": 22,
@@ -298,7 +320,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Low-FODMAP",
       "Vegan"
-    ]
+    ],
+    "kcal": 193
   },
   {
     "id": 23,
@@ -311,7 +334,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Italien",
       "Rapide"
-    ]
+    ],
+    "kcal": 153
   },
   {
     "id": 24,
@@ -324,7 +348,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Japonais",
       "Détox"
-    ]
+    ],
+    "kcal": 190
   },
   {
     "id": 25,
@@ -337,7 +362,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Vegan",
       "Méditerranéen"
-    ]
+    ],
+    "kcal": 159
   },
   {
     "id": 26,
@@ -350,7 +376,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Low-FODMAP",
       "Cru"
-    ]
+    ],
+    "kcal": 226
   },
   {
     "id": 27,
@@ -363,7 +390,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Asiatique",
       "Épicé"
-    ]
+    ],
+    "kcal": 244
   },
   {
     "id": 28,
@@ -376,7 +404,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Sans gluten",
       "Low-FODMAP"
-    ]
+    ],
+    "kcal": 227
   },
   {
     "id": 29,
@@ -389,7 +418,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Espagnol",
       "Froid"
-    ]
+    ],
+    "kcal": 178
   },
   {
     "id": 30,
@@ -402,7 +432,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Classique",
       "Protéiné"
-    ]
+    ],
+    "kcal": 227
   },
   {
     "id": 31,
@@ -415,7 +446,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Automnal",
       "Vegan"
-    ]
+    ],
+    "kcal": 190
   },
   {
     "id": 32,
@@ -428,7 +460,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Oméga-3",
       "Frais"
-    ]
+    ],
+    "kcal": 249
   },
   {
     "id": 33,
@@ -441,7 +474,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Protéiné",
       "Végétarien"
-    ]
+    ],
+    "kcal": 163
   },
   {
     "id": 34,
@@ -454,7 +488,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Péruvien",
       "Cru"
-    ]
+    ],
+    "kcal": 210
   },
   {
     "id": 35,
@@ -467,7 +502,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Classique",
       "Français"
-    ]
+    ],
+    "kcal": 210
   },
   {
     "id": 36,
@@ -480,7 +516,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Estival",
       "Frais"
-    ]
+    ],
+    "kcal": 218
   },
   {
     "id": 37,
@@ -493,7 +530,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Asiatique",
       "Léger"
-    ]
+    ],
+    "kcal": 196
   },
   {
     "id": 38,
@@ -506,7 +544,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Vert",
       "Détox"
-    ]
+    ],
+    "kcal": 220
   },
   {
     "id": 39,
@@ -519,7 +558,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Hivernal",
       "Low-FODMAP"
-    ]
+    ],
+    "kcal": 161
   },
   {
     "id": 40,
@@ -532,7 +572,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Antillais",
       "Frit"
-    ]
+    ],
+    "kcal": 207
   },
   {
     "id": 41,
@@ -545,7 +586,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Sans gluten",
       "Low-FODMAP"
-    ]
+    ],
+    "kcal": 528
   },
   {
     "id": 42,
@@ -558,7 +600,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Oméga-3",
       "Low-FODMAP"
-    ]
+    ],
+    "kcal": 539
   },
   {
     "id": 43,
@@ -571,7 +614,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Protéiné",
       "Low-FODMAP"
-    ]
+    ],
+    "kcal": 454
   },
   {
     "id": 44,
@@ -584,7 +628,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Vegan",
       "Low-FODMAP"
-    ]
+    ],
+    "kcal": 536
   },
   {
     "id": 45,
@@ -597,7 +642,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Italien",
       "Classique"
-    ]
+    ],
+    "kcal": 502
   },
   {
     "id": 46,
@@ -610,7 +656,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Vegan",
       "Indien"
-    ]
+    ],
+    "kcal": 445
   },
   {
     "id": 47,
@@ -623,7 +670,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Protéiné",
       "Rapide"
-    ]
+    ],
+    "kcal": 515
   },
   {
     "id": 48,
@@ -636,7 +684,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Vegan",
       "Français"
-    ]
+    ],
+    "kcal": 635
   },
   {
     "id": 49,
@@ -649,7 +698,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Thaï",
       "Populaire"
-    ]
+    ],
+    "kcal": 670
   },
   {
     "id": 50,
@@ -662,7 +712,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Français",
       "Réconfort"
-    ]
+    ],
+    "kcal": 561
   },
   {
     "id": 51,
@@ -675,7 +726,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Marocain",
       "Épicé"
-    ]
+    ],
+    "kcal": 583
   },
   {
     "id": 52,
@@ -688,7 +740,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Végétarien",
       "Italien"
-    ]
+    ],
+    "kcal": 664
   },
   {
     "id": 53,
@@ -701,7 +754,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Japonais",
       "Tendance"
-    ]
+    ],
+    "kcal": 689
   },
   {
     "id": 54,
@@ -714,7 +768,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Vegan",
       "Mexicain"
-    ]
+    ],
+    "kcal": 643
   },
   {
     "id": 55,
@@ -727,7 +782,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Gastronomique",
       "Fête"
-    ]
+    ],
+    "kcal": 418
   },
   {
     "id": 56,
@@ -741,7 +797,8 @@ export const staticRecipes: StaticRecipe[] = [
       "Vegan",
       "Asiatique",
       "Rapide"
-    ]
+    ],
+    "kcal": 513
   },
   {
     "id": 57,
@@ -754,7 +811,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Français",
       "Classique"
-    ]
+    ],
+    "kcal": 611
   },
   {
     "id": 58,
@@ -767,7 +825,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Coréen",
       "Complet"
-    ]
+    ],
+    "kcal": 659
   },
   {
     "id": 59,
@@ -780,7 +839,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Français",
       "Réconfort"
-    ]
+    ],
+    "kcal": 435
   },
   {
     "id": 60,
@@ -793,7 +853,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Vegan",
       "Low-FODMAP"
-    ]
+    ],
+    "kcal": 413
   },
   {
     "id": 61,
@@ -806,7 +867,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Américain",
       "Populaire"
-    ]
+    ],
+    "kcal": 524
   },
   {
     "id": 62,
@@ -819,7 +881,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Maghrébin",
       "Fête"
-    ]
+    ],
+    "kcal": 448
   },
   {
     "id": 63,
@@ -832,7 +895,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Fruits de mer",
       "Rapide"
-    ]
+    ],
+    "kcal": 500
   },
   {
     "id": 64,
@@ -845,7 +909,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Indien",
       "Épicé"
-    ]
+    ],
+    "kcal": 539
   },
   {
     "id": 65,
@@ -858,7 +923,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Réconfort",
       "Végétarien"
-    ]
+    ],
+    "kcal": 542
   },
   {
     "id": 66,
@@ -871,7 +937,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Français",
       "Mijotage"
-    ]
+    ],
+    "kcal": 518
   },
   {
     "id": 67,
@@ -884,7 +951,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Vegan",
       "Libanais"
-    ]
+    ],
+    "kcal": 697
   },
   {
     "id": 68,
@@ -897,7 +965,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Italien",
       "Populaire"
-    ]
+    ],
+    "kcal": 680
   },
   {
     "id": 69,
@@ -910,7 +979,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Asiatique",
       "Low-FODMAP"
-    ]
+    ],
+    "kcal": 545
   },
   {
     "id": 70,
@@ -923,7 +993,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Français",
       "Rapide"
-    ]
+    ],
+    "kcal": 513
   },
   {
     "id": 71,
@@ -936,7 +1007,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Grec",
       "Réconfort"
-    ]
+    ],
+    "kcal": 409
   },
   {
     "id": 72,
@@ -949,7 +1021,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Mexicain",
       "Frais"
-    ]
+    ],
+    "kcal": 455
   },
   {
     "id": 73,
@@ -962,7 +1035,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Espagnol",
       "Fête"
-    ]
+    ],
+    "kcal": 586
   },
   {
     "id": 74,
@@ -975,7 +1049,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Vegan",
       "Japonais"
-    ]
+    ],
+    "kcal": 515
   },
   {
     "id": 75,
@@ -988,7 +1063,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Français",
       "Mijotage"
-    ]
+    ],
+    "kcal": 646
   },
   {
     "id": 76,
@@ -1001,7 +1077,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Vegan",
       "Indien"
-    ]
+    ],
+    "kcal": 529
   },
   {
     "id": 77,
@@ -1014,7 +1091,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Léger",
       "Low-FODMAP"
-    ]
+    ],
+    "kcal": 646
   },
   {
     "id": 78,
@@ -1027,7 +1105,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Italien",
       "Fait maison"
-    ]
+    ],
+    "kcal": 511
   },
   {
     "id": 79,
@@ -1040,7 +1119,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Indonésien",
       "Wok"
-    ]
+    ],
+    "kcal": 503
   },
   {
     "id": 80,
@@ -1053,7 +1133,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Végétarien",
       "Estival"
-    ]
+    ],
+    "kcal": 587
   },
   {
     "id": 81,
@@ -1066,7 +1147,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Chinois",
       "Fête"
-    ]
+    ],
+    "kcal": 486
   },
   {
     "id": 82,
@@ -1079,7 +1161,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Italien",
       "Végétarien"
-    ]
+    ],
+    "kcal": 617
   },
   {
     "id": 83,
@@ -1092,7 +1175,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Enfants",
       "Classique"
-    ]
+    ],
+    "kcal": 520
   },
   {
     "id": 84,
@@ -1105,7 +1189,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Italien",
       "Réconfort"
-    ]
+    ],
+    "kcal": 625
   },
   {
     "id": 85,
@@ -1118,7 +1203,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Méditerranéen",
       "Low-FODMAP"
-    ]
+    ],
+    "kcal": 476
   },
   {
     "id": 86,
@@ -1131,7 +1217,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Mexicain",
       "Copieux"
-    ]
+    ],
+    "kcal": 673
   },
   {
     "id": 87,
@@ -1144,7 +1231,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Vietnamien",
       "Bouillon"
-    ]
+    ],
+    "kcal": 627
   },
   {
     "id": 88,
@@ -1157,7 +1245,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Protéiné",
       "Enfants"
-    ]
+    ],
+    "kcal": 475
   },
   {
     "id": 89,
@@ -1170,7 +1259,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Italien",
       "Automnal"
-    ]
+    ],
+    "kcal": 489
   },
   {
     "id": 90,
@@ -1183,7 +1273,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Rapide",
       "Déjeuner"
-    ]
+    ],
+    "kcal": 457
   },
   {
     "id": 91,
@@ -1196,7 +1287,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Italien",
       "Gastronomique"
-    ]
+    ],
+    "kcal": 644
   },
   {
     "id": 92,
@@ -1209,7 +1301,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Estival",
       "Meal Prep"
-    ]
+    ],
+    "kcal": 445
   },
   {
     "id": 93,
@@ -1222,7 +1315,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Thaï",
       "Épicé"
-    ]
+    ],
+    "kcal": 664
   },
   {
     "id": 94,
@@ -1235,7 +1329,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Végétarien",
       "Méditerranéen"
-    ]
+    ],
+    "kcal": 474
   },
   {
     "id": 95,
@@ -1248,7 +1343,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Français",
       "Gastronomique"
-    ]
+    ],
+    "kcal": 648
   },
   {
     "id": 96,
@@ -1261,7 +1357,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Hawaïen",
       "Frais"
-    ]
+    ],
+    "kcal": 665
   },
   {
     "id": 97,
@@ -1274,7 +1371,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Keto",
       "Végétarien"
-    ]
+    ],
+    "kcal": 489
   },
   {
     "id": 98,
@@ -1287,7 +1385,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Italien",
       "Classique"
-    ]
+    ],
+    "kcal": 481
   },
   {
     "id": 99,
@@ -1300,7 +1399,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Indien",
       "Doux"
-    ]
+    ],
+    "kcal": 553
   },
   {
     "id": 100,
@@ -1313,7 +1413,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Français",
       "Cru"
-    ]
+    ],
+    "kcal": 403
   },
   {
     "id": 101,
@@ -1327,7 +1428,8 @@ export const staticRecipes: StaticRecipe[] = [
       "Asiatique",
       "Vegan",
       "Rapide"
-    ]
+    ],
+    "kcal": 598
   },
   {
     "id": 102,
@@ -1340,7 +1442,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Français",
       "Réconfort"
-    ]
+    ],
+    "kcal": 464
   },
   {
     "id": 103,
@@ -1353,7 +1456,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Thaï",
       "Rapide"
-    ]
+    ],
+    "kcal": 452
   },
   {
     "id": 104,
@@ -1366,7 +1470,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Japonais",
       "Fait maison"
-    ]
+    ],
+    "kcal": 687
   },
   {
     "id": 105,
@@ -1379,7 +1484,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Gastronomique",
       "Sucré-salé"
-    ]
+    ],
+    "kcal": 494
   },
   {
     "id": 106,
@@ -1392,7 +1498,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Vegan",
       "Indien"
-    ]
+    ],
+    "kcal": 661
   },
   {
     "id": 107,
@@ -1405,7 +1512,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Américain",
       "Grillé"
-    ]
+    ],
+    "kcal": 518
   },
   {
     "id": 108,
@@ -1418,7 +1526,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Italien",
       "Rapide"
-    ]
+    ],
+    "kcal": 521
   },
   {
     "id": 109,
@@ -1431,7 +1540,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Indien",
       "Épicé"
-    ]
+    ],
+    "kcal": 605
   },
   {
     "id": 110,
@@ -1444,7 +1554,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Végétarien",
       "Français"
-    ]
+    ],
+    "kcal": 579
   },
   {
     "id": 111,
@@ -1457,7 +1568,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Vietnamien",
       "Frais"
-    ]
+    ],
+    "kcal": 509
   },
   {
     "id": 112,
@@ -1470,7 +1582,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Végétarien",
       "Low-FODMAP"
-    ]
+    ],
+    "kcal": 503
   },
   {
     "id": 113,
@@ -1483,7 +1596,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Français",
       "Poisson"
-    ]
+    ],
+    "kcal": 489
   },
   {
     "id": 114,
@@ -1496,7 +1610,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Asiatique",
       "Rapide"
-    ]
+    ],
+    "kcal": 446
   },
   {
     "id": 115,
@@ -1509,7 +1624,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Italien",
       "Végétarien"
-    ]
+    ],
+    "kcal": 573
   },
   {
     "id": 116,
@@ -1522,7 +1638,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Mijotage",
       "Hivernal"
-    ]
+    ],
+    "kcal": 541
   },
   {
     "id": 117,
@@ -1535,7 +1652,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Japonais",
       "Froid"
-    ]
+    ],
+    "kcal": 663
   },
   {
     "id": 118,
@@ -1548,7 +1666,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Français",
       "Végétarien"
-    ]
+    ],
+    "kcal": 619
   },
   {
     "id": 119,
@@ -1561,7 +1680,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Épicé",
       "Rapide"
-    ]
+    ],
+    "kcal": 674
   },
   {
     "id": 120,
@@ -1574,7 +1694,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Rapide",
       "Facile"
-    ]
+    ],
+    "kcal": 514
   },
   {
     "id": 121,
@@ -1587,7 +1708,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Vegan",
       "Réconfort"
-    ]
+    ],
+    "kcal": 119
   },
   {
     "id": 122,
@@ -1600,7 +1722,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Low-FODMAP",
       "Basique"
-    ]
+    ],
+    "kcal": 192
   },
   {
     "id": 123,
@@ -1613,7 +1736,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Vegan",
       "Low-FODMAP"
-    ]
+    ],
+    "kcal": 184
   },
   {
     "id": 124,
@@ -1626,7 +1750,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Frais",
       "Rapide"
-    ]
+    ],
+    "kcal": 238
   },
   {
     "id": 125,
@@ -1639,7 +1764,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Low-FODMAP",
       "Léger"
-    ]
+    ],
+    "kcal": 137
   },
   {
     "id": 126,
@@ -1652,7 +1778,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Classique",
       "Réconfort"
-    ]
+    ],
+    "kcal": 195
   },
   {
     "id": 127,
@@ -1665,7 +1792,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Cru",
       "Frais"
-    ]
+    ],
+    "kcal": 114
   },
   {
     "id": 128,
@@ -1678,7 +1806,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Populaire",
       "Four"
-    ]
+    ],
+    "kcal": 146
   },
   {
     "id": 129,
@@ -1691,7 +1820,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Low-FODMAP",
       "Rapide"
-    ]
+    ],
+    "kcal": 166
   },
   {
     "id": 130,
@@ -1704,7 +1834,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Libanais",
       "Frais"
-    ]
+    ],
+    "kcal": 178
   },
   {
     "id": 131,
@@ -1717,7 +1848,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Sucré-salé",
       "Low-FODMAP"
-    ]
+    ],
+    "kcal": 243
   },
   {
     "id": 132,
@@ -1730,7 +1862,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Classique",
       "Low-FODMAP"
-    ]
+    ],
+    "kcal": 216
   },
   {
     "id": 133,
@@ -1743,7 +1876,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Superaliment",
       "Frais"
-    ]
+    ],
+    "kcal": 136
   },
   {
     "id": 134,
@@ -1756,7 +1890,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Léger",
       "Détox"
-    ]
+    ],
+    "kcal": 244
   },
   {
     "id": 135,
@@ -1769,7 +1904,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Américain",
       "Frais"
-    ]
+    ],
+    "kcal": 146
   },
   {
     "id": 136,
@@ -1782,7 +1918,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Français",
       "Classique"
-    ]
+    ],
+    "kcal": 397
   },
   {
     "id": 137,
@@ -1795,7 +1932,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Chocolat",
       "Populaire"
-    ]
+    ],
+    "kcal": 438
   },
   {
     "id": 138,
@@ -1808,7 +1946,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Classique",
       "Automnal"
-    ]
+    ],
+    "kcal": 294
   },
   {
     "id": 139,
@@ -1821,7 +1960,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Italien",
       "Léger"
-    ]
+    ],
+    "kcal": 271
   },
   {
     "id": 140,
@@ -1834,7 +1974,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Classique",
       "Chocolat"
-    ]
+    ],
+    "kcal": 336
   },
   {
     "id": 141,
@@ -1847,7 +1988,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Low-FODMAP",
       "Frais"
-    ]
+    ],
+    "kcal": 283
   },
   {
     "id": 142,
@@ -1860,7 +2002,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Italien",
       "Café"
-    ]
+    ],
+    "kcal": 439
   },
   {
     "id": 143,
@@ -1873,7 +2016,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Américain",
       "Snack"
-    ]
+    ],
+    "kcal": 325
   },
   {
     "id": 144,
@@ -1886,7 +2030,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Français",
       "Estival"
-    ]
+    ],
+    "kcal": 298
   },
   {
     "id": 145,
@@ -1899,7 +2044,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Américain",
       "Goûter"
-    ]
+    ],
+    "kcal": 378
   },
   {
     "id": 146,
@@ -1912,7 +2058,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Français",
       "Flambé"
-    ]
+    ],
+    "kcal": 275
   },
   {
     "id": 147,
@@ -1925,7 +2072,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Vegan",
       "Snack"
-    ]
+    ],
+    "kcal": 447
   },
   {
     "id": 148,
@@ -1938,7 +2086,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Américain",
       "Gourmand"
-    ]
+    ],
+    "kcal": 391
   },
   {
     "id": 149,
@@ -1951,7 +2100,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Frais",
       "Tropical"
-    ]
+    ],
+    "kcal": 345
   },
   {
     "id": 150,
@@ -1964,7 +2114,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Français",
       "Goûter"
-    ]
+    ],
+    "kcal": 281
   },
   {
     "id": 151,
@@ -1977,7 +2128,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Réconfort",
       "Doux"
-    ]
+    ],
+    "kcal": 433
   },
   {
     "id": 152,
@@ -1990,7 +2142,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Français",
       "Gastronomique"
-    ]
+    ],
+    "kcal": 291
   },
   {
     "id": 153,
@@ -2003,7 +2156,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Français",
       "Acidulé"
-    ]
+    ],
+    "kcal": 376
   },
   {
     "id": 154,
@@ -2016,7 +2170,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Chocolat",
       "Américain"
-    ]
+    ],
+    "kcal": 383
   },
   {
     "id": 155,
@@ -2029,7 +2184,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Léger",
       "Bébé"
-    ]
+    ],
+    "kcal": 375
   },
   {
     "id": 156,
@@ -2042,7 +2198,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Estival",
       "Croquant"
-    ]
+    ],
+    "kcal": 257
   },
   {
     "id": 157,
@@ -2055,7 +2212,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Français",
       "Boulangerie"
-    ]
+    ],
+    "kcal": 326
   },
   {
     "id": 158,
@@ -2068,7 +2226,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Japonais",
       "Glacé"
-    ]
+    ],
+    "kcal": 437
   },
   {
     "id": 159,
@@ -2081,7 +2240,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Français",
       "Caramélisé"
-    ]
+    ],
+    "kcal": 260
   },
   {
     "id": 160,
@@ -2094,7 +2254,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Chocolat",
       "Fête"
-    ]
+    ],
+    "kcal": 410
   },
   {
     "id": 161,
@@ -2107,7 +2268,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Rapide",
       "Sucré"
-    ]
+    ],
+    "kcal": 96
   },
   {
     "id": 162,
@@ -2120,7 +2282,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Détox",
       "Low-FODMAP"
-    ]
+    ],
+    "kcal": 62
   },
   {
     "id": 163,
@@ -2133,7 +2296,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Japonais",
       "Tendance"
-    ]
+    ],
+    "kcal": 108
   },
   {
     "id": 164,
@@ -2146,7 +2310,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Hivernal",
       "Réconfort"
-    ]
+    ],
+    "kcal": 116
   },
   {
     "id": 165,
@@ -2159,7 +2324,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Détox",
       "Low-FODMAP"
-    ]
+    ],
+    "kcal": 79
   },
   {
     "id": 166,
@@ -2172,7 +2338,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Estival",
       "Frais"
-    ]
+    ],
+    "kcal": 148
   },
   {
     "id": 167,
@@ -2185,7 +2352,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Anti-inflammatoire",
       "Ayurvédique"
-    ]
+    ],
+    "kcal": 138
   },
   {
     "id": 168,
@@ -2198,7 +2366,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Sport",
       "Protéiné"
-    ]
+    ],
+    "kcal": 147
   },
   {
     "id": 169,
@@ -2211,7 +2380,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Estival",
       "Frais"
-    ]
+    ],
+    "kcal": 111
   },
   {
     "id": 170,
@@ -2224,7 +2394,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Grec",
       "Rafraîchissant"
-    ]
+    ],
+    "kcal": 79
   },
   {
     "id": 171,
@@ -2237,7 +2408,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Meal Prep",
       "Sport"
-    ]
+    ],
+    "kcal": 197
   },
   {
     "id": 172,
@@ -2250,7 +2422,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Vegan",
       "Rapide"
-    ]
+    ],
+    "kcal": 187
   },
   {
     "id": 173,
@@ -2263,7 +2436,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Goûter",
       "Végétarien"
-    ]
+    ],
+    "kcal": 205
   },
   {
     "id": 174,
@@ -2276,7 +2450,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Vegan",
       "Low-FODMAP"
-    ]
+    ],
+    "kcal": 157
   },
   {
     "id": 175,
@@ -2289,7 +2464,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Rapide",
       "Sucré"
-    ]
+    ],
+    "kcal": 162
   },
   {
     "id": 176,
@@ -2302,7 +2478,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Japonais",
       "Protéiné"
-    ]
+    ],
+    "kcal": 157
   },
   {
     "id": 177,
@@ -2315,7 +2492,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Mexicain",
       "Vegan"
-    ]
+    ],
+    "kcal": 183
   },
   {
     "id": 178,
@@ -2328,7 +2506,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Low-FODMAP",
       "Rapide"
-    ]
+    ],
+    "kcal": 242
   },
   {
     "id": 179,
@@ -2341,7 +2520,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Low-FODMAP",
       "Fait maison"
-    ]
+    ],
+    "kcal": 182
   },
   {
     "id": 180,
@@ -2354,7 +2534,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Énergie",
       "Vegan"
-    ]
+    ],
+    "kcal": 167
   },
   {
     "id": 181,
@@ -2367,7 +2548,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Basique",
       "Italien"
-    ]
+    ],
+    "kcal": 109
   },
   {
     "id": 182,
@@ -2380,7 +2562,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Rapide",
       "Low-FODMAP"
-    ]
+    ],
+    "kcal": 84
   },
   {
     "id": 183,
@@ -2393,7 +2576,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Italien",
       "Frais"
-    ]
+    ],
+    "kcal": 102
   },
   {
     "id": 184,
@@ -2406,7 +2590,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Française",
       "Basique"
-    ]
+    ],
+    "kcal": 89
   },
   {
     "id": 185,
@@ -2419,7 +2604,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Argentin",
       "Frais"
-    ]
+    ],
+    "kcal": 148
   },
   {
     "id": 186,
@@ -2432,7 +2618,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Basique",
       "Low-FODMAP"
-    ]
+    ],
+    "kcal": 129
   },
   {
     "id": 187,
@@ -2445,7 +2632,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Thaï",
       "Épicé"
-    ]
+    ],
+    "kcal": 145
   },
   {
     "id": 188,
@@ -2458,7 +2646,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Français",
       "Condiment"
-    ]
+    ],
+    "kcal": 109
   },
   {
     "id": 189,
@@ -2471,7 +2660,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Japonais",
       "Rapide"
-    ]
+    ],
+    "kcal": 143
   },
   {
     "id": 190,
@@ -2484,7 +2674,8 @@ export const staticRecipes: StaticRecipe[] = [
     "tags": [
       "Sucré",
       "Low-FODMAP"
-    ]
+    ],
+    "kcal": 128
   }
 ];
 

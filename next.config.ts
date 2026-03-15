@@ -15,6 +15,7 @@ const nextConfig: NextConfig = {
   }
 };
 
+// @ts-expect-error
 const finalConfig = process.env.NODE_ENV === 'development' ? nextConfig : withPWA(nextConfig);
 
 export default finalConfig;

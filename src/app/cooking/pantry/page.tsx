@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useCookingAuth, PantryItem } from '../CookingAuthContext';
 import Link from 'next/link';
 
@@ -15,21 +15,13 @@ const categories = [
 
 export default function PantryPage() {
     const { user, updateUser } = useCookingAuth();
-    const [items, setItems] = useState<PantryItem[]>([]);
+    const items = useMemo(() => user?.pantryItems || [], [user]);
     const [search, setSearch] = useState('');
     const [activeCategory, setActiveCategory] = useState<string | null>(null);
     const [newItemName, setNewItemName] = useState('');
 
-    // Sync items with user profile
-    useEffect(() => {
-        if (user) {
-            setItems(user.pantryItems);
-        }
-    }, [user]);
-
     // Persist changes back to user context
     const updateItems = (newItems: PantryItem[]) => {
-        setItems(newItems);
         if (user) updateUser({ pantryItems: newItems });
     };
 

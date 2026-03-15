@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { ShoppingCart, Truck, Package, DollarSign, Building2, TrendingUp } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ShoppingCart, Truck, Package, DollarSign, Building2, TrendingUp, CheckCircle2 } from "lucide-react";
 import T from "@/components/T";
 import FileUploadZone from "@/components/hub/FileUploadZone";
 
@@ -9,7 +9,21 @@ interface AchatsTabProps {
     project?: { id: string };
 }
 
-// Demo data to showcase the design
+interface PurchaseCategory {
+    id: string;
+    category: string;
+    status: string | null;
+    inProgress: boolean;
+    offerPriceSoum: number | null;
+    costPrice: number | null;
+    supplierSoum: string | null;
+    supplierExe: string | null;
+    negotiatedPrice: number | null;
+    returnAmount: number | null;
+    comments: string | null;
+}
+
+// Demo data fallback
 const DEMO_PURCHASES = [
     { category: "Ferraillage", supplier: "ArcelorMittal", amount: 185000, status: "delivered", description: "Acier et armatures" },
     { category: "Menuiseries Extérieures", supplier: "Schüco France", amount: 142000, status: "ordered", description: "Fenêtres et baies vitrées alu" },
@@ -27,15 +41,52 @@ const statusConfig: Record<string, { label: string; color: string; bg: string; b
     pending: { label: "En Attente", color: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/30" },
 };
 
+const fmt = (val: number | null) => {
+    if (val === null || val === undefined) return '—';
+    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(val);
+};
+
 export default function AchatsTab({ project }: AchatsTabProps) {
-    const [showDemo] = useState(true);
+    const [realData, setRealData] = useState<PurchaseCategory[] | null>(null);
+    const [loading, setLoading] = useState(false);
 
-    const totalBudget = DEMO_PURCHASES.reduce((sum, p) => sum + p.amount, 0);
-    const deliveredTotal = DEMO_PURCHASES.filter(p => p.status === "delivered").reduce((sum, p) => sum + p.amount, 0);
-    const orderedTotal = DEMO_PURCHASES.filter(p => p.status === "ordered").reduce((sum, p) => sum + p.amount, 0);
-    const pendingTotal = DEMO_PURCHASES.filter(p => p.status === "pending").reduce((sum, p) => sum + p.amount, 0);
+    const fetchData = () => {
+        if (!project?.id) return;
+        setLoading(true);
+        fetch(`/api/hub/purchases?projectId=${project.id}`)
+            .then(r => r.json())
+            .then(d => {
+                const cats = d.categories || [];
+                setRealData(cats.length > 0 ? cats : null);
+                setLoading(false);
+            })
+            .catch(() => setLoading(false));
+    };
 
-    const uniqueSuppliers = [...new Set(DEMO_PURCHASES.map(p => p.supplier))];
+    useEffect(() => { fetchData(); }, [project?.id]);
+
+    const isDemo = realData === null;
+
+    // Build display data
+    const displayData = isDemo
+        ? DEMO_PURCHASES.map(p => ({
+            category: p.category,
+            supplierSoum: p.supplier,
+            supplierExe: null as string | null,
+            offerPriceSoum: p.amount,
+            costPrice: null as number | null,
+            negotiatedPrice: null as number | null,
+            returnAmount: null as number | null,
+            status: p.status,
+            inProgress: p.status === 'ordered',
+            comments: p.description,
+        }))
+        : realData;
+
+    const totalBudget = displayData.reduce((s, c) => s + (c.offerPriceSoum || 0), 0);
+    const totalCost = displayData.reduce((s, c) => s + (c.costPrice || 0), 0);
+    const totalNegotiated = displayData.reduce((s, c) => s + (c.negotiatedPrice || 0), 0);
+    const totalReturn = displayData.reduce((s, c) => s + (c.returnAmount || 0), 0);
 
     return (
         <div className="flex flex-col gap-8">
@@ -48,9 +99,30 @@ export default function AchatsTab({ project }: AchatsTabProps) {
                 subtitle="Glissez un fichier Excel contenant la liste des achats et fournisseurs du projet"
                 accentColor="amber"
                 icon={<ShoppingCart size={36} className="text-amber-400" />}
+                onUploadComplete={() => fetchData()}
             />
 
-            {showDemo && (
+            {/* Data source indicator */}
+            {isDemo ? (
+                <div className="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-4 text-center">
+                    <p className="text-xs text-amber-300">
+                        <T k="hub_demo_data_notice" /> — <T k="hub_upload_to_replace" />
+                    </p>
+                </div>
+            ) : (
+                <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-4 flex items-center justify-center gap-2">
+                    <CheckCircle2 size={16} className="text-emerald-400" />
+                    <p className="text-xs text-emerald-300 font-semibold">
+                        Données importées actives — {displayData.length} catégorie{displayData.length > 1 ? 's' : ''} d&apos;achat chargée{displayData.length > 1 ? 's' : ''}
+                    </p>
+                </div>
+            )}
+
+            {loading ? (
+                <div className="flex items-center justify-center py-20">
+                    <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+                </div>
+            ) : (
                 <>
                     {/* KPI Summary */}
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -61,113 +133,98 @@ export default function AchatsTab({ project }: AchatsTabProps) {
                                 </div>
                                 <span className="text-[10px] uppercase tracking-widest text-gray-400 font-black"><T k="hub_total_budget" /></span>
                             </div>
-                            <div className="text-2xl font-black text-white">{(totalBudget / 1000).toFixed(0)}k €</div>
+                            <div className="text-2xl font-black text-white">{fmt(totalBudget)}</div>
                         </div>
                         <div className="bg-[#080d1a]/80 border border-white/5 rounded-2xl p-5">
                             <div className="flex items-center gap-3 mb-3">
                                 <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center">
                                     <Package size={18} className="text-emerald-400" />
                                 </div>
-                                <span className="text-[10px] uppercase tracking-widest text-gray-400 font-black"><T k="hub_delivered" /></span>
+                                <span className="text-[10px] uppercase tracking-widest text-gray-400 font-black">Coût Revient</span>
                             </div>
-                            <div className="text-2xl font-black text-emerald-400">{(deliveredTotal / 1000).toFixed(0)}k €</div>
+                            <div className="text-2xl font-black text-emerald-400">{fmt(totalCost)}</div>
                         </div>
                         <div className="bg-[#080d1a]/80 border border-white/5 rounded-2xl p-5">
                             <div className="flex items-center gap-3 mb-3">
                                 <div className="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center">
                                     <Truck size={18} className="text-blue-400" />
                                 </div>
-                                <span className="text-[10px] uppercase tracking-widest text-gray-400 font-black"><T k="hub_ordered" /></span>
+                                <span className="text-[10px] uppercase tracking-widest text-gray-400 font-black">Prix Négocié</span>
                             </div>
-                            <div className="text-2xl font-black text-blue-400">{(orderedTotal / 1000).toFixed(0)}k €</div>
+                            <div className="text-2xl font-black text-blue-400">{fmt(totalNegotiated)}</div>
                         </div>
                         <div className="bg-[#080d1a]/80 border border-white/5 rounded-2xl p-5">
                             <div className="flex items-center gap-3 mb-3">
                                 <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center">
                                     <TrendingUp size={18} className="text-amber-400" />
                                 </div>
-                                <span className="text-[10px] uppercase tracking-widest text-gray-400 font-black"><T k="hub_pending" /></span>
+                                <span className="text-[10px] uppercase tracking-widest text-gray-400 font-black">RETURN</span>
                             </div>
-                            <div className="text-2xl font-black text-amber-400">{(pendingTotal / 1000).toFixed(0)}k €</div>
+                            <div className={`text-2xl font-black ${totalReturn >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{fmt(totalReturn)}</div>
                         </div>
                     </div>
 
-                    {/* Status Distribution Bar */}
-                    <div className="bg-[#080d1a]/80 border border-white/5 rounded-2xl p-6">
-                        <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 mb-4">
-                            <T k="hub_status_distribution" />
-                        </h3>
-                        <div className="flex h-6 rounded-full overflow-hidden bg-white/5">
-                            <div className="bg-gradient-to-r from-emerald-500 to-green-400 transition-all" style={{ width: `${(deliveredTotal / totalBudget) * 100}%` }} />
-                            <div className="bg-gradient-to-r from-blue-500 to-cyan-400 transition-all" style={{ width: `${(orderedTotal / totalBudget) * 100}%` }} />
-                            <div className="bg-gradient-to-r from-amber-500 to-orange-400 transition-all" style={{ width: `${(pendingTotal / totalBudget) * 100}%` }} />
+                    {/* Purchase Table */}
+                    <div className="bg-[#080d1a]/80 border border-white/5 rounded-2xl overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                                <thead>
+                                    <tr className="border-b border-white/5">
+                                        <th className="text-left text-gray-400 font-medium px-4 py-3 text-xs uppercase tracking-wider">Catégorie</th>
+                                        <th className="text-right text-gray-400 font-medium px-4 py-3 text-xs uppercase tracking-wider">Prix Soumission</th>
+                                        <th className="text-right text-gray-400 font-medium px-4 py-3 text-xs uppercase tracking-wider">Coût Revient</th>
+                                        <th className="text-left text-gray-400 font-medium px-4 py-3 text-xs uppercase tracking-wider">Fourn. SOUM</th>
+                                        <th className="text-left text-gray-400 font-medium px-4 py-3 text-xs uppercase tracking-wider">Fourn. EXE</th>
+                                        <th className="text-right text-gray-400 font-medium px-4 py-3 text-xs uppercase tracking-wider">Prix Négocié</th>
+                                        <th className="text-right text-gray-400 font-medium px-4 py-3 text-xs uppercase tracking-wider">RETURN</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {displayData.map((c, idx) => (
+                                        <tr key={idx} className="border-b border-white/[0.03] hover:bg-white/[0.02] transition-colors">
+                                            <td className="px-4 py-3">
+                                                <div className="flex items-center gap-2">
+                                                    {c.inProgress && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />}
+                                                    <span className="text-white font-medium">{c.category}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-4 py-3 text-right text-gray-300 font-mono text-xs">{fmt(c.offerPriceSoum)}</td>
+                                            <td className="px-4 py-3 text-right text-gray-300 font-mono text-xs">{fmt(c.costPrice)}</td>
+                                            <td className="px-4 py-3 text-gray-300 text-xs">{c.supplierSoum || '—'}</td>
+                                            <td className="px-4 py-3 text-xs">
+                                                {c.supplierExe ? (
+                                                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                                                        c.supplierExe !== c.supplierSoum ? 'bg-amber-500/15 text-amber-300' : 'bg-white/5 text-gray-300'
+                                                    }`}>{c.supplierExe}</span>
+                                                ) : '—'}
+                                            </td>
+                                            <td className="px-4 py-3 text-right text-gray-300 font-mono text-xs">{fmt(c.negotiatedPrice)}</td>
+                                            <td className="px-4 py-3 text-right">
+                                                <span className={`font-mono text-xs font-semibold ${
+                                                    (c.returnAmount || 0) > 0 ? 'text-emerald-400' : (c.returnAmount || 0) < 0 ? 'text-red-400' : 'text-gray-500'
+                                                }`}>{fmt(c.returnAmount)}</span>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                                {displayData.length > 0 && (
+                                    <tfoot>
+                                        <tr className="border-t-2 border-white/10 bg-white/[0.02]">
+                                            <td className="px-4 py-3 text-white font-bold">TOTAL</td>
+                                            <td className="px-4 py-3 text-right text-white font-mono text-xs font-bold">{fmt(totalBudget)}</td>
+                                            <td className="px-4 py-3 text-right text-white font-mono text-xs font-bold">{fmt(totalCost)}</td>
+                                            <td colSpan={2} />
+                                            <td className="px-4 py-3 text-right text-white font-mono text-xs font-bold">{fmt(totalNegotiated)}</td>
+                                            <td className="px-4 py-3 text-right">
+                                                <span className={`font-mono text-xs font-bold ${totalReturn >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                                    {fmt(totalReturn)}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                )}
+                            </table>
                         </div>
-                        <div className="flex justify-between mt-3 text-[10px] uppercase tracking-widest font-bold">
-                            <span className="text-emerald-400"><T k="hub_delivered" /> {((deliveredTotal / totalBudget) * 100).toFixed(0)}%</span>
-                            <span className="text-blue-400"><T k="hub_ordered" /> {((orderedTotal / totalBudget) * 100).toFixed(0)}%</span>
-                            <span className="text-amber-400"><T k="hub_pending" /> {((pendingTotal / totalBudget) * 100).toFixed(0)}%</span>
-                        </div>
-                    </div>
-
-                    {/* Purchase Cards Grid */}
-                    <div>
-                        <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 mb-4 flex items-center gap-2">
-                            <ShoppingCart size={16} className="text-amber-400" />
-                            <T k="hub_major_purchases" /> ({DEMO_PURCHASES.length})
-                        </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {DEMO_PURCHASES.map((purchase, idx) => {
-                                const status = statusConfig[purchase.status] || statusConfig.pending;
-                                return (
-                                    <div key={idx} className="bg-[#080d1a]/80 border border-white/5 rounded-2xl p-5 hover:border-white/10 transition-all group">
-                                        <div className="flex items-start justify-between mb-3">
-                                            <div>
-                                                <h4 className="text-sm font-bold text-white">{purchase.category}</h4>
-                                                <p className="text-xs text-gray-500 mt-0.5">{purchase.description}</p>
-                                            </div>
-                                            <span className={`text-[9px] uppercase tracking-widest font-black px-2.5 py-1 rounded-full ${status.bg} ${status.border} border ${status.color}`}>
-                                                {status.label}
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center justify-between mt-4">
-                                            <div className="flex items-center gap-2">
-                                                <Building2 size={12} className="text-gray-500" />
-                                                <span className="text-xs text-gray-300 font-medium">{purchase.supplier}</span>
-                                            </div>
-                                            <span className="text-lg font-black text-white">{purchase.amount.toLocaleString()} €</span>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-
-                    {/* Suppliers Summary */}
-                    <div className="bg-[#080d1a]/80 border border-white/5 rounded-2xl p-6">
-                        <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 mb-4 flex items-center gap-2">
-                            <Building2 size={16} className="text-cyan-400" />
-                            <T k="hub_suppliers" /> ({uniqueSuppliers.length})
-                        </h3>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                            {uniqueSuppliers.map((supplier, idx) => {
-                                const supplierPurchases = DEMO_PURCHASES.filter(p => p.supplier === supplier);
-                                const supplierTotal = supplierPurchases.reduce((sum, p) => sum + p.amount, 0);
-                                return (
-                                    <div key={idx} className="bg-white/5 border border-white/5 rounded-xl p-3.5 text-center hover:border-white/10 transition-colors">
-                                        <div className="text-xs font-bold text-gray-300 mb-1 truncate">{supplier}</div>
-                                        <div className="text-base font-black text-white">{(supplierTotal / 1000).toFixed(0)}k €</div>
-                                        <div className="text-[9px] text-gray-500 mt-0.5">{supplierPurchases.length} <T k="hub_purchase_count" /></div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-
-                    {/* Demo notice */}
-                    <div className="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-4 text-center">
-                        <p className="text-xs text-amber-300">
-                            <T k="hub_demo_data_notice" /> — <T k="hub_upload_to_replace" />
-                        </p>
                     </div>
                 </>
             )}

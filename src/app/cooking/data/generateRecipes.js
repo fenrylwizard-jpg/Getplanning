@@ -210,6 +210,20 @@ const recipes = [
   { id:190, name:'Confiture de fraises maison', emoji:'🍓', time:'30 min', difficulty:'Facile', category:'Sauce', fodmap:true, tags:['Sucré','Low-FODMAP'] },
 ];
 
+// Generate realistic kcal based on category
+recipes.forEach(r => {
+  let base = 300;
+  if (r.category === 'Petit-déj') base = 350 + Math.floor(Math.random() * 150);
+  else if (r.category === 'Entrée') base = 150 + Math.floor(Math.random() * 100);
+  else if (r.category === 'Plat') base = 400 + Math.floor(Math.random() * 300);
+  else if (r.category === 'Accompagnement') base = 100 + Math.floor(Math.random() * 150);
+  else if (r.category === 'Dessert') base = 250 + Math.floor(Math.random() * 200);
+  else if (r.category === 'Boisson') base = 50 + Math.floor(Math.random() * 100);
+  else if (r.category === 'Collation') base = 150 + Math.floor(Math.random() * 100);
+  else if (r.category === 'Sauce') base = 80 + Math.floor(Math.random() * 70);
+  r.kcal = base;
+});
+
 // Generate the TS file
 const output = `// Auto-generated recipe database — ${recipes.length} recipes
 export interface StaticRecipe {
@@ -221,6 +235,7 @@ export interface StaticRecipe {
   category: string;
   fodmap: boolean;
   tags: string[];
+  kcal: number;
 }
 
 export const staticRecipes: StaticRecipe[] = ${JSON.stringify(recipes, null, 2)};

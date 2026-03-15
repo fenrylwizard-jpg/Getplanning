@@ -13,7 +13,9 @@ export async function POST(req: Request) {
             data: {
                 name: name,
                 location: location || null,
-                subLocations: subLocations ? JSON.stringify(subLocations) : null,
+                ...(subLocations && Array.isArray(subLocations) && subLocations.length > 0
+                    ? { subLocations: { create: subLocations.map((s: string) => ({ name: s })) } }
+                    : {}),
                 startDate: startDate ? new Date(startDate) : null,
                 endDate: endDate ? new Date(endDate) : null,
                 projectManagerId: pm.id,

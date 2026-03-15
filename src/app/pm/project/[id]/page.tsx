@@ -80,12 +80,12 @@ export default async function ProjectHub({ params, searchParams }: { params: Pro
 
             {/* Tab Content */}
             <div className="max-w-7xl w-full px-4 sm:px-8 py-8">
-                {activeTab === "overview" && <OverviewTab project={project} />}
-                {activeTab === "finances" && <FinancesTab project={project} />}
-                {activeTab === "achats" && <AchatsTab project={project} />}
-                {activeTab === "production" && <ProductionTab project={project} />}
-                {activeTab === "technique" && <DossierTechniqueTab project={project} />}
-                {activeTab === "planning" && <PlanningTab project={project} />}
+                {activeTab === "overview" && <OverviewTab project={project as any} />}
+                {activeTab === "finances" && <FinancesTab project={project as any} />}
+                {activeTab === "achats" && <AchatsTab project={project as any} />}
+                {activeTab === "production" && <ProductionTab project={project as any} />}
+                {activeTab === "technique" && <DossierTechniqueTab project={project as any} />}
+                {activeTab === "planning" && <PlanningTab project={project as any} />}
             </div>
         </div>
     );

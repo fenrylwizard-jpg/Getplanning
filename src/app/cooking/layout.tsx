@@ -14,6 +14,7 @@ const navItems = [
     { href: '/cooking/journal', label: 'Journal', icon: '📋' },
     { href: '/cooking/shopping', label: 'Courses', icon: '🛒' },
     { href: '/cooking/mealprep', label: 'Meal Prep', icon: '🍱' },
+    { href: '/cooking/profile', label: 'Profil', icon: '👤' },
 ];
 
 function CookingNavbar() {
@@ -42,19 +43,22 @@ function CookingNavbar() {
                         ))}
                         {user ? (
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginLeft: '0.5rem' }}>
-                                <div style={{
+                                <Link href="/cooking/profile" style={{
                                     display: 'flex',
                                     alignItems: 'center',
                                     gap: '0.5rem',
                                     padding: '0.4rem 0.75rem',
-                                    background: 'rgba(245, 138, 61, 0.08)',
+                                    background: pathname === '/cooking/profile' ? 'var(--ck-rose)' : 'rgba(245, 138, 61, 0.08)',
+                                    color: pathname === '/cooking/profile' ? 'white' : 'inherit',
                                     borderRadius: '12px',
+                                    textDecoration: 'none',
+                                    transition: 'all 0.2s ease',
                                 }}>
                                     <span style={{
                                         width: '28px',
                                         height: '28px',
                                         borderRadius: '50%',
-                                        background: 'linear-gradient(135deg, var(--ck-rose), var(--ck-coral))',
+                                        background: pathname === '/cooking/profile' ? 'rgba(255,255,255,0.2)' : 'linear-gradient(135deg, var(--ck-rose), var(--ck-coral))',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
@@ -64,10 +68,10 @@ function CookingNavbar() {
                                     }}>
                                         {user.displayName[0]}
                                     </span>
-                                    <span style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--ck-text)' }}>
+                                    <span style={{ fontWeight: 700, fontSize: '0.85rem', color: pathname === '/cooking/profile' ? 'white' : 'var(--ck-text)' }}>
                                         {user.displayName}
                                     </span>
-                                </div>
+                                </Link>
                                 <button
                                     onClick={logout}
                                     title="Se déconnecter"

@@ -1,0 +1,27 @@
+next.config.ts(2,25): error TS7016: Could not find a declaration file for module 'next-pwa'. 'C:/Users/Imam/.gemini/antigravity/scratch/worksite-tracker/node_modules/next-pwa/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/next-pwa` if it exists or add a new declaration (.d.ts) file containing `declare module 'next-pwa';`
+simulate_herlin.ts(20,7): error TS2322: Type 'string' is not assignable to type 'SubLocationUncheckedCreateNestedManyWithoutProjectInput | SubLocationCreateNestedManyWithoutProjectInput | undefined'.
+simulate_herlin.ts(68,9): error TS2353: Object literal may only specify known properties, and 'emptyDrumsCount' does not exist in type 'Without<WeeklyPlanCreateInput, WeeklyPlanUncheckedCreateInput> & WeeklyPlanUncheckedCreateInput'.
+src/app/api/admin/users/[id]/reset-password/route.ts(32,21): error TS2353: Object literal may only specify known properties, and 'password' does not exist in type '(Without<UserUpdateInput, UserUncheckedUpdateInput> & UserUncheckedUpdateInput) | (Without<...> & UserUpdateInput)'.
+src/app/api/project/[id]/finances/route.ts(7,35): error TS2339: Property 'financeData' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+src/app/api/project/[id]/finances/route.ts(20,22): error TS2339: Property 'financeData' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+src/app/api/project/[id]/purchases/route.ts(7,40): error TS2339: Property 'purchase' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+src/app/api/project/[id]/purchases/route.ts(20,22): error TS2339: Property 'purchase' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+src/app/api/project/[id]/report/upload-photo/route.ts(42,17): error TS2353: Object literal may only specify known properties, and 'weeklyPlanTaskId' does not exist in type '(Without<PhotoProofCreateInput, PhotoProofUncheckedCreateInput> & PhotoProofUncheckedCreateInput) | (Without<...> & PhotoProofCreateInput)'.
+src/app/api/project/[id]/tasks/route.ts(21,38): error TS2345: Argument of type '{ id: string; name: string; projectId: string; }[]' is not assignable to parameter of type 'string'.
+src/app/api/project/[id]/technique/route.ts(7,40): error TS2339: Property 'technicalDocument' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+src/app/api/project/[id]/technique/route.ts(20,22): error TS2339: Property 'technicalDocument' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+src/app/api/project/route.ts(16,17): error TS2322: Type 'string | null' is not assignable to type 'SubLocationUncheckedCreateNestedManyWithoutProjectInput | SubLocationCreateNestedManyWithoutProjectInput | undefined'.
+  Type 'null' is not assignable to type 'SubLocationUncheckedCreateNestedManyWithoutProjectInput | SubLocationCreateNestedManyWithoutProjectInput | undefined'.
+src/app/pm/project/[id]/page.tsx(84,59): error TS2322: Type '{ siteManager: { id: string; name: string; email: string; passwordHash: string; role: string; status: string; xp: number; level: number; characterId: number; company: string | null; createdAt: Date; updatedAt: Date; } | null; tasks: { ...; }[]; weeklyPlans: ({ ...; } & { ...; })[]; revisions: { ...; }[]; } & { ...; }' is not assignable to type '{ id: string; name: string; tasks: { totalBudgetedHours: number | null; completedHours: number | null; hourlyRate: number | null; }[]; }'.
+  Types of property 'tasks' are incompatible.
+    Type '{ id: string; status: string; createdAt: Date; updatedAt: Date; taskCode: string; category: string; description: string; unit: string; quantity: number; completedQuantity: number; minutesPerUnit: number; projectId: string; }[]' is not assignable to type '{ totalBudgetedHours: number | null; completedHours: number | null; hourlyRate: number | null; }[]'.
+      Type '{ id: string; status: string; createdAt: Date; updatedAt: Date; taskCode: string; category: string; description: string; unit: string; quantity: number; completedQuantity: number; minutesPerUnit: number; projectId: string; }' is missing the following properties from type '{ totalBudgetedHours: number | null; completedHours: number | null; hourlyRate: number | null; }': totalBudgetedHours, completedHours, hourlyRate
+src/lib/validations.ts(13,13): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(values: readonly ["PM", "SM"], params?: string | { error?: string | $ZodErrorMap<$ZodIssueInvalidValue<unknown>> | undefined; message?: string | undefined; } | undefined): ZodEnum<...>', gave the following error.
+    Object literal may only specify known properties, and 'errorMap' does not exist in type '{ error?: string | $ZodErrorMap<$ZodIssueInvalidValue<unknown>> | undefined; message?: string | undefined; }'.
+  Overload 2 of 2, '(entries: Readonly<Record<string, EnumValue>>, params?: string | { error?: string | $ZodErrorMap<$ZodIssueInvalidValue<unknown>> | undefined; message?: string | undefined; } | undefined): ZodEnum<...>', gave the following error.
+    Argument of type 'string[]' is not assignable to parameter of type 'Readonly<Record<string, EnumValue>>'.
+      Index signature for type 'string' is missing in type 'string[]'.
+src/lib/validations.ts(82,30): error TS2339: Property 'errors' does not exist on type 'ZodError<T>'.
+src/lib/validations.ts(82,41): error TS7006: Parameter 'e' implicitly has an 'any' type.

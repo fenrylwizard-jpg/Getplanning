@@ -1,20 +1,48 @@
 import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { parseEtudes } from "@/lib/parsers/parse-etudes";
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
-    const { id } = await params;
+    const { id: projectId } = await params;
     try {
         const formData = await req.formData();
         const file = formData.get("file") as File;
         if (!file) return NextResponse.json({ error: "File is required" }, { status: 400 });
 
+        const buffer = Buffer.from(await file.arrayBuffer());
+        const tasks = parseEtudes(buffer);
+
+        // Delete old etude tasks for this project and insert new ones
+        await prisma.etudeTask.deleteMany({ where: { projectId } });
+
+        // Create upload record
+        const upload = await prisma.monthlyUpload.create({
+            data: {
+                projectId,
+                month: new Date(),
+                etudesFile: file.name,
+            },
+        });
+
+        if (tasks.length > 0) {
+            await prisma.etudeTask.createMany({
+                data: tasks.map(t => ({
+                    projectId,
+                    uploadId: upload.id,
+                    ...t,
+                })),
+            });
+        }
+
         return NextResponse.json({
             success: true,
-            message: "File received. Excel parsing will be implemented with sample data.",
-            projectId: id,
+            projectId,
             fileName: file.name,
+            count: tasks.length,
         });
     } catch (error) {
         console.error("Technique upload error:", error);
-        return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+        const message = error instanceof Error ? error.message : "Upload failed";
+        return NextResponse.json({ error: message }, { status: 500 });
     }
 }

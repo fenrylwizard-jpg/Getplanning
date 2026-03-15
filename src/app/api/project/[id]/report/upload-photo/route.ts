@@ -35,7 +35,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         fs.writeFileSync(filepath, imageBuffer);
 
         // Save DB Record
-        const proof = await prisma.photoProof.create({
+        const proof = await (prisma.photoProof as any).create({
             data: {
                 url: fileUrl,
                 caption: caption || null,

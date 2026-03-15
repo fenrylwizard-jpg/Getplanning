@@ -2,11 +2,22 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
+export interface PersonalParams {
+    weight: number;      // kg
+    height: number;      // cm
+    age: number;
+    gender: 'M' | 'F';
+    activityLevel: 1.2 | 1.375 | 1.55 | 1.725 | 1.9; // Sedentary to Very Active
+    goalWeight: number;  // kg
+    goalDuration: number; // weeks
+    dailyKcalTarget?: number; // Calculated field
+}
+
 export interface SymptomEntry {
     id: number;
     date: string;            // ISO date string
     mealType: 'Petit-déj' | 'Déjeuner' | 'Dîner' | 'Collation';
-    foodsEaten: string[];
+    foodsEaten: { name: string; kcal: number }[];
     symptoms: {
         name: string;
         severity: 1 | 2 | 3 | 4 | 5;
@@ -19,8 +30,9 @@ export interface SymptomEntry {
 export interface CookingUser {
     username: string;
     displayName: string;
-    protocol: 'low-fodmap' | 'perte-de-poids' | 'vegetarien' | 'vegan' | 'keto' | 'mediterraneen' | 'sans-gluten' | 'sans-lactose' | 'paleo' | 'anti-inflammatoire' | 'jeune-intermittent' | 'dash' | 'none';
-    protocolPhase: 1 | 2 | 3;
+    protocols: string[]; // Support multiple diets (e.g. ['low-fodmap', 'perte-de-poids'])
+    protocolPhase?: 1 | 2 | 3;
+    personalParams?: PersonalParams;
     mealPrepEnabled: boolean;
     pantryItems: PantryItem[];
     shoppingList: ShoppingItem[];
@@ -58,8 +70,18 @@ const USERS_DB: Record<string, { password: string; profile: CookingUser }> = {
         profile: {
             username: 'victoria',
             displayName: 'Victoria',
-            protocol: 'low-fodmap',
+            protocols: ['low-fodmap'],
             protocolPhase: 1,
+            personalParams: {
+                weight: 65,
+                height: 168,
+                age: 32,
+                gender: 'F',
+                activityLevel: 1.375,
+                goalWeight: 60,
+                goalDuration: 12,
+                dailyKcalTarget: 1750,
+            },
             mealPrepEnabled: true,
             pantryItems: [
                 { id: 1, name: 'Carottes', category: 'Légumes', emoji: '🥕', qty: '500g' },
@@ -85,7 +107,11 @@ const USERS_DB: Record<string, { password: string; profile: CookingUser }> = {
                     id: 1,
                     date: '2026-03-14T12:30:00',
                     mealType: 'Déjeuner',
-                    foodsEaten: ['Risotto aux courgettes', 'Parmesan', 'Huile d\'olive'],
+                    foodsEaten: [
+                        { name: 'Risotto aux courgettes', kcal: 450 },
+                        { name: 'Parmesan', kcal: 80 },
+                        { name: 'Huile d\'olive', kcal: 90 }
+                    ],
                     symptoms: [
                         { name: 'Ballonnements', severity: 2, emoji: '🫧' },
                     ],
@@ -96,7 +122,11 @@ const USERS_DB: Record<string, { password: string; profile: CookingUser }> = {
                     id: 2,
                     date: '2026-03-13T19:00:00',
                     mealType: 'Dîner',
-                    foodsEaten: ['Saumon grillé', 'Riz basmati', 'Carottes'],
+                    foodsEaten: [
+                        { name: 'Saumon grillé', kcal: 320 },
+                        { name: 'Riz basmati', kcal: 210 },
+                        { name: 'Carottes', kcal: 45 }
+                    ],
                     symptoms: [],
                     overallFeeling: 5,
                     notes: 'Aucun symptôme ! Repas parfait.',
@@ -105,7 +135,11 @@ const USERS_DB: Record<string, { password: string; profile: CookingUser }> = {
                     id: 3,
                     date: '2026-03-12T13:00:00',
                     mealType: 'Déjeuner',
-                    foodsEaten: ['Salade de quinoa', 'Tomates', 'Oignon'],
+                    foodsEaten: [
+                        { name: 'Salade de quinoa', kcal: 280 },
+                        { name: 'Tomates', kcal: 25 },
+                        { name: 'Oignon', kcal: 15 }
+                    ],
                     symptoms: [
                         { name: 'Douleur abdominale', severity: 4, emoji: '😣' },
                         { name: 'Ballonnements', severity: 4, emoji: '🫧' },
@@ -126,13 +160,17 @@ export function CookingAuthProvider({ children }: { children: ReactNode }) {
     const [loaded, setLoaded] = useState(false);
 
     useEffect(() => {
+        let isMounted = true;
         const stored = localStorage.getItem(STORAGE_KEY);
-        if (stored) {
+        if (stored && isMounted) {
             try {
                 setUser(JSON.parse(stored));
             } catch { /* ignore */ }
         }
-        setLoaded(true);
+        if (isMounted) {
+            setLoaded(true);
+        }
+        return () => { isMounted = false; };
     }, []);
 
     useEffect(() => {

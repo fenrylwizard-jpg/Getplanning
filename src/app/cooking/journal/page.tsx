@@ -28,7 +28,9 @@ export default function JournalPage() {
 
     // New entry form state
     const [newMealType, setNewMealType] = useState<typeof mealTypes[number]>('Déjeuner');
-    const [newFoods, setNewFoods] = useState('');
+    const [newFoods, setNewFoods] = useState<{ name: string; kcal: number }[]>([]);
+    const [currentFoodName, setCurrentFoodName] = useState('');
+    const [currentFoodKcal, setCurrentFoodKcal] = useState<number | ''>('');
     const [newSymptoms, setNewSymptoms] = useState<{ name: string; severity: 1 | 2 | 3 | 4 | 5; emoji: string }[]>([]);
     const [newFeeling, setNewFeeling] = useState<1 | 2 | 3 | 4 | 5>(3);
     const [newNotes, setNewNotes] = useState('');
@@ -59,6 +61,19 @@ export default function JournalPage() {
             .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     }, [log, filterDays]);
 
+    // Daily Calorie Tracking (Today)
+    const todayStats = useMemo(() => {
+        const today = new Date().setHours(0, 0, 0, 0);
+        const todaysEntries = log.filter(e => new Date(e.date).setHours(0, 0, 0, 0) === today);
+        let totalKcal = 0;
+        todaysEntries.forEach(e => {
+            e.foodsEaten.forEach(food => {
+                totalKcal += food.kcal;
+            });
+        });
+        return { totalKcal, entriesCount: todaysEntries.length };
+    }, [log]);
+
     // Analytics
     const analytics = useMemo(() => {
         if (log.length === 0) return null;
@@ -72,7 +87,7 @@ export default function JournalPage() {
                 symptomFreq[s.name] = (symptomFreq[s.name] || 0) + 1;
                 // Map foods to symptoms
                 entry.foodsEaten.forEach(food => {
-                    const key = food.toLowerCase().trim();
+                    const key = food.name.toLowerCase().trim();
                     if (!foodSymptomMap[key]) foodSymptomMap[key] = { count: 0, totalSeverity: 0 };
                     foodSymptomMap[key].count += 1;
                     foodSymptomMap[key].totalSeverity += s.severity;
@@ -107,15 +122,25 @@ export default function JournalPage() {
         setNewSymptoms(newSymptoms.map(s => s.name === name ? { ...s, severity } : s));
     };
 
+    const addFoodItem = () => {
+        if (!currentFoodName.trim()) return;
+        setNewFoods([...newFoods, { name: currentFoodName.trim(), kcal: Number(currentFoodKcal) || 0 }]);
+        setCurrentFoodName('');
+        setCurrentFoodKcal('');
+    };
+
+    const removeFoodItem = (index: number) => {
+        setNewFoods(newFoods.filter((_, i) => i !== index));
+    };
+
     const addEntry = () => {
-        const foodsList = newFoods.split(',').map(f => f.trim()).filter(Boolean);
-        if (foodsList.length === 0) return;
+        if (newFoods.length === 0) return;
 
         const entry: SymptomEntry = {
             id: Date.now(),
             date: new Date().toISOString(),
             mealType: newMealType,
-            foodsEaten: foodsList,
+            foodsEaten: newFoods,
             symptoms: newSymptoms,
             overallFeeling: newFeeling,
             notes: newNotes,
@@ -123,7 +148,7 @@ export default function JournalPage() {
 
         updateUser({ symptomLog: [entry, ...log] });
         setShowAddForm(false);
-        setNewFoods('');
+        setNewFoods([]);
         setNewSymptoms([]);
         setNewFeeling(3);
         setNewNotes('');
@@ -156,6 +181,35 @@ export default function JournalPage() {
             </div>
 
             <div className="ck-glass-section">
+                
+                {/* Daily Calorie Summary */}
+                {user.personalParams?.dailyKcalTarget && (
+                    <div className="ck-glass-card ck-fade-up-2" style={{ marginBottom: '2rem', padding: '1.5rem', background: 'linear-gradient(135deg, rgba(255,160,122,0.1), rgba(255,107,107,0.05))', border: '1px solid rgba(255,160,122,0.2)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                            <h2 style={{ fontSize: '1.2rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                🔥 Calories du Jour
+                            </h2>
+                            <span style={{ fontWeight: 700, color: 'var(--ck-orange)', fontSize: '1.1rem' }}>
+                                {todayStats.totalKcal} / {user.personalParams.dailyKcalTarget} kcal
+                            </span>
+                        </div>
+                        
+                        {/* Progress Bar */}
+                        <div style={{ width: '100%', height: '12px', background: 'rgba(0,0,0,0.05)', borderRadius: '6px', overflow: 'hidden', marginBottom: '0.5rem' }}>
+                            <div style={{ 
+                                height: '100%', 
+                                width: `${Math.min(100, (todayStats.totalKcal / user.personalParams.dailyKcalTarget) * 100)}%`,
+                                background: todayStats.totalKcal > user.personalParams.dailyKcalTarget ? 'var(--ck-coral)' : 'linear-gradient(90deg, var(--ck-orange), var(--ck-peach))',
+                                transition: 'width 0.5s ease-out'
+                            }} />
+                        </div>
+                        <p style={{ fontSize: '0.8rem', color: 'var(--ck-text-muted)', margin: 0 }}>
+                            {todayStats.totalKcal > user.personalParams.dailyKcalTarget 
+                                ? `Vous avez dépassé votre objectif de ${todayStats.totalKcal - user.personalParams.dailyKcalTarget} kcal.` 
+                                : `Il vous reste ${user.personalParams.dailyKcalTarget - todayStats.totalKcal} kcal pour aujourd'hui. (${todayStats.entriesCount} repas partagés)`}
+                        </p>
+                    </div>
+                )}
                 {/* Analytics Dashboard */}
                 {analytics && analytics.totalEntries > 0 && (
                     <div className="ck-fade-up-2" style={{ marginBottom: '2rem' }}>
@@ -286,17 +340,61 @@ export default function JournalPage() {
                             </div>
                         </div>
 
-                        {/* Foods Eaten */}
+                        {/* Foods Eaten with Calories */}
                         <div style={{ marginBottom: '1rem' }}>
                             <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ck-text-muted)', marginBottom: '0.5rem' }}>
-                                Aliments consommés (séparés par des virgules)
+                                Aliments & Calories
                             </label>
-                            <input
-                                className="ck-input"
-                                placeholder="Ex: Poulet, riz, courgettes, huile d'olive"
-                                value={newFoods}
-                                onChange={e => setNewFoods(e.target.value)}
-                            />
+                            
+                            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                                <input
+                                    className="ck-input"
+                                    placeholder="Nom de l'aliment (ex: Poulet rôti)"
+                                    value={currentFoodName}
+                                    onChange={e => setCurrentFoodName(e.target.value)}
+                                    style={{ flex: 2 }}
+                                    onKeyDown={e => e.key === 'Enter' && addFoodItem()}
+                                />
+                                <input
+                                    className="ck-input"
+                                    placeholder="kcal (ex: 250)"
+                                    type="number"
+                                    value={currentFoodKcal}
+                                    onChange={e => setCurrentFoodKcal(e.target.value === '' ? '' : Number(e.target.value))}
+                                    style={{ flex: 1 }}
+                                    onKeyDown={e => e.key === 'Enter' && addFoodItem()}
+                                />
+                                <button 
+                                    className="ck-btn ck-btn-primary" 
+                                    onClick={addFoodItem}
+                                    style={{ padding: '0 1rem' }}
+                                >
+                                    +
+                                </button>
+                            </div>
+
+                            {/* List of added foods */}
+                            {newFoods.length > 0 && (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', background: 'rgba(0,0,0,0.02)', padding: '0.75rem', borderRadius: '0.5rem' }}>
+                                    {newFoods.map((food, idx) => (
+                                        <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem' }}>
+                                            <span style={{ fontWeight: 600 }}>{food.name}</span>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                                <span style={{ color: 'var(--ck-orange)', fontWeight: 600 }}>{food.kcal} kcal</span>
+                                                <button 
+                                                    onClick={() => removeFoodItem(idx)}
+                                                    style={{ background: 'none', border: 'none', color: 'var(--ck-coral)', cursor: 'pointer', fontSize: '0.8rem' }}
+                                                >
+                                                    ✕
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    <div style={{ borderTop: '1px solid rgba(0,0,0,0.1)', paddingTop: '0.35rem', marginTop: '0.35rem', textAlign: 'right', fontSize: '0.8rem', fontWeight: 700 }}>
+                                        Total: <span style={{ color: 'var(--ck-orange)' }}>{newFoods.reduce((acc, curr) => acc + curr.kcal, 0)} kcal</span>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         {/* Symptoms */}
@@ -411,7 +509,7 @@ export default function JournalPage() {
                             className="ck-btn ck-btn-rose"
                             onClick={addEntry}
                             style={{ width: '100%', padding: '0.875rem' }}
-                            disabled={!newFoods.trim()}
+                            disabled={newFoods.length === 0}
                         >
                             ✓ Enregistrer le repas
                         </button>
@@ -438,7 +536,10 @@ export default function JournalPage() {
                                                 {entry.mealType === 'Petit-déj' ? '☀️' : entry.mealType === 'Déjeuner' ? '🌤️' : entry.mealType === 'Dîner' ? '🌙' : '🍪'} {entry.mealType}
                                             </h3>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                <span style={{ fontSize: '0.75rem', color: 'var(--ck-text-muted)' }}>{formatDate(entry.date)}</span>
+                                                <span style={{ fontSize: '0.75rem', color: 'var(--ck-orange)', fontWeight: 700 }}>
+                                                    🔥 {entry.foodsEaten.reduce((acc, f) => acc + f.kcal, 0)} kcal
+                                                </span>
+                                                <span style={{ fontSize: '0.75rem', color: 'var(--ck-text-muted)' }}>• {formatDate(entry.date)}</span>
                                                 <button
                                                     onClick={() => deleteEntry(entry.id)}
                                                     title="Supprimer cette entrée"
@@ -455,9 +556,9 @@ export default function JournalPage() {
 
                                         {/* Foods */}
                                         <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
-                                            {entry.foodsEaten.map(food => (
-                                                <span key={food} className="ck-tag ck-tag-orange" style={{ fontSize: '0.7rem', padding: '0.15rem 0.5rem' }}>
-                                                    {food}
+                                            {entry.foodsEaten.map((food, idx) => (
+                                                <span key={idx} className="ck-tag ck-tag-orange" style={{ fontSize: '0.7rem', padding: '0.15rem 0.5rem' }}>
+                                                    {food.name} <span style={{ opacity: 0.7 }}>({food.kcal} kcal)</span>
                                                 </span>
                                             ))}
                                         </div>

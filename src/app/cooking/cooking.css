@@ -91,8 +91,8 @@
   top: 0;
   z-index: 50;
   padding: 1rem 0;
-  backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
   background: rgba(255, 248, 240, 0.75);
   border-bottom: 1px solid rgba(245, 138, 61, 0.08);
 }
@@ -234,8 +234,8 @@
 
 .ck-feature-card {
   background: var(--ck-glass-bg);
-  backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
   border: 1px solid var(--ck-glass-border);
   border-radius: var(--ck-radius-lg);
   padding: 2rem;
@@ -365,8 +365,8 @@
 
 .ck-glass-card {
   background: var(--ck-glass-bg);
-  backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
   border: 1px solid var(--ck-glass-border);
   border-radius: var(--ck-radius-lg);
   padding: 2rem;
@@ -529,8 +529,8 @@
 /* ── Phase/Step Cards ── */
 .ck-phase-card {
   background: var(--ck-glass-bg);
-  backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
   border: 1px solid var(--ck-glass-border);
   border-radius: var(--ck-radius-lg);
   padding: 2rem;
@@ -591,8 +591,8 @@
 /* ── Recipe Cards ── */
 .ck-recipe-card {
   background: var(--ck-glass-bg);
-  backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
   border: 1px solid var(--ck-glass-border);
   border-radius: var(--ck-radius-lg);
   overflow: hidden;
@@ -622,6 +622,7 @@
 /* ── Stat Cards ── */
 .ck-stat-card {
   background: var(--ck-glass-bg);
+  -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
   border: 1px solid var(--ck-glass-border);
   border-radius: var(--ck-radius);
@@ -696,8 +697,8 @@
   left: 0;
   right: 0;
   z-index: 50;
-  backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
   background: rgba(255, 248, 240, 0.85);
   border-top: 1px solid rgba(245, 138, 61, 0.1);
   padding: 0.5rem 0;
