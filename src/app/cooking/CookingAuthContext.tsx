@@ -164,7 +164,20 @@ export function CookingAuthProvider({ children }: { children: ReactNode }) {
         const stored = localStorage.getItem(STORAGE_KEY);
         if (stored && isMounted) {
             try {
-                setUser(JSON.parse(stored));
+                const parsed = JSON.parse(stored);
+                // Normalize stale localStorage data — ensure all required fields exist
+                const normalized: CookingUser = {
+                    username: parsed.username || '',
+                    displayName: parsed.displayName || parsed.username || '',
+                    protocols: parsed.protocols ?? (parsed.protocol ? [parsed.protocol] : []),
+                    protocolPhase: parsed.protocolPhase ?? 1,
+                    personalParams: parsed.personalParams ?? undefined,
+                    mealPrepEnabled: parsed.mealPrepEnabled ?? false,
+                    pantryItems: parsed.pantryItems ?? [],
+                    shoppingList: parsed.shoppingList ?? [],
+                    symptomLog: parsed.symptomLog ?? [],
+                };
+                setUser(normalized);
             } catch { /* ignore */ }
         }
         if (isMounted) {
