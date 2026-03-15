@@ -29,6 +29,8 @@ export interface PurchaseCategoryData {
 export function parsePurchases(buffer: Buffer): PurchaseCategoryData[] {
   const wb = XLSX.read(buffer, { type: 'buffer' });
   
+  console.log('[parse-purchases] Sheet names found:', wb.SheetNames);
+  
   // Find the Synthèse sheet - try by name first, then by index
   let sheetName = wb.SheetNames.find(n => 
     n.toLowerCase().includes('synth') || n.toLowerCase().includes('recap')
@@ -36,12 +38,24 @@ export function parsePurchases(buffer: Buffer): PurchaseCategoryData[] {
   if (!sheetName) {
     // Fallback to 3rd sheet (index 2) since it's typically there
     sheetName = wb.SheetNames[2] || wb.SheetNames[0];
+    console.log('[parse-purchases] No "Synthèse" sheet found, using fallback:', sheetName);
+  } else {
+    console.log('[parse-purchases] Using sheet:', sheetName);
   }
   
   const ws = wb.Sheets[sheetName];
-  if (!ws) return [];
+  if (!ws) { console.warn('[parse-purchases] Sheet not found'); return []; }
   
   const data: any[][] = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+  console.log('[parse-purchases] Total rows in sheet:', data.length);
+  
+  // Log first 10 rows for debugging
+  for (let i = 0; i < Math.min(data.length, 10); i++) {
+    const row = data[i];
+    if (!row) continue;
+    const rowStr = row.slice(0, 8).map((c: any) => String(c || '').substring(0, 20)).join(' | ');
+    console.log(`[parse-purchases]   Row ${i}: ${rowStr}`);
+  }
   
   // Find the header row by looking for "PARTIE ACHATS" or "Initiales PE"
   let headerRowIdx = -1;
@@ -56,9 +70,10 @@ export function parsePurchases(buffer: Buffer): PurchaseCategoryData[] {
   }
   
   if (headerRowIdx === -1) {
-    console.warn('Could not find Synthèse header row');
+    console.warn('[parse-purchases] Could not find header row with "PARTIE ACHATS" or "Initiales PE" in first 15 rows');
     return [];
   }
+  console.log('[parse-purchases] Header row found at index:', headerRowIdx);
   
   const header = data[headerRowIdx].map((c: any) => String(c || '').trim());
   

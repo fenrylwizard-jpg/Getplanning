@@ -34,11 +34,48 @@ export function parseEtudes(buffer: Buffer): EtudeTaskData[] {
   const wb = XLSX.read(buffer, { type: 'buffer' });
   const results: EtudeTaskData[] = [];
   
-  const ws = wb.Sheets['Gantt Chart'];
-  if (!ws || !ws['!ref']) return results;
+  console.log('[parse-etudes] Sheet names found:', wb.SheetNames);
+  
+  // Try to find the gantt chart sheet - flexible matching
+  let ws = wb.Sheets['Gantt Chart'];
+  let usedSheet = 'Gantt Chart';
+  
+  if (!ws) {
+    // Try case-insensitive and partial match
+    const ganttName = wb.SheetNames.find(n => 
+      n.toLowerCase().includes('gantt') || 
+      n.toLowerCase().includes('planning') ||
+      n.toLowerCase().includes('études') ||
+      n.toLowerCase().includes('etudes') ||
+      n.toLowerCase().includes('suivi')
+    );
+    if (ganttName) {
+      ws = wb.Sheets[ganttName];
+      usedSheet = ganttName;
+      console.log('[parse-etudes] Using sheet by fuzzy match:', ganttName);
+    } else {
+      // Fall back to first sheet
+      usedSheet = wb.SheetNames[0];
+      ws = wb.Sheets[usedSheet];
+      console.log('[parse-etudes] No matching sheet found, trying first sheet:', usedSheet);
+    }
+  } else {
+    console.log('[parse-etudes] Found exact "Gantt Chart" sheet');
+  }
+  
+  if (!ws || !ws['!ref']) { console.warn('[parse-etudes] No usable sheet'); return results; }
   
   const data: unknown[][] = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+  console.log('[parse-etudes] Total rows:', data.length);
   if (data.length < 5) return results;
+  
+  // Log first 10 rows for debugging
+  for (let i = 0; i < Math.min(data.length, 10); i++) {
+    const row = data[i];
+    if (!row) continue;
+    const rowStr = (row as unknown[]).slice(0, 8).map((c: unknown) => String(c || '').substring(0, 25)).join(' | ');
+    console.log(`[parse-etudes]   Row ${i}: ${rowStr}`);
+  }
   
   // Find the header row - typically containing "Activité", "Assigné à"
   let headerRowIdx = -1;
@@ -46,7 +83,7 @@ export function parseEtudes(buffer: Buffer): EtudeTaskData[] {
     const row = data[i];
     if (!row) continue;
     const rowStr = row.map((c: unknown) => String(c || '')).join('|');
-    if (rowStr.includes('Activité') || rowStr.includes('Assigné à')) {
+    if (rowStr.includes('Activité') || rowStr.includes('Assigné à') || rowStr.includes('Activity') || rowStr.includes('Task')) {
       headerRowIdx = i;
       break;
     }
@@ -54,6 +91,9 @@ export function parseEtudes(buffer: Buffer): EtudeTaskData[] {
   
   if (headerRowIdx === -1) {
     headerRowIdx = 4; // 0-indexed, row 5 in Excel
+    console.log('[parse-etudes] Header not detected, defaulting to row index 4');
+  } else {
+    console.log('[parse-etudes] Header row found at index:', headerRowIdx);
   }
   
   const header = data[headerRowIdx]?.map((c: unknown) => String(c || '').trim()) || [];

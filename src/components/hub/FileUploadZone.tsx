@@ -29,6 +29,7 @@ export default function FileUploadZone({
 }: FileUploadZoneProps) {
     const [state, setState] = useState<UploadState>("idle");
     const [errorMessage, setErrorMessage] = useState("");
+    const [successMessage, setSuccessMessage] = useState("");
     const [fileName, setFileName] = useState("");
     const [progress, setProgress] = useState(0);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -87,14 +88,19 @@ export default function FileUploadZone({
 
             const data = await res.json();
             setProgress(100);
-            setState("success");
-            onUploadComplete?.(data);
 
-            // Reset after 3 seconds
-            setTimeout(() => {
-                setState("idle");
-                setProgress(0);
-            }, 3000);
+            // Check if any records were actually parsed
+            const count = data.count ?? 0;
+            if (count === 0) {
+                setState("error");
+                setErrorMessage(`Fichier reçu mais 0 enregistrement extrait. Vérifiez le format du fichier Excel (feuilles, colonnes).`);
+                setTimeout(() => { setState("idle"); setProgress(0); }, 6000);
+            } else {
+                setState("success");
+                setSuccessMessage(`${count} enregistrement${count > 1 ? 's' : ''} importé${count > 1 ? 's' : ''} avec succès`);
+                onUploadComplete?.(data);
+                setTimeout(() => { setState("idle"); setProgress(0); setSuccessMessage(""); }, 5000);
+            }
         } catch (err) {
             clearInterval(progressInterval);
             setState("error");
@@ -192,7 +198,7 @@ export default function FileUploadZone({
                     <>
                         <CheckCircle2 size={36} className="text-emerald-400" />
                         <div>
-                            <p className="text-sm font-bold text-emerald-400"><T k="hub_upload_success" /></p>
+                            <p className="text-sm font-bold text-emerald-400">{successMessage || <T k="hub_upload_success" />}</p>
                             <p className="text-xs text-gray-400 mt-1">{fileName}</p>
                         </div>
                     </>
