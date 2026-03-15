@@ -182,15 +182,31 @@ export function parseDossierTechnique(buffer: Buffer): {
       // Skip empty rows (no doc type or no doc number)
       if (!docType && !docNumber) continue;
       
-      // Skip template/test rows
+      // Skip template/test rows by name pattern
       const checkStr = `${docId || ''} ${description || ''} ${getStr(3) || ''}`;
       if (config.templatePattern.test(checkStr)) {
-        console.log(`[parse-dossier]   Skipping template row ${i}: ${checkStr.substring(0, 50)}`);
+        console.log(`[parse-dossier]   Skipping template row ${i} (name match): ${checkStr.substring(0, 50)}`);
         continue;
       }
       
       // Skip rows with no actual content (just structure)
       if (!description && !docId) continue;
+      
+      // KEY FIX: Skip rows that have a doc number but NO real description.
+      // These are empty template placeholders (e.g. FT65 with no product name,
+      // NC11-NC17 with no calc title). A real row always has a meaningful description.
+      if (!description || description.length < 3) {
+        console.log(`[parse-dossier]   Skipping empty template row ${i}: docNum="${docNumber}" desc="${description || '(empty)'}"`);
+        continue;
+      }
+      
+      // For Plans sheet: skip rows where the ID looks like a blank template
+      // (e.g. "Extension Institut Herlin__PL_" with no lot)
+      const lot = getStr(config.cols.lot);
+      if (config.category === 'plans' && !lot) {
+        console.log(`[parse-dossier]   Skipping plan template row ${i} (no lot): ${(description || '').substring(0, 40)}`);
+        continue;
+      }
       
       const beStatus = getStr(config.cols.beStatusCol)?.toUpperCase() || null;
       const arStatus = getStr(config.cols.arStatusCol)?.toUpperCase() || null;
@@ -203,7 +219,7 @@ export function parseDossierTechnique(buffer: Buffer): {
         description: description || docId || '',
         docType: docType || '',
         docNumber,
-        lot: getStr(config.cols.lot),
+        lot,
         submittedDate: excelDateToJS(row[config.cols.transmittedDate]),
         dueDate: excelDateToJS(row[config.cols.dueDate]),
         beStatus,
