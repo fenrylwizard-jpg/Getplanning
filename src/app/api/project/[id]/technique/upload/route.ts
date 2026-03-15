@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { parseEtudes } from "@/lib/parsers/parse-etudes";
+import { parseDossierTechnique } from "@/lib/parsers/parse-dossier-technique";
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
     const { id: projectId } = await params;
@@ -10,7 +11,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         if (!file) return NextResponse.json({ error: "File is required" }, { status: 400 });
 
         const buffer = Buffer.from(await file.arrayBuffer());
+        
+        // Parse both the Gantt tasks AND the dossier technique sheets
         const tasks = parseEtudes(buffer);
+        const { documents, summaries } = parseDossierTechnique(buffer);
 
         // Delete old etude tasks for this project and insert new ones
         await prisma.etudeTask.deleteMany({ where: { projectId } });
@@ -34,11 +38,18 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
             });
         }
 
+        const totalCount = tasks.length + documents.length;
+
         return NextResponse.json({
             success: true,
             projectId,
             fileName: file.name,
-            count: tasks.length,
+            count: totalCount,
+            details: {
+                ganttTasks: tasks.length,
+                dossierDocuments: documents.length,
+                summaries,
+            },
         });
     } catch (error) {
         console.error("Technique upload error:", error);
