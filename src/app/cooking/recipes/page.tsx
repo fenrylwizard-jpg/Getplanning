@@ -34,7 +34,7 @@ export default function RecipesPage() {
 
     // AI search options
     const [usePantryOnly, setUsePantryOnly] = useState(false);
-    const [mealPrepMode, setMealPrepMode] = useState(user?.mealPrepEnabled || false);
+    const [mealPrepMode, setMealPrepMode] = useState(user?.mealPrepEnabled ?? false);
     const [mealType, setMealType] = useState('');
     const [servings, setServings] = useState(2);
     const [preferences, setPreferences] = useState('');
@@ -256,9 +256,9 @@ export default function RecipesPage() {
                                             Votre profil
                                         </div>
                                         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                                            {user.protocols.length > 0 ? user.protocols.map(p => (
+                                            {(user.protocols ?? []).length > 0 ? (user.protocols ?? []).map(p => (
                                                 <span key={p} className="ck-tag ck-tag-coral" style={{ textTransform: 'capitalize' }}>
-                                                    {p.replace('-', ' ')} {p === 'low-fodmap' && `Phase ${user.protocolPhase}`}
+                                                    {p.replace('-', ' ')} {p === 'low-fodmap' && `Phase ${user.protocolPhase ?? 1}`}
                                                 </span>
                                             )) : (
                                                 <span className="ck-tag ck-tag-coral">🍽️ Aucun régime</span>
@@ -266,7 +266,7 @@ export default function RecipesPage() {
                                             {user.personalParams?.dailyKcalTarget && (
                                                 <span className="ck-tag ck-tag-orange">🔥 Objectif: {user.personalParams.dailyKcalTarget} kcal</span>
                                             )}
-                                            <span className="ck-tag ck-tag-sage">🥫 {user.pantryItems.length} ingrédients en stock</span>
+                                            <span className="ck-tag ck-tag-sage">🥫 {(user.pantryItems ?? []).length} ingrédients en stock</span>
                                             {user.mealPrepEnabled && <span className="ck-tag ck-tag-lavender">🍱 Meal Prep actif</span>}
                                         </div>
                                     </div>
