@@ -73,7 +73,7 @@ Réponds UNIQUEMENT avec un JSON valide, sans markdown, sans backticks. Utilise 
 
 
         const response = await ai.models.generateContent({
-            model: 'gemini-2.0-flash',
+            model: 'gemini-3-flash',
             contents: prompt,
         });
 
