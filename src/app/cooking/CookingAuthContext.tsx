@@ -19,7 +19,7 @@ export interface SymptomEntry {
 export interface CookingUser {
     username: string;
     displayName: string;
-    protocol: 'low-fodmap' | 'none';
+    protocol: 'low-fodmap' | 'perte-de-poids' | 'vegetarien' | 'vegan' | 'keto' | 'mediterraneen' | 'sans-gluten' | 'sans-lactose' | 'paleo' | 'anti-inflammatoire' | 'jeune-intermittent' | 'dash' | 'none';
     protocolPhase: 1 | 2 | 3;
     mealPrepEnabled: boolean;
     pantryItems: PantryItem[];

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useCookingAuth } from '../CookingAuthContext';
 import Link from 'next/link';
+import { staticRecipes, recipeCategories } from '../data/recipesData';
 
 interface AIRecipe {
     name: string;
@@ -17,15 +18,6 @@ interface AIRecipe {
     fodmapSafe: boolean;
 }
 
-const staticRecipes = [
-    { id: 1, name: 'Risotto aux courgettes', emoji: '🍚', time: '35 min', difficulty: 'Facile', category: 'Plat', fodmap: true, tags: ['Sans gluten', 'Low-FODMAP'] },
-    { id: 2, name: 'Salade de quinoa', emoji: '🥗', time: '15 min', difficulty: 'Facile', category: 'Entrée', fodmap: true, tags: ['Vegan', 'Low-FODMAP'] },
-    { id: 3, name: 'Saumon grillé', emoji: '🐟', time: '25 min', difficulty: 'Moyen', category: 'Plat', fodmap: true, tags: ['Oméga-3', 'Low-FODMAP'] },
-    { id: 4, name: 'Smoothie fraises-banane', emoji: '🍓', time: '5 min', difficulty: 'Facile', category: 'Boisson', fodmap: false, tags: ['Rapide', 'Sucré'] },
-    { id: 5, name: 'Poulet rôti aux herbes', emoji: '🍗', time: '60 min', difficulty: 'Moyen', category: 'Plat', fodmap: true, tags: ['Protéiné', 'Low-FODMAP'] },
-    { id: 6, name: 'Bowl de riz au tofu', emoji: '🍜', time: '20 min', difficulty: 'Facile', category: 'Plat', fodmap: true, tags: ['Vegan', 'Low-FODMAP'] },
-];
-
 export default function RecipesPage() {
     const { user } = useCookingAuth();
     const [aiRecipes, setAiRecipes] = useState<AIRecipe[]>([]);
@@ -34,12 +26,25 @@ export default function RecipesPage() {
     const [expandedRecipe, setExpandedRecipe] = useState<number | null>(null);
     const [showAI, setShowAI] = useState(false);
 
+    // Classic recipe filters
+    const [searchQuery, setSearchQuery] = useState('');
+    const [activeCategory, setActiveCategory] = useState('Tous');
+    const [fodmapOnly, setFodmapOnly] = useState(false);
+
     // AI search options
     const [usePantryOnly, setUsePantryOnly] = useState(false);
     const [mealPrepMode, setMealPrepMode] = useState(user?.mealPrepEnabled || false);
     const [mealType, setMealType] = useState('');
     const [servings, setServings] = useState(2);
     const [preferences, setPreferences] = useState('');
+
+    // Filtered classic recipes
+    const filteredRecipes = staticRecipes.filter(r => {
+        if (activeCategory !== 'Tous' && r.category !== activeCategory) return false;
+        if (fodmapOnly && !r.fodmap) return false;
+        if (searchQuery && !r.name.toLowerCase().includes(searchQuery.toLowerCase()) && !r.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()))) return false;
+        return true;
+    });
 
     const searchWithAI = async () => {
         setLoading(true);
@@ -123,30 +128,83 @@ export default function RecipesPage() {
 
                 {/* Classic Recipes */}
                 {!showAI && (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.25rem' }}>
-                        {staticRecipes.map((recipe, i) => (
-                            <div key={recipe.id} className="ck-recipe-card ck-fade-up" style={{ animationDelay: `${i * 0.08}s` }}>
-                                <div className="ck-recipe-img" style={{
-                                    background: `linear-gradient(135deg, ${['#FFE5E5', '#E8F5E9', '#EDE7F6', '#FFF3E0', '#FCE4EC', '#E1F5FE'][i % 6]}, ${['#FFDADA', '#D5ECD6', '#E0D4F5', '#FFE8CC', '#F9D0E0', '#D0ECFA'][i % 6]})`,
-                                }}>
-                                    {recipe.emoji}
-                                </div>
-                                <div className="ck-recipe-body">
-                                    <h3 style={{ fontWeight: 800, marginBottom: '0.5rem', fontSize: '1.1rem' }}>{recipe.name}</h3>
-                                    <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.75rem', fontSize: '0.8rem', color: 'var(--ck-text-muted)' }}>
-                                        <span>⏱ {recipe.time}</span>
-                                        <span>📊 {recipe.difficulty}</span>
-                                    </div>
-                                    <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
-                                        {recipe.tags.map(tag => (
-                                            <span key={tag} className="ck-tag ck-tag-lavender" style={{ fontSize: '0.7rem', padding: '0.2rem 0.6rem' }}>
-                                                {tag}
-                                            </span>
-                                        ))}
-                                    </div>
-                                </div>
+                    <div>
+                        {/* Search & Filters */}
+                        <div style={{ marginBottom: '1.25rem' }}>
+                            <input
+                                className="ck-input"
+                                placeholder="🔍 Rechercher une recette ou un tag..."
+                                value={searchQuery}
+                                onChange={e => setSearchQuery(e.target.value)}
+                                style={{ marginBottom: '0.75rem' }}
+                            />
+                            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                                {recipeCategories.map(cat => (
+                                    <button
+                                        key={cat.name}
+                                        className="ck-tag"
+                                        title={`Filtrer par ${cat.name}`}
+                                        onClick={() => setActiveCategory(cat.name)}
+                                        style={activeCategory === cat.name
+                                            ? { background: 'linear-gradient(135deg, var(--ck-lavender), var(--ck-plum))', color: 'white', borderColor: 'transparent' }
+                                            : { background: 'rgba(255,255,255,0.5)', color: 'var(--ck-text-soft)', borderColor: 'rgba(0,0,0,0.06)' }
+                                        }
+                                    >
+                                        {cat.emoji} {cat.name}
+                                    </button>
+                                ))}
+                                <button
+                                    className="ck-tag"
+                                    title="Afficher uniquement les recettes Low-FODMAP"
+                                    onClick={() => setFodmapOnly(!fodmapOnly)}
+                                    style={fodmapOnly
+                                        ? { background: 'var(--ck-sage)', color: 'white', borderColor: 'transparent' }
+                                        : { background: 'rgba(255,255,255,0.5)', color: 'var(--ck-text-soft)', borderColor: 'rgba(0,0,0,0.06)' }
+                                    }
+                                >
+                                    🥦 FODMAP-safe
+                                </button>
                             </div>
-                        ))}
+                        </div>
+
+                        <p style={{ fontSize: '0.85rem', color: 'var(--ck-text-muted)', marginBottom: '1rem' }}>
+                            {filteredRecipes.length} recette{filteredRecipes.length > 1 ? 's' : ''} trouvée{filteredRecipes.length > 1 ? 's' : ''}
+                        </p>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.25rem' }}>
+                            {filteredRecipes.map((recipe, i) => (
+                                <div key={recipe.id} className="ck-recipe-card ck-fade-up" style={{ animationDelay: `${(i % 12) * 0.04}s` }}>
+                                    <div className="ck-recipe-img" style={{
+                                        background: `linear-gradient(135deg, ${['#FFE5E5', '#E8F5E9', '#EDE7F6', '#FFF3E0', '#FCE4EC', '#E1F5FE', '#FFF8E1', '#F3E5F5'][i % 8]}, ${['#FFDADA', '#D5ECD6', '#E0D4F5', '#FFE8CC', '#F9D0E0', '#D0ECFA', '#FFECB3', '#E1BEE7'][i % 8]})`,
+                                    }}>
+                                        {recipe.emoji}
+                                    </div>
+                                    <div className="ck-recipe-body">
+                                        <h3 style={{ fontWeight: 800, marginBottom: '0.5rem', fontSize: '1.05rem' }}>{recipe.name}</h3>
+                                        <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.75rem', fontSize: '0.8rem', color: 'var(--ck-text-muted)' }}>
+                                            <span>⏱ {recipe.time}</span>
+                                            <span>📊 {recipe.difficulty}</span>
+                                            <span style={{ opacity: 0.6 }}>{recipe.category}</span>
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+                                            {recipe.tags.slice(0, 3).map(tag => (
+                                                <span key={tag} className="ck-tag ck-tag-lavender" style={{ fontSize: '0.7rem', padding: '0.2rem 0.6rem' }}>
+                                                    {tag}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {filteredRecipes.length === 0 && (
+                            <div className="ck-empty-state">
+                                <div className="ck-empty-state-icon">🍽️</div>
+                                <h3 style={{ fontWeight: 800, marginBottom: '0.5rem' }}>Aucune recette trouvée</h3>
+                                <p style={{ color: 'var(--ck-text-muted)' }}>Essayez une autre catégorie ou un autre mot-clé.</p>
+                            </div>
+                        )}
                     </div>
                 )}
 
@@ -215,6 +273,7 @@ export default function RecipesPage() {
                                                 value={mealType}
                                                 onChange={e => setMealType(e.target.value)}
                                                 style={{ cursor: 'pointer' }}
+                                                title="Type de repas"
                                             >
                                                 <option value="">Tous les types</option>
                                                 <option value="petit-déj">☀️ Petit-déjeuner</option>
@@ -234,6 +293,8 @@ export default function RecipesPage() {
                                                 max={10}
                                                 value={servings}
                                                 onChange={e => setServings(parseInt(e.target.value) || 2)}
+                                                title="Nombre de portions"
+                                                placeholder="2"
                                             />
                                         </div>
                                     </div>
