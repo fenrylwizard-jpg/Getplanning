@@ -3,13 +3,14 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 export interface PersonalParams {
-    weight: number;      // kg
-    height: number;      // cm
-    age: number;
+    weight?: number;      // kg
+    height?: number;      // cm
+    age?: number;
     gender: 'M' | 'F';
     activityLevel: 1.2 | 1.375 | 1.55 | 1.725 | 1.9; // Sedentary to Very Active
-    goalWeight: number;  // kg
-    goalDuration: number; // weeks
+    goalWeight?: number;  // kg
+    goalDuration?: number; // weeks (legacy)
+    goalDurationWeeks?: number; // weeks
     dailyKcalTarget?: number; // Calculated field
 }
 

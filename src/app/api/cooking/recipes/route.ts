@@ -1,10 +1,13 @@
 import { GoogleGenAI } from '@google/genai';
 import { NextRequest, NextResponse } from 'next/server';
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
-
 export async function POST(req: NextRequest) {
     try {
+        if (!process.env.GEMINI_API_KEY) {
+            return NextResponse.json({ error: 'Clé API Gemini non configurée. Contactez l\'administrateur.' }, { status: 500 });
+        }
+
+        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
         const body = await req.json();
         const {
             protocols = [],   // string[] - 'low-fodmap' | 'perte-de-poids' | 'sans-gluten' etc.
@@ -68,9 +71,6 @@ Réponds UNIQUEMENT avec un JSON valide, sans markdown, sans backticks. Utilise 
   }
 ]`;
 
-        if (!process.env.GEMINI_API_KEY) {
-            return NextResponse.json({ error: 'GEMINI_API_KEY not configured' }, { status: 500 });
-        }
 
         const response = await ai.models.generateContent({
             model: 'gemini-2.0-flash',
@@ -92,9 +92,10 @@ Réponds UNIQUEMENT avec un JSON valide, sans markdown, sans backticks. Utilise 
 
         return NextResponse.json({ recipes });
     } catch (error) {
-        console.error('Gemini API error:', error);
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        console.error('Gemini API error:', errorMsg);
         return NextResponse.json(
-            { error: 'Failed to generate recipes', details: String(error) },
+            { error: `Erreur Gemini: ${errorMsg}` },
             { status: 500 }
         );
     }
