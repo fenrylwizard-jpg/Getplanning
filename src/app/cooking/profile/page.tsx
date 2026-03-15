@@ -20,6 +20,7 @@ const AVAILABLE_PROTOCOLS = [
 export default function ProfilePage() {
     const { user, updateUser } = useCookingAuth();
     const [mounted, setMounted] = useState(false);
+    const seeded = React.useRef(false);
     
     // State for multiple protocols
     const [selectedProtocols, setSelectedProtocols] = useState<string[]>([]);
@@ -33,9 +34,14 @@ export default function ProfilePage() {
     const [goalWeight, setGoalWeight] = useState<string>('');
     const [goalDurationWeeks, setGoalDurationWeeks] = useState<string>('12'); // weeks
 
+    // Toast state
+    const [showToast, setShowToast] = useState(false);
+
+    // Only seed form state ONCE on initial mount (not on every user change)
     useEffect(() => {
         setMounted(true);
-        if (user) {
+        if (user && !seeded.current) {
+            seeded.current = true;
             setSelectedProtocols(user.protocols || []);
             if (user.personalParams) {
                 setWeight(user.personalParams.weight?.toString() || '');
@@ -44,7 +50,7 @@ export default function ProfilePage() {
                 setGender(user.personalParams.gender || 'F');
                 setActivity(user.personalParams.activityLevel || 1.2);
                 setGoalWeight(user.personalParams.goalWeight?.toString() || '');
-                setGoalDurationWeeks(user.personalParams.goalDurationWeeks?.toString() || '12');
+                setGoalDurationWeeks(user.personalParams.goalDurationWeeks?.toString() || user.personalParams.goalDuration?.toString() || '12');
             }
         }
     }, [user]);
@@ -84,7 +90,7 @@ export default function ProfilePage() {
         bmr += gender === 'M' ? 5 : -161;
 
         // Activity Multiplier
-        let maintenance = bmr * activity;
+        const maintenance = bmr * activity;
 
         // Adjust for goal if set
         const gw = parseFloat(goalWeight);
@@ -129,7 +135,9 @@ export default function ProfilePage() {
             }
         });
         
-        alert("Profil sauvegardé avec succès !");
+        // Show animated toast
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 2500);
     };
 
     const kcalTarget = calculateDailyKcal();
@@ -286,6 +294,37 @@ export default function ProfilePage() {
                     💾 Sauvegarder mon profil
                 </button>
             </div>
+
+            {/* Save Toast */}
+            {showToast && (
+                <div style={{
+                    position: 'fixed',
+                    bottom: '2rem',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+                    color: 'white',
+                    padding: '1rem 2rem',
+                    borderRadius: '1rem',
+                    fontWeight: 700,
+                    fontSize: '1rem',
+                    boxShadow: '0 8px 30px rgba(34, 197, 94, 0.35)',
+                    zIndex: 9999,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.75rem',
+                    animation: 'ck-toast-in 0.4s ease-out',
+                }}>
+                    <span style={{ fontSize: '1.4rem' }}>✅</span>
+                    Profil sauvegardé avec succès !
+                </div>
+            )}
+            <style jsx>{`
+                @keyframes ck-toast-in {
+                    0% { opacity: 0; transform: translateX(-50%) translateY(1rem); }
+                    100% { opacity: 1; transform: translateX(-50%) translateY(0); }
+                }
+            `}</style>
         </div>
     );
 }
