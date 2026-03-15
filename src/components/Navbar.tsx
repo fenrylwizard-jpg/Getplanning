@@ -77,13 +77,12 @@ export default function Navbar({ userName, userRole, characterId, level, company
                                     <T k={userRole || "dashboard"} />
                                 </span>
                             </div>
-                            <div>
-                                <AvatarDisplay 
-                                    characterId={characterId || 1} 
-                                    level={level || 1} 
-                                    size={40} 
-                                />
-                            </div>
+                            <AvatarDisplay 
+                                characterId={characterId || 1} 
+                                level={level || 1} 
+                                size={40} 
+                                showLevel={false}
+                            />
                         </div>
                         <button 
                             onClick={handleLogout}

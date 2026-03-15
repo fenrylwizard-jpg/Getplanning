@@ -28,6 +28,11 @@ model User {
   planTemplates    PlanTemplate[] @relation("templatesCreatedBy")
   userBadges       UserBadge[]
   
+  // Cooking App Relations
+  cookingProtocols CookingProtocol[] @relation("UserProtocols")
+  pantryItems      PantryItem[]      @relation("UserPantry")
+  mealPreps        MealPrep[]        @relation("UserMealPreps")
+  
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 }
@@ -314,4 +319,56 @@ model UserBadge {
   earnedAt            DateTime  @default(now())
 
   @@unique([userId, badgeId])
+}
+
+// ==========================================
+// COOKING APP MODELS
+// ==========================================
+
+model CookingProtocol {
+  id          String   @id @default(cuid())
+  name        String   // "Low-FODMAP", etc.
+  description String?
+  userId      String
+  user        User     @relation("UserProtocols", fields: [userId], references: [id], onDelete: Cascade)
+  startDate   DateTime @default(now())
+  status      String   @default("ACTIVE") // ACTIVE, COMPLETED, PAUSED
+}
+
+model PantryItem {
+  id          String   @id @default(cuid())
+  name        String
+  category    String   // 'Légumes', 'Épicerie', 'Produits Laitiers' etc.
+  quantity    Float?
+  unit        String?  // 'g', 'ml', 'pcs'
+  userId      String
+  user        User     @relation("UserPantry", fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model CookingRecipe {
+  id           String             @id @default(cuid())
+  title        String
+  description  String?
+  imageUrl     String?
+  instructions String?            // JSON string or long text
+  ingredients  RecipeIngredient[]
+  mealPreps    MealPrep[]
+}
+
+model RecipeIngredient {
+  id          String        @id @default(cuid())
+  name        String
+  quantity    Float?
+  unit        String?
+  recipeId    String
+  recipe      CookingRecipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+}
+
+model MealPrep {
+  id          String        @id @default(cuid())
+  date        DateTime
+  recipeId    String
+  recipe      CookingRecipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User          @relation("UserMealPreps", fields: [userId], references: [id], onDelete: Cascade)
 }

@@ -6,6 +6,7 @@ export async function middleware(req: NextRequest) {
     const { pathname } = req.nextUrl;
     const hostname = req.headers.get('host') || '';
 
+
     // ── Subdomain routing ──
     // Strip port for local dev
     const host = hostname.split(':')[0];
@@ -29,6 +30,13 @@ export async function middleware(req: NextRequest) {
         return NextResponse.rewrite(url);
     }
 
+    // ── Cooking subdomain → serve cooking app ──
+    if (subdomain === 'cooking') {
+        if (!pathname.startsWith('/cooking')) {
+            return NextResponse.rewrite(new URL(`/cooking${pathname === '/' ? '' : pathname}`, req.url));
+        }
+    }
+
     // ── Root domain (no subdomain) → serve personal landing page ──
     // Only redirect if it's the root domain AND the path is "/"
     if (!subdomain && pathname === '/' && !host.startsWith('localhost') && !host.startsWith('127.0.0.1')) {
@@ -49,13 +57,14 @@ export async function middleware(req: NextRequest) {
         pathname.startsWith('/api/presence') ||
         pathname.startsWith('/landing') ||
         pathname.startsWith('/presentation') ||
+        pathname.startsWith('/cooking') ||
         pathname === '/'
     ) {
         return NextResponse.next();
     }
 
     // Exempt authentication and seed routes from JWT check
-    if (pathname.startsWith('/api/auth') || pathname.startsWith('/api/seed') || pathname.startsWith('/api/cron')) {
+    if (pathname.startsWith('/api/auth') || pathname.startsWith('/api/seed') || pathname.startsWith('/api/cron') || pathname.startsWith('/api/cooking')) {
         return NextResponse.next();
     }
 

@@ -1,10 +1,9 @@
 "use client";
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import {
     ShieldCheck, CheckCircle, XCircle, Clock, UserIcon, LogOut,
-    TrendingUp, Euro, Activity, Folder, Target, RefreshCw, Globe, ListOrdered, ArrowRight, Trash2
+    TrendingUp, Euro, Activity, Folder, Target, RefreshCw, Globe, ListOrdered
 } from 'lucide-react';
 import { toast } from 'sonner';
 import AvatarDisplay from '@/components/AvatarDisplay';
@@ -234,18 +233,13 @@ export default function AdminDashboard() {
                                     <th className="pb-3 pr-4"><T k="labor_budget" /></th>
                                     <th className="pb-3 pr-4"><T k="achieved_value" /></th>
                                     <th className="pb-3 pr-4"><T k="progress" /></th>
-                                    <th className="pb-3 pr-4"><T k="targets" /></th>
-                                    <th className="pb-3 text-right">Actions</th>
+                                    <th className="pb-3"><T k="targets" /></th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {stats.projects.map(p => (
-                                    <tr key={p.id} className="border-b border-white/5 hover:bg-white/[0.04] transition-colors group">
-                                        <td className="py-3 pr-4">
-                                            <Link href={`/pm/project/${p.id}`} className="font-bold text-white hover:text-purple-300 transition-colors">
-                                                {p.name}
-                                            </Link>
-                                        </td>
+                                    <tr key={p.id} className="border-b border-white/5 hover:bg-white/3 transition-colors">
+                                        <td className="py-3 pr-4 font-bold text-white">{p.name}</td>
                                         <td className="py-3 pr-4 text-gray-400">{p.pm}</td>
                                         <td className="py-3 pr-4 text-gray-300">{p.budgetHours.toLocaleString()}h</td>
                                         <td className="py-3 pr-4 text-gray-300">{p.earnedHours.toLocaleString()}h</td>
@@ -260,29 +254,8 @@ export default function AdminDashboard() {
                                                 <span className="text-xs text-gray-400">{p.pct}%</span>
                                             </div>
                                         </td>
-                                        <td className="py-3 pr-4 text-gray-400 text-xs">
+                                        <td className="py-3 text-gray-400 text-xs">
                                             {p.weeksHit}/{p.weeksClosed} sem.
-                                        </td>
-                                        <td className="py-3 text-right">
-                                            <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <Link href={`/pm/project/${p.id}`} className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-purple-500/10 border border-purple-500/30 text-purple-400 hover:bg-purple-500/20 text-xs font-bold transition-all">
-                                                    <ArrowRight size={12} /> Hub
-                                                </Link>
-                                                <button
-                                                    onClick={() => {
-                                                        const pin = prompt(`Pour supprimer "${p.name}", entrez le code PIN :`);
-                                                        if (pin !== '645428') { if (pin !== null) toast.error('Code PIN incorrect.'); return; }
-                                                        if (!confirm(`Confirmez la suppression DÉFINITIVE de "${p.name}" ?`)) return;
-                                                        fetch(`/api/project/${p.id}`, { method: 'DELETE' }).then(r => {
-                                                            if (r.ok) { toast.success(`Projet "${p.name}" supprimé.`); fetchData(); }
-                                                            else toast.error('Erreur lors de la suppression.');
-                                                        });
-                                                    }}
-                                                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 text-xs font-bold transition-all"
-                                                >
-                                                    <Trash2 size={12} /> Supprimer
-                                                </button>
-                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -350,7 +323,7 @@ export default function AdminDashboard() {
                                         <tr key={user.id} className="border-b border-white/5 hover:bg-white/3 transition-colors group">
                                             <td className="py-3 pr-4 pl-2 text-center text-xl font-black text-white/50 group-hover:text-white transition-colors">#{index + 1}</td>
                                             <td className="py-3 pr-4 pl-4 pt-4">
-                                                <AvatarDisplay characterId={user.characterId || 1} level={user.level || 1} size={100} />
+                                                <AvatarDisplay characterId={user.characterId || 1} level={user.level || 1} size={64} showLevel={false} />
                                             </td>
                                             <td className="py-3 pr-4">
                                                 <div className="font-bold text-lg text-white mb-1 group-hover:text-purple-300 transition-colors drop-shadow-sm">{user.name || '—'}</div>
