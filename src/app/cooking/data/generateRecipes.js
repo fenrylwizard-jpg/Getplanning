@@ -1,214 +1,136 @@
-// Script to generate recipesData.ts
 const fs = require('fs');
 const path = require('path');
 
-const recipes = [
-  // ── PETIT-DÉJEUNER (30) ──
-  { id:1, name:'Porridge aux myrtilles', emoji:'🫐', time:'10 min', difficulty:'Facile', category:'Petit-déj', fodmap:true, tags:['Sans gluten','Low-FODMAP','Rapide'] },
-  { id:2, name:'Œufs brouillés aux herbes', emoji:'🥚', time:'8 min', difficulty:'Facile', category:'Petit-déj', fodmap:true, tags:['Protéiné','Keto','Rapide'] },
-  { id:3, name:'Pancakes à la banane', emoji:'🥞', time:'15 min', difficulty:'Facile', category:'Petit-déj', fodmap:false, tags:['Sucré','Végétarien'] },
-  { id:4, name:'Smoothie vert épinards-kiwi', emoji:'🥝', time:'5 min', difficulty:'Facile', category:'Petit-déj', fodmap:true, tags:['Vegan','Détox','Rapide'] },
-  { id:5, name:'Tartine avocat-œuf poché', emoji:'🥑', time:'12 min', difficulty:'Facile', category:'Petit-déj', fodmap:false, tags:['Protéiné','Tendance'] },
-  { id:6, name:'Granola maison', emoji:'🥣', time:'35 min', difficulty:'Moyen', category:'Petit-déj', fodmap:true, tags:['Meal Prep','Low-FODMAP'] },
-  { id:7, name:'Crêpes complètes', emoji:'🥞', time:'20 min', difficulty:'Facile', category:'Petit-déj', fodmap:false, tags:['Classique','Végétarien'] },
-  { id:8, name:'Bol açaí', emoji:'🍇', time:'10 min', difficulty:'Facile', category:'Petit-déj', fodmap:false, tags:['Superaliment','Vegan'] },
-  { id:9, name:'Omelette aux champignons', emoji:'🍳', time:'10 min', difficulty:'Facile', category:'Petit-déj', fodmap:false, tags:['Protéiné','Keto'] },
-  { id:10, name:'Yaourt grec fruits rouges', emoji:'🍓', time:'5 min', difficulty:'Facile', category:'Petit-déj', fodmap:false, tags:['Rapide','Protéiné'] },
-  { id:11, name:'Muffins aux carottes', emoji:'🧁', time:'30 min', difficulty:'Moyen', category:'Petit-déj', fodmap:true, tags:['Meal Prep','Low-FODMAP'] },
-  { id:12, name:'Pain perdu à la cannelle', emoji:'🍞', time:'15 min', difficulty:'Facile', category:'Petit-déj', fodmap:false, tags:['Sucré','Classique'] },
-  { id:13, name:'Chia pudding coco-mangue', emoji:'🥥', time:'5 min', difficulty:'Facile', category:'Petit-déj', fodmap:true, tags:['Vegan','Meal Prep'] },
-  { id:14, name:'Gaufres légères', emoji:'🧇', time:'20 min', difficulty:'Facile', category:'Petit-déj', fodmap:false, tags:['Sucré','Végétarien'] },
-  { id:15, name:'Shakshuka', emoji:'🍳', time:'25 min', difficulty:'Moyen', category:'Petit-déj', fodmap:false, tags:['Méditerranéen','Protéiné'] },
-  { id:16, name:'Overnight oats banane-cacao', emoji:'🍫', time:'5 min', difficulty:'Facile', category:'Petit-déj', fodmap:false, tags:['Meal Prep','Vegan'] },
-  { id:17, name:'Toasts saumon fumé-cream cheese', emoji:'🐟', time:'5 min', difficulty:'Facile', category:'Petit-déj', fodmap:true, tags:['Oméga-3','Rapide'] },
-  { id:18, name:'Porridge protéiné beurre de cacahuète', emoji:'🥜', time:'10 min', difficulty:'Facile', category:'Petit-déj', fodmap:false, tags:['Protéiné','Sport'] },
-  { id:19, name:'Smoothie bowl tropical', emoji:'🥭', time:'10 min', difficulty:'Facile', category:'Petit-déj', fodmap:false, tags:['Vegan','Superaliment'] },
-  { id:20, name:'Galette sarrasin complète', emoji:'🥚', time:'15 min', difficulty:'Moyen', category:'Petit-déj', fodmap:true, tags:['Sans gluten','Breton'] },
-
-  // ── ENTRÉES (25) ──
-  { id:21, name:'Salade César revisitée', emoji:'🥗', time:'15 min', difficulty:'Facile', category:'Entrée', fodmap:false, tags:['Classique','Protéiné'] },
-  { id:22, name:'Velouté de carottes au gingembre', emoji:'🥕', time:'25 min', difficulty:'Facile', category:'Entrée', fodmap:true, tags:['Low-FODMAP','Vegan'] },
-  { id:23, name:'Bruschetta tomates-basilic', emoji:'🍅', time:'10 min', difficulty:'Facile', category:'Entrée', fodmap:false, tags:['Italien','Rapide'] },
-  { id:24, name:'Soupe miso', emoji:'🍜', time:'15 min', difficulty:'Facile', category:'Entrée', fodmap:false, tags:['Japonais','Détox'] },
-  { id:25, name:'Houmous maison', emoji:'🫘', time:'10 min', difficulty:'Facile', category:'Entrée', fodmap:false, tags:['Vegan','Méditerranéen'] },
-  { id:26, name:'Carpaccio de courgettes', emoji:'🥒', time:'10 min', difficulty:'Facile', category:'Entrée', fodmap:true, tags:['Low-FODMAP','Cru'] },
-  { id:27, name:'Soupe thaï au lait de coco', emoji:'🥥', time:'20 min', difficulty:'Moyen', category:'Entrée', fodmap:false, tags:['Asiatique','Épicé'] },
-  { id:28, name:'Taboulé de quinoa', emoji:'🌾', time:'20 min', difficulty:'Facile', category:'Entrée', fodmap:true, tags:['Sans gluten','Low-FODMAP'] },
-  { id:29, name:'Gaspacho andalou', emoji:'🍅', time:'15 min', difficulty:'Facile', category:'Entrée', fodmap:false, tags:['Espagnol','Froid'] },
-  { id:30, name:'Salade niçoise', emoji:'🥗', time:'15 min', difficulty:'Facile', category:'Entrée', fodmap:false, tags:['Classique','Protéiné'] },
-  { id:31, name:'Velouté de potimarron', emoji:'🎃', time:'30 min', difficulty:'Facile', category:'Entrée', fodmap:false, tags:['Automnal','Vegan'] },
-  { id:32, name:'Tartare de saumon', emoji:'🐟', time:'15 min', difficulty:'Moyen', category:'Entrée', fodmap:true, tags:['Oméga-3','Frais'] },
-  { id:33, name:'Salade de lentilles tièdes', emoji:'🫘', time:'25 min', difficulty:'Facile', category:'Entrée', fodmap:false, tags:['Protéiné','Végétarien'] },
-  { id:34, name:'Ceviche de daurade', emoji:'🐟', time:'20 min', difficulty:'Moyen', category:'Entrée', fodmap:true, tags:['Péruvien','Cru'] },
-  { id:35, name:'Soupe à l\'oignon gratinée', emoji:'🧅', time:'40 min', difficulty:'Moyen', category:'Entrée', fodmap:false, tags:['Classique','Français'] },
-  { id:36, name:'Salade feta-pastèque-menthe', emoji:'🍉', time:'10 min', difficulty:'Facile', category:'Entrée', fodmap:false, tags:['Estival','Frais'] },
-  { id:37, name:'Rouleaux de printemps crevettes', emoji:'🦐', time:'25 min', difficulty:'Moyen', category:'Entrée', fodmap:true, tags:['Asiatique','Léger'] },
-  { id:38, name:'Velouté de brocolis', emoji:'🥦', time:'20 min', difficulty:'Facile', category:'Entrée', fodmap:false, tags:['Vert','Détox'] },
-  { id:39, name:'Salade d\'endives aux noix', emoji:'🥜', time:'10 min', difficulty:'Facile', category:'Entrée', fodmap:true, tags:['Hivernal','Low-FODMAP'] },
-  { id:40, name:'Accras de morue', emoji:'🐟', time:'30 min', difficulty:'Moyen', category:'Entrée', fodmap:false, tags:['Antillais','Frit'] },
-
-  // ── PLATS PRINCIPAUX (80) ──
-  { id:41, name:'Risotto aux courgettes', emoji:'🍚', time:'35 min', difficulty:'Facile', category:'Plat', fodmap:true, tags:['Sans gluten','Low-FODMAP'] },
-  { id:42, name:'Saumon grillé aux herbes', emoji:'🐟', time:'25 min', difficulty:'Moyen', category:'Plat', fodmap:true, tags:['Oméga-3','Low-FODMAP'] },
-  { id:43, name:'Poulet rôti aux herbes', emoji:'🍗', time:'60 min', difficulty:'Moyen', category:'Plat', fodmap:true, tags:['Protéiné','Low-FODMAP'] },
-  { id:44, name:'Bowl de riz au tofu', emoji:'🍜', time:'20 min', difficulty:'Facile', category:'Plat', fodmap:true, tags:['Vegan','Low-FODMAP'] },
-  { id:45, name:'Pâtes carbonara légères', emoji:'🍝', time:'20 min', difficulty:'Facile', category:'Plat', fodmap:false, tags:['Italien','Classique'] },
-  { id:46, name:'Curry de pois chiches', emoji:'🍛', time:'30 min', difficulty:'Facile', category:'Plat', fodmap:false, tags:['Vegan','Indien'] },
-  { id:47, name:'Steak de thon mi-cuit', emoji:'🐟', time:'15 min', difficulty:'Moyen', category:'Plat', fodmap:true, tags:['Protéiné','Rapide'] },
-  { id:48, name:'Ratatouille provençale', emoji:'🍆', time:'45 min', difficulty:'Facile', category:'Plat', fodmap:false, tags:['Vegan','Français'] },
-  { id:49, name:'Pad thaï au poulet', emoji:'🍜', time:'25 min', difficulty:'Moyen', category:'Plat', fodmap:false, tags:['Thaï','Populaire'] },
-  { id:50, name:'Gratin dauphinois', emoji:'🥔', time:'60 min', difficulty:'Facile', category:'Plat', fodmap:false, tags:['Français','Réconfort'] },
-  { id:51, name:'Tajine de poulet citron confit', emoji:'🍋', time:'50 min', difficulty:'Moyen', category:'Plat', fodmap:false, tags:['Marocain','Épicé'] },
-  { id:52, name:'Lasagnes végétariennes', emoji:'🍝', time:'60 min', difficulty:'Moyen', category:'Plat', fodmap:false, tags:['Végétarien','Italien'] },
-  { id:53, name:'Sushi bowl saumon-avocat', emoji:'🍣', time:'20 min', difficulty:'Facile', category:'Plat', fodmap:false, tags:['Japonais','Tendance'] },
-  { id:54, name:'Chili sin carne', emoji:'🌶️', time:'35 min', difficulty:'Facile', category:'Plat', fodmap:false, tags:['Vegan','Mexicain'] },
-  { id:55, name:'Filet mignon en croûte', emoji:'🥩', time:'50 min', difficulty:'Difficile', category:'Plat', fodmap:false, tags:['Gastronomique','Fête'] },
-  { id:56, name:'Wok de légumes au sésame', emoji:'🥦', time:'15 min', difficulty:'Facile', category:'Plat', fodmap:true, tags:['Vegan','Asiatique','Rapide'] },
-  { id:57, name:'Quiche lorraine', emoji:'🥧', time:'45 min', difficulty:'Moyen', category:'Plat', fodmap:false, tags:['Français','Classique'] },
-  { id:58, name:'Bibimbap coréen', emoji:'🍚', time:'30 min', difficulty:'Moyen', category:'Plat', fodmap:false, tags:['Coréen','Complet'] },
-  { id:59, name:'Blanquette de veau', emoji:'🍖', time:'90 min', difficulty:'Moyen', category:'Plat', fodmap:false, tags:['Français','Réconfort'] },
-  { id:60, name:'Buddha bowl quinoa-légumes', emoji:'🥗', time:'20 min', difficulty:'Facile', category:'Plat', fodmap:true, tags:['Vegan','Low-FODMAP'] },
-  { id:61, name:'Burger maison classique', emoji:'🍔', time:'25 min', difficulty:'Facile', category:'Plat', fodmap:false, tags:['Américain','Populaire'] },
-  { id:62, name:'Couscous royal', emoji:'🍲', time:'90 min', difficulty:'Difficile', category:'Plat', fodmap:false, tags:['Maghrébin','Fête'] },
-  { id:63, name:'Poêlée de crevettes à l\'ail', emoji:'🦐', time:'15 min', difficulty:'Facile', category:'Plat', fodmap:false, tags:['Fruits de mer','Rapide'] },
-  { id:64, name:'Poulet tikka masala', emoji:'🍛', time:'40 min', difficulty:'Moyen', category:'Plat', fodmap:false, tags:['Indien','Épicé'] },
-  { id:65, name:'Gratin de pâtes béchamel', emoji:'🍝', time:'40 min', difficulty:'Facile', category:'Plat', fodmap:false, tags:['Réconfort','Végétarien'] },
-  { id:66, name:'Bœuf bourguignon', emoji:'🍷', time:'120 min', difficulty:'Moyen', category:'Plat', fodmap:false, tags:['Français','Mijotage'] },
-  { id:67, name:'Falafels sauce tahini', emoji:'🧆', time:'30 min', difficulty:'Moyen', category:'Plat', fodmap:false, tags:['Vegan','Libanais'] },
-  { id:68, name:'Pizza margherita maison', emoji:'🍕', time:'30 min', difficulty:'Moyen', category:'Plat', fodmap:false, tags:['Italien','Populaire'] },
-  { id:69, name:'Sauté de porc au gingembre', emoji:'🥩', time:'20 min', difficulty:'Facile', category:'Plat', fodmap:true, tags:['Asiatique','Low-FODMAP'] },
-  { id:70, name:'Croque-monsieur', emoji:'🧀', time:'10 min', difficulty:'Facile', category:'Plat', fodmap:false, tags:['Français','Rapide'] },
-  { id:71, name:'Moussaka grecque', emoji:'🍆', time:'60 min', difficulty:'Moyen', category:'Plat', fodmap:false, tags:['Grec','Réconfort'] },
-  { id:72, name:'Tacos au poisson grillé', emoji:'🌮', time:'20 min', difficulty:'Facile', category:'Plat', fodmap:false, tags:['Mexicain','Frais'] },
-  { id:73, name:'Paëlla valenciana', emoji:'🥘', time:'50 min', difficulty:'Difficile', category:'Plat', fodmap:false, tags:['Espagnol','Fête'] },
-  { id:74, name:'Tofu teriyaki', emoji:'🍱', time:'20 min', difficulty:'Facile', category:'Plat', fodmap:true, tags:['Vegan','Japonais'] },
-  { id:75, name:'Poulet basquaise', emoji:'🍗', time:'45 min', difficulty:'Moyen', category:'Plat', fodmap:false, tags:['Français','Mijotage'] },
-  { id:76, name:'Dahl de lentilles corail', emoji:'🍛', time:'30 min', difficulty:'Facile', category:'Plat', fodmap:false, tags:['Vegan','Indien'] },
-  { id:77, name:'Filet de bar en papillote', emoji:'🐟', time:'25 min', difficulty:'Facile', category:'Plat', fodmap:true, tags:['Léger','Low-FODMAP'] },
-  { id:78, name:'Raviolis ricotta-épinards', emoji:'🥟', time:'45 min', difficulty:'Difficile', category:'Plat', fodmap:false, tags:['Italien','Fait maison'] },
-  { id:79, name:'Nasi goreng', emoji:'🍚', time:'20 min', difficulty:'Facile', category:'Plat', fodmap:false, tags:['Indonésien','Wok'] },
-  { id:80, name:'Gratin de légumes d\'été', emoji:'🍆', time:'40 min', difficulty:'Facile', category:'Plat', fodmap:false, tags:['Végétarien','Estival'] },
-  { id:81, name:'Canard laqué', emoji:'🦆', time:'90 min', difficulty:'Difficile', category:'Plat', fodmap:false, tags:['Chinois','Fête'] },
-  { id:82, name:'Polenta crémeuse aux champignons', emoji:'🍄', time:'30 min', difficulty:'Moyen', category:'Plat', fodmap:false, tags:['Italien','Végétarien'] },
-  { id:83, name:'Poisson pané maison', emoji:'🐟', time:'20 min', difficulty:'Facile', category:'Plat', fodmap:false, tags:['Enfants','Classique'] },
-  { id:84, name:'Gnocchis sauce tomate', emoji:'🍝', time:'25 min', difficulty:'Facile', category:'Plat', fodmap:false, tags:['Italien','Réconfort'] },
-  { id:85, name:'Poulet au citron et romarin', emoji:'🍋', time:'40 min', difficulty:'Facile', category:'Plat', fodmap:true, tags:['Méditerranéen','Low-FODMAP'] },
-  { id:86, name:'Burritos au bœuf', emoji:'🌯', time:'25 min', difficulty:'Facile', category:'Plat', fodmap:false, tags:['Mexicain','Copieux'] },
-  { id:87, name:'Soupe pho vietnamienne', emoji:'🍜', time:'60 min', difficulty:'Moyen', category:'Plat', fodmap:false, tags:['Vietnamien','Bouillon'] },
-  { id:88, name:'Escalopes de dinde panées', emoji:'🍗', time:'20 min', difficulty:'Facile', category:'Plat', fodmap:false, tags:['Protéiné','Enfants'] },
-  { id:89, name:'Risotto aux champignons', emoji:'🍄', time:'35 min', difficulty:'Moyen', category:'Plat', fodmap:false, tags:['Italien','Automnal'] },
-  { id:90, name:'Wrap poulet-avocat', emoji:'🌯', time:'10 min', difficulty:'Facile', category:'Plat', fodmap:false, tags:['Rapide','Déjeuner'] },
-  { id:91, name:'Osso buco milanais', emoji:'🍖', time:'120 min', difficulty:'Difficile', category:'Plat', fodmap:false, tags:['Italien','Gastronomique'] },
-  { id:92, name:'Salade de pâtes méditerranéenne', emoji:'🍝', time:'15 min', difficulty:'Facile', category:'Plat', fodmap:false, tags:['Estival','Meal Prep'] },
-  { id:93, name:'Poulet au curry vert thaï', emoji:'🍛', time:'30 min', difficulty:'Moyen', category:'Plat', fodmap:false, tags:['Thaï','Épicé'] },
-  { id:94, name:'Poivrons farcis au riz', emoji:'🫑', time:'45 min', difficulty:'Moyen', category:'Plat', fodmap:false, tags:['Végétarien','Méditerranéen'] },
-  { id:95, name:'Magret de canard au miel', emoji:'🦆', time:'25 min', difficulty:'Moyen', category:'Plat', fodmap:false, tags:['Français','Gastronomique'] },
-  { id:96, name:'Bol poké hawaïen', emoji:'🐟', time:'15 min', difficulty:'Facile', category:'Plat', fodmap:false, tags:['Hawaïen','Frais'] },
-  { id:97, name:'Gratin de chou-fleur', emoji:'🥦', time:'35 min', difficulty:'Facile', category:'Plat', fodmap:false, tags:['Keto','Végétarien'] },
-  { id:98, name:'Spaghetti bolognaise', emoji:'🍝', time:'40 min', difficulty:'Facile', category:'Plat', fodmap:false, tags:['Italien','Classique'] },
-  { id:99, name:'Poulet korma', emoji:'🍛', time:'35 min', difficulty:'Moyen', category:'Plat', fodmap:false, tags:['Indien','Doux'] },
-  { id:100, name:'Tartare de bœuf', emoji:'🥩', time:'15 min', difficulty:'Moyen', category:'Plat', fodmap:true, tags:['Français','Cru'] },
-  { id:101, name:'Nouilles sautées aux légumes', emoji:'🍜', time:'15 min', difficulty:'Facile', category:'Plat', fodmap:true, tags:['Asiatique','Vegan','Rapide'] },
-  { id:102, name:'Hachis parmentier', emoji:'🥔', time:'50 min', difficulty:'Moyen', category:'Plat', fodmap:false, tags:['Français','Réconfort'] },
-  { id:103, name:'Crevettes sautées à la citronnelle', emoji:'🦐', time:'15 min', difficulty:'Facile', category:'Plat', fodmap:true, tags:['Thaï','Rapide'] },
-  { id:104, name:'Gyozas maison', emoji:'🥟', time:'40 min', difficulty:'Moyen', category:'Plat', fodmap:false, tags:['Japonais','Fait maison'] },
-  { id:105, name:'Aiguillettes de canard aux figues', emoji:'🦆', time:'25 min', difficulty:'Moyen', category:'Plat', fodmap:false, tags:['Gastronomique','Sucré-salé'] },
-  { id:106, name:'Curry de légumes', emoji:'🍛', time:'30 min', difficulty:'Facile', category:'Plat', fodmap:false, tags:['Vegan','Indien'] },
-  { id:107, name:'Côtes de porc au barbecue', emoji:'🍖', time:'30 min', difficulty:'Moyen', category:'Plat', fodmap:false, tags:['Américain','Grillé'] },
-  { id:108, name:'Pâtes au pesto frais', emoji:'🍝', time:'15 min', difficulty:'Facile', category:'Plat', fodmap:false, tags:['Italien','Rapide'] },
-  { id:109, name:'Poulet tandoori', emoji:'🍗', time:'40 min', difficulty:'Moyen', category:'Plat', fodmap:false, tags:['Indien','Épicé'] },
-  { id:110, name:'Gratin de courgettes au chèvre', emoji:'🧀', time:'35 min', difficulty:'Facile', category:'Plat', fodmap:false, tags:['Végétarien','Français'] },
-  { id:111, name:'Bo bun vietnamien', emoji:'🥗', time:'25 min', difficulty:'Moyen', category:'Plat', fodmap:false, tags:['Vietnamien','Frais'] },
-  { id:112, name:'Galettes de légumes', emoji:'🥬', time:'20 min', difficulty:'Facile', category:'Plat', fodmap:true, tags:['Végétarien','Low-FODMAP'] },
-  { id:113, name:'Dos de cabillaud au beurre blanc', emoji:'🐟', time:'30 min', difficulty:'Moyen', category:'Plat', fodmap:true, tags:['Français','Poisson'] },
-  { id:114, name:'Riz sauté aux crevettes', emoji:'🦐', time:'15 min', difficulty:'Facile', category:'Plat', fodmap:true, tags:['Asiatique','Rapide'] },
-  { id:115, name:'Aubergines à la parmigiana', emoji:'🍆', time:'50 min', difficulty:'Moyen', category:'Plat', fodmap:false, tags:['Italien','Végétarien'] },
-  { id:116, name:'Ragoût d\'agneau aux légumes', emoji:'🍖', time:'90 min', difficulty:'Moyen', category:'Plat', fodmap:false, tags:['Mijotage','Hivernal'] },
-  { id:117, name:'Soba froides au sésame', emoji:'🍜', time:'15 min', difficulty:'Facile', category:'Plat', fodmap:true, tags:['Japonais','Froid'] },
-  { id:118, name:'Tarte aux poireaux', emoji:'🥧', time:'45 min', difficulty:'Moyen', category:'Plat', fodmap:false, tags:['Français','Végétarien'] },
-  { id:119, name:'Émincé de poulet cajun', emoji:'🍗', time:'20 min', difficulty:'Facile', category:'Plat', fodmap:true, tags:['Épicé','Rapide'] },
-  { id:120, name:'One-pot pasta méditerranéen', emoji:'🍝', time:'20 min', difficulty:'Facile', category:'Plat', fodmap:false, tags:['Rapide','Facile'] },
-
-  // ── ACCOMPAGNEMENTS (20) ──
-  { id:121, name:'Purée de patates douces', emoji:'🍠', time:'25 min', difficulty:'Facile', category:'Accompagnement', fodmap:false, tags:['Vegan','Réconfort'] },
-  { id:122, name:'Riz pilaf aux herbes', emoji:'🍚', time:'20 min', difficulty:'Facile', category:'Accompagnement', fodmap:true, tags:['Low-FODMAP','Basique'] },
-  { id:123, name:'Légumes rôtis au four', emoji:'🥕', time:'35 min', difficulty:'Facile', category:'Accompagnement', fodmap:true, tags:['Vegan','Low-FODMAP'] },
-  { id:124, name:'Salade de concombre à l\'aneth', emoji:'🥒', time:'5 min', difficulty:'Facile', category:'Accompagnement', fodmap:true, tags:['Frais','Rapide'] },
-  { id:125, name:'Haricots verts sautés', emoji:'🫛', time:'10 min', difficulty:'Facile', category:'Accompagnement', fodmap:true, tags:['Low-FODMAP','Léger'] },
-  { id:126, name:'Gratin de pommes de terre', emoji:'🥔', time:'45 min', difficulty:'Facile', category:'Accompagnement', fodmap:false, tags:['Classique','Réconfort'] },
-  { id:127, name:'Salade de chou rouge', emoji:'🥬', time:'10 min', difficulty:'Facile', category:'Accompagnement', fodmap:false, tags:['Cru','Frais'] },
-  { id:128, name:'Frites de patate douce', emoji:'🍠', time:'30 min', difficulty:'Facile', category:'Accompagnement', fodmap:false, tags:['Populaire','Four'] },
-  { id:129, name:'Poêlée de courgettes au thym', emoji:'🥒', time:'10 min', difficulty:'Facile', category:'Accompagnement', fodmap:true, tags:['Low-FODMAP','Rapide'] },
-  { id:130, name:'Tabboulé libanais', emoji:'🌿', time:'15 min', difficulty:'Facile', category:'Accompagnement', fodmap:false, tags:['Libanais','Frais'] },
-  { id:131, name:'Carottes glacées au miel', emoji:'🥕', time:'15 min', difficulty:'Facile', category:'Accompagnement', fodmap:true, tags:['Sucré-salé','Low-FODMAP'] },
-  { id:132, name:'Pommes de terre sautées', emoji:'🥔', time:'20 min', difficulty:'Facile', category:'Accompagnement', fodmap:true, tags:['Classique','Low-FODMAP'] },
-  { id:133, name:'Salade d\'épinards-grenade', emoji:'🥬', time:'10 min', difficulty:'Facile', category:'Accompagnement', fodmap:true, tags:['Superaliment','Frais'] },
-  { id:134, name:'Brocolis vapeur au citron', emoji:'🥦', time:'10 min', difficulty:'Facile', category:'Accompagnement', fodmap:false, tags:['Léger','Détox'] },
-  { id:135, name:'Coleslaw maison', emoji:'🥗', time:'10 min', difficulty:'Facile', category:'Accompagnement', fodmap:false, tags:['Américain','Frais'] },
-
-  // ── DESSERTS (30) ──
-  { id:136, name:'Crème brûlée vanille', emoji:'🍮', time:'45 min', difficulty:'Moyen', category:'Dessert', fodmap:false, tags:['Français','Classique'] },
-  { id:137, name:'Fondant au chocolat', emoji:'🍫', time:'25 min', difficulty:'Facile', category:'Dessert', fodmap:false, tags:['Chocolat','Populaire'] },
-  { id:138, name:'Tarte aux pommes', emoji:'🍎', time:'50 min', difficulty:'Moyen', category:'Dessert', fodmap:false, tags:['Classique','Automnal'] },
-  { id:139, name:'Panna cotta fruits rouges', emoji:'🍓', time:'15 min', difficulty:'Facile', category:'Dessert', fodmap:false, tags:['Italien','Léger'] },
-  { id:140, name:'Mousse au chocolat', emoji:'🍫', time:'20 min', difficulty:'Facile', category:'Dessert', fodmap:false, tags:['Classique','Chocolat'] },
-  { id:141, name:'Sorbet citron maison', emoji:'🍋', time:'10 min', difficulty:'Facile', category:'Dessert', fodmap:true, tags:['Low-FODMAP','Frais'] },
-  { id:142, name:'Tiramisu classique', emoji:'☕', time:'30 min', difficulty:'Moyen', category:'Dessert', fodmap:false, tags:['Italien','Café'] },
-  { id:143, name:'Cookies aux pépites de chocolat', emoji:'🍪', time:'20 min', difficulty:'Facile', category:'Dessert', fodmap:false, tags:['Américain','Snack'] },
-  { id:144, name:'Clafoutis aux cerises', emoji:'🍒', time:'40 min', difficulty:'Facile', category:'Dessert', fodmap:false, tags:['Français','Estival'] },
-  { id:145, name:'Banana bread', emoji:'🍌', time:'50 min', difficulty:'Facile', category:'Dessert', fodmap:false, tags:['Américain','Goûter'] },
-  { id:146, name:'Crêpes Suzette', emoji:'🥞', time:'25 min', difficulty:'Moyen', category:'Dessert', fodmap:false, tags:['Français','Flambé'] },
-  { id:147, name:'Energy balls coco-dattes', emoji:'🥥', time:'10 min', difficulty:'Facile', category:'Dessert', fodmap:false, tags:['Vegan','Snack'] },
-  { id:148, name:'Cheesecake new-yorkais', emoji:'🍰', time:'60 min', difficulty:'Moyen', category:'Dessert', fodmap:false, tags:['Américain','Gourmand'] },
-  { id:149, name:'Salade de fruits exotiques', emoji:'🥭', time:'10 min', difficulty:'Facile', category:'Dessert', fodmap:false, tags:['Frais','Tropical'] },
-  { id:150, name:'Madeleines au citron', emoji:'🧁', time:'25 min', difficulty:'Facile', category:'Dessert', fodmap:false, tags:['Français','Goûter'] },
-  { id:151, name:'Riz au lait à la vanille', emoji:'🍚', time:'30 min', difficulty:'Facile', category:'Dessert', fodmap:false, tags:['Réconfort','Doux'] },
-  { id:152, name:'Macarons framboise', emoji:'🩷', time:'60 min', difficulty:'Difficile', category:'Dessert', fodmap:false, tags:['Français','Gastronomique'] },
-  { id:153, name:'Tarte au citron meringuée', emoji:'🍋', time:'50 min', difficulty:'Moyen', category:'Dessert', fodmap:false, tags:['Français','Acidulé'] },
-  { id:154, name:'Brownies fondants', emoji:'🍫', time:'30 min', difficulty:'Facile', category:'Dessert', fodmap:false, tags:['Chocolat','Américain'] },
-  { id:155, name:'Compote pomme-cannelle', emoji:'🍎', time:'15 min', difficulty:'Facile', category:'Dessert', fodmap:false, tags:['Léger','Bébé'] },
-  { id:156, name:'Crumble fraises-rhubarbe', emoji:'🍓', time:'35 min', difficulty:'Facile', category:'Dessert', fodmap:false, tags:['Estival','Croquant'] },
-  { id:157, name:'Flan pâtissier', emoji:'🍮', time:'50 min', difficulty:'Moyen', category:'Dessert', fodmap:false, tags:['Français','Boulangerie'] },
-  { id:158, name:'Mochi glacé', emoji:'🍡', time:'30 min', difficulty:'Moyen', category:'Dessert', fodmap:false, tags:['Japonais','Glacé'] },
-  { id:159, name:'Tarte tatin', emoji:'🍎', time:'45 min', difficulty:'Moyen', category:'Dessert', fodmap:false, tags:['Français','Caramélisé'] },
-  { id:160, name:'Truffes au chocolat noir', emoji:'🍫', time:'20 min', difficulty:'Facile', category:'Dessert', fodmap:false, tags:['Chocolat','Fête'] },
-
-  // ── BOISSONS (15) ──
-  { id:161, name:'Smoothie fraises-banane', emoji:'🍓', time:'5 min', difficulty:'Facile', category:'Boisson', fodmap:false, tags:['Rapide','Sucré'] },
-  { id:162, name:'Jus vert détox', emoji:'🥬', time:'5 min', difficulty:'Facile', category:'Boisson', fodmap:true, tags:['Détox','Low-FODMAP'] },
-  { id:163, name:'Latte matcha', emoji:'🍵', time:'5 min', difficulty:'Facile', category:'Boisson', fodmap:false, tags:['Japonais','Tendance'] },
-  { id:164, name:'Chocolat chaud onctueux', emoji:'☕', time:'10 min', difficulty:'Facile', category:'Boisson', fodmap:false, tags:['Hivernal','Réconfort'] },
-  { id:165, name:'Infusion gingembre-citron', emoji:'🍋', time:'5 min', difficulty:'Facile', category:'Boisson', fodmap:true, tags:['Détox','Low-FODMAP'] },
-  { id:166, name:'Limonade à la menthe', emoji:'🍹', time:'10 min', difficulty:'Facile', category:'Boisson', fodmap:true, tags:['Estival','Frais'] },
-  { id:167, name:'Golden milk (lait d\'or)', emoji:'🥛', time:'5 min', difficulty:'Facile', category:'Boisson', fodmap:false, tags:['Anti-inflammatoire','Ayurvédique'] },
-  { id:168, name:'Smoothie protéiné post-sport', emoji:'💪', time:'5 min', difficulty:'Facile', category:'Boisson', fodmap:false, tags:['Sport','Protéiné'] },
-  { id:169, name:'Thé glacé pêche maison', emoji:'🍑', time:'10 min', difficulty:'Facile', category:'Boisson', fodmap:false, tags:['Estival','Frais'] },
-  { id:170, name:'Café frappé grec', emoji:'☕', time:'5 min', difficulty:'Facile', category:'Boisson', fodmap:true, tags:['Grec','Rafraîchissant'] },
-
-  // ── COLLATIONS / SNACKS (15) ──
-  { id:171, name:'Barres de céréales maison', emoji:'🍫', time:'25 min', difficulty:'Facile', category:'Collation', fodmap:true, tags:['Meal Prep','Sport'] },
-  { id:172, name:'Bâtonnets de légumes & houmous', emoji:'🥕', time:'5 min', difficulty:'Facile', category:'Collation', fodmap:false, tags:['Vegan','Rapide'] },
-  { id:173, name:'Muffins banane-noix', emoji:'🧁', time:'25 min', difficulty:'Facile', category:'Collation', fodmap:false, tags:['Goûter','Végétarien'] },
-  { id:174, name:'Chips de kale', emoji:'🥬', time:'15 min', difficulty:'Facile', category:'Collation', fodmap:true, tags:['Vegan','Low-FODMAP'] },
-  { id:175, name:'Toast ricotta-miel-noix', emoji:'🍯', time:'5 min', difficulty:'Facile', category:'Collation', fodmap:false, tags:['Rapide','Sucré'] },
-  { id:176, name:'Edamame au sel de mer', emoji:'🫛', time:'5 min', difficulty:'Facile', category:'Collation', fodmap:false, tags:['Japonais','Protéiné'] },
-  { id:177, name:'Guacamole maison', emoji:'🥑', time:'10 min', difficulty:'Facile', category:'Collation', fodmap:false, tags:['Mexicain','Vegan'] },
-  { id:178, name:'Popcorn au parmesan', emoji:'🍿', time:'5 min', difficulty:'Facile', category:'Collation', fodmap:true, tags:['Low-FODMAP','Rapide'] },
-  { id:179, name:'Crackers aux graines', emoji:'🌾', time:'30 min', difficulty:'Moyen', category:'Collation', fodmap:true, tags:['Low-FODMAP','Fait maison'] },
-  { id:180, name:'Bouchées de dattes fourrées', emoji:'🌴', time:'10 min', difficulty:'Facile', category:'Collation', fodmap:false, tags:['Énergie','Vegan'] },
-
-  // ── SAUCES & BASES (10) ──
-  { id:181, name:'Sauce tomate maison', emoji:'🍅', time:'30 min', difficulty:'Facile', category:'Sauce', fodmap:false, tags:['Basique','Italien'] },
-  { id:182, name:'Vinaigrette balsamique', emoji:'🫒', time:'5 min', difficulty:'Facile', category:'Sauce', fodmap:true, tags:['Rapide','Low-FODMAP'] },
-  { id:183, name:'Pesto basilic frais', emoji:'🌿', time:'10 min', difficulty:'Facile', category:'Sauce', fodmap:false, tags:['Italien','Frais'] },
-  { id:184, name:'Sauce béchamel légère', emoji:'🥛', time:'10 min', difficulty:'Facile', category:'Sauce', fodmap:false, tags:['Française','Basique'] },
-  { id:185, name:'Sauce chimichurri', emoji:'🌿', time:'5 min', difficulty:'Facile', category:'Sauce', fodmap:false, tags:['Argentin','Frais'] },
-  { id:186, name:'Bouillon de légumes maison', emoji:'🍲', time:'60 min', difficulty:'Facile', category:'Sauce', fodmap:true, tags:['Basique','Low-FODMAP'] },
-  { id:187, name:'Sauce curry thaï', emoji:'🍛', time:'10 min', difficulty:'Facile', category:'Sauce', fodmap:false, tags:['Thaï','Épicé'] },
-  { id:188, name:'Aïoli provençal', emoji:'🧄', time:'10 min', difficulty:'Facile', category:'Sauce', fodmap:false, tags:['Français','Condiment'] },
-  { id:189, name:'Sauce ponzu', emoji:'🍋', time:'5 min', difficulty:'Facile', category:'Sauce', fodmap:true, tags:['Japonais','Rapide'] },
-  { id:190, name:'Confiture de fraises maison', emoji:'🍓', time:'30 min', difficulty:'Facile', category:'Sauce', fodmap:true, tags:['Sucré','Low-FODMAP'] },
+const categories = [
+  'Petit-déj', 'Entrée', 'Plat', 'Accompagnement', 'Dessert', 'Boisson', 'Collation', 'Sauce'
 ];
+
+const emojis = {
+  'Petit-déj': ['🥞', '🍳', '🥣', '🫐', '🥝', '🥑', '🍞', '🥥', '🧇', '🍓', '🥜'],
+  'Entrée': ['🥗', '🥕', '🍅', '🍜', '🫘', '🥒', '🥥', '🌾', '🍉', '🦐', '🥦', '🧅'],
+  'Plat': ['🍚', '🐟', '🍗', '🍝', '🍛', '🍆', '🥩', '🌶️', '🍔', '🌮', '🥘', '🍱', '🥟', '🥦', '🫑', '🦆'],
+  'Accompagnement': ['🍠', '🍚', '🥕', '🥒', '🫛', '🥔', '🥬', '🌿', '🥦', '🥗'],
+  'Dessert': ['🍮', '🍫', '🍎', '🍓', '🍋', '☕', '🍪', '🍒', '🍌', '🍰', '🥭', '🧁', '🍡', '🥧'],
+  'Boisson': ['🍓', '🥬', '🍵', '☕', '🍋', '🍹', '🥛', '💪', '🍑'],
+  'Collation': ['🍫', '🥕', '🧁', '🥬', '🍯', '🫛', '🥑', '🍿', '🌾', '🌴'],
+  'Sauce': ['🍅', '🫒', '🌿', '🥛', '🍲', '🍛', '🧄', '🍋', '🍓']
+};
+
+const bases = {
+  'Petit-déj': ['Porridge', 'Pancakes', 'Smoothie', 'Tartine', 'Omelette', 'Bol açaí', 'Granola', 'Yaourt grec', 'Muffins', 'Pain perdu', 'Gaufres'],
+  'Entrée': ['Salade', 'Velouté', 'Bruschetta', 'Soupe', 'Houmous', 'Carpaccio', 'Gaspacho', 'Tartare', 'Ceviche', 'Rouleaux de printemps', 'Accras'],
+  'Plat': ['Risotto', 'Saumon grillé', 'Poulet rôti', 'Bowl', 'Pâtes', 'Curry', 'Steak', 'Ratatouille', 'Pad thaï', 'Gratin', 'Tajine', 'Lasagnes', 'Sushi', 'Chili', 'Wok', 'Quiche', 'Burger', 'Couscous', 'Tacos', 'Paëlla', 'Pizza'],
+  'Accompagnement': ['Purée', 'Riz', 'Légumes rôtis', 'Frites', 'Poêlée', 'Tabboulé', 'Brocolis vapeur', 'Salade'],
+  'Dessert': ['Crème brûlée', 'Fondant', 'Tarte', 'Panna cotta', 'Mousse', 'Sorbet', 'Tiramisu', 'Cookies', 'Clafoutis', 'Cake', 'Cheesecake', 'Macarons', 'Brownies'],
+  'Boisson': ['Smoothie', 'Jus vert', 'Latte', 'Chocolat chaud', 'Infusion', 'Limonade', 'Thé glacé', 'Café frappé'],
+  'Collation': ['Barres de céréales', 'Bâtonnets de légumes', 'Muffins', 'Chips', 'Toast', 'Guacamole', 'Popcorn', 'Crackers'],
+  'Sauce': ['Sauce tomate', 'Vinaigrette', 'Pesto', 'Sauce béchamel', 'Bouillon', 'Ayoli', 'Mayonnaise', 'Confiture']
+};
+
+const flavors = {
+  'Petit-déj': ['aux myrtilles', 'aux herbes', 'à la banane', 'épinards-kiwi', 'avocat-œuf', 'maison', 'fruits rouges', 'aux carottes', 'à la cannelle', 'coco-mangue', 'au cacao', 'saumon fumé', 'beurre de cacahuète', 'tropical'],
+  'Entrée': ['César', 'au gingembre', 'tomates-basilic', 'miso', 'aux courgettes', 'au lait de coco', 'de quinoa', 'andalou', 'niçoise', 'de potimarron', 'de saumon', 'de lentilles', 'de daurade', 'à l\'oignon', 'feta-pastèque', 'crevettes', 'de brocolis', 'aux noix', 'de morue'],
+  'Plat': ['aux courgettes', 'aux herbes', 'au tofu', 'carbonara', 'de pois chiches', 'mi-cuit', 'provençale', 'au poulet', 'dauphinois', 'citron confit', 'végétarien', 'saumon-avocat', 'sin carne', 'en croûte', 'au sésame', 'lorraine', 'coréen', 'de veau', 'quinoa-légumes', 'maison', 'royal', 'à l\'ail', 'tikka masala', 'béchamel', 'bourguignon', 'sauce tahini', 'margherita', 'au gingembre', 'grecque', 'au poisson marin', 'valenciana', 'teriyaki', 'basquaise', 'de lentilles corail', 'en papillote', 'ricotta-épinards', 'goreng', 'd\'été', 'laqué', 'aux champignons', 'sauce tomate', 'au citron et romarin', 'au bœuf', 'vietnamienne', 'panées', 'poulet-avocat', 'milanais', 'méditerranéenne', 'au curry vert', 'au riz', 'au miel', 'hawaïen'],
+  'Accompagnement': ['de patates douces', 'aux herbes', 'au four', 'à l\'aneth', 'sautés', 'de pommes de terre', 'de chou rouge', 'de patate douce', 'au thym', 'libanais', 'au miel', 'd\'épinards-grenade', 'au citron', 'maison'],
+  'Dessert': ['vanille', 'au chocolat', 'aux pommes', 'fruits rouges', 'maison', 'classique', 'aux pépites de chocolat', 'aux cerises', 'coco-dattes', 'new-yorkais', 'exotiques', 'au citron', 'à la vanille', 'framboise', 'meringuée', 'fondants', 'pomme-cannelle', 'fraises-rhubarbe', 'pâtissier', 'glacé', 'tatin'],
+  'Boisson': ['fraises-banane', 'détox', 'matcha', 'onctueux', 'gingembre-citron', 'à la menthe', '(lait d\'or)', 'post-sport', 'pêche maison', 'grec'],
+  'Collation': ['maison', '& houmous', 'banane-noix', 'de kale', 'ricotta-miel', 'au sel de mer', 'au parmesan', 'aux graines', 'de dattes fourrées'],
+  'Sauce': ['maison', 'balsamique', 'basilic frais', 'légère', 'chimichurri', 'de légumes', 'curry thaï', 'provençal', 'ponzu', 'de fraises']
+};
+
+const difficulties = ['Facile', 'Moyen', 'Difficile'];
+const allTags = ['Sans gluten', 'Low-FODMAP', 'Rapide', 'Protéiné', 'Keto', 'Sucré', 'Végétarien', 'Vegan', 'Détox', 'Tendance', 'Meal Prep', 'Classique', 'Superaliment', 'Méditerranéen', 'Oméga-3', 'Sport', 'Breton', 'Italien', 'Japonais', 'Cru', 'Asiatique', 'Épicé', 'Espagnol', 'Froid', 'Automnal', 'Frais', 'Péruvien', 'Français', 'Estival', 'Léger', 'Hivernal', 'Antillais', 'Frit', 'Indien', 'Thaï', 'Populaire', 'Réconfort', 'Marocain', 'Mexicain', 'Gastronomique', 'Fête', 'Coréen', 'Complet', 'Maghrébin', 'Fruits de mer', 'Mijotage', 'Libanais', 'Grec', 'Fait maison', 'Indonésien', 'Chinois', 'Enfants', 'Bouillon', 'Wok', 'Cru', 'Sucré-salé', 'Grillé', 'Ayurvédique', 'Gourmand', 'Acidulé', 'Bébé', 'Croquant', 'Boulangerie', 'Glacé', 'Caramélisé'];
+const times = ['5 min', '8 min', '10 min', '12 min', '15 min', '20 min', '25 min', '30 min', '35 min', '40 min', '45 min', '50 min', '60 min', '90 min', '120 min'];
+
+function randomChoice(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+const recipes = [];
+const usedNames = new Set();
+let idCounter = 1;
+
+// Base recipes provided by user originally (keep some of the 190 nice ones)
+const seedRecipes = [
+  { name:'Porridge aux myrtilles', category:'Petit-déj', base: 'Porridge' },
+  { name:'Risotto aux courgettes', category:'Plat', base: 'Risotto' },
+  { name:'Salade César revisitée', category:'Entrée', base: 'Salade' },
+  { name:'Saumon grillé aux herbes', category:'Plat', base: 'Saumon grillé' },
+  { name:'Spaghetti bolognaise', category:'Plat', base: 'Pâtes' },
+  { name:'Fondant au chocolat', category:'Dessert', base: 'Fondant' },
+];
+
+for (const seed of seedRecipes) {
+  usedNames.add(seed.name.toLowerCase());
+  const emoji = randomChoice(emojis[seed.category]);
+  recipes.push({
+    id: idCounter++,
+    name: seed.name,
+    emoji: emoji,
+    time: randomChoice(times),
+    difficulty: randomChoice(difficulties),
+    category: seed.category,
+    fodmap: Math.random() > 0.5,
+    tags: [randomChoice(allTags), randomChoice(allTags)],
+  });
+}
+
+const targetCount = 1000;
+
+while (recipes.length < targetCount) {
+  // Pick category
+  let categoryProb = Math.random();
+  let category;
+  if (categoryProb < 0.3) category = 'Plat'; // 30% plats
+  else if (categoryProb < 0.45) category = 'Dessert'; // 15% desserts
+  else if (categoryProb < 0.6) category = 'Entrée'; // 15% entrées
+  else if (categoryProb < 0.7) category = 'Petit-déj'; // 10%
+  else if (categoryProb < 0.8) category = 'Accompagnement'; // 10%
+  else if (categoryProb < 0.9) category = 'Collation'; // 10%
+  else if (categoryProb < 0.95) category = 'Boisson'; // 5%
+  else category = 'Sauce'; // 5%
+
+  const base = randomChoice(bases[category]);
+  const flavor = randomChoice(flavors[category]);
+  const name = `${base} ${flavor}`;
+
+  if (!usedNames.has(name.toLowerCase())) {
+    usedNames.add(name.toLowerCase());
+    
+    // Shuffle tags 
+    const numTags = Math.floor(Math.random() * 3) + 1; // 1 to 3 tags
+    const recipeTags = [];
+    for (let i = 0; i < numTags; i++) {
+        let tag = randomChoice(allTags);
+        if (!recipeTags.includes(tag)) recipeTags.push(tag);
+    }
+    
+    const isFodmap = recipeTags.includes('Low-FODMAP') ? true : Math.random() > 0.6;
+    
+    // Logic for time based on difficulty
+    let timePool = times.slice(0, 5); // easy times
+    let diff = 'Facile';
+    if (Math.random() > 0.5) {
+        diff = 'Moyen';
+        timePool = times.slice(4, 9);
+    }
+    if (Math.random() > 0.8) {
+        diff = 'Difficile';
+        timePool = times.slice(9);
+    }
+
+    recipes.push({
+      id: idCounter++,
+      name: name,
+      emoji: randomChoice(emojis[category]),
+      time: randomChoice(timePool),
+      difficulty: diff,
+      category: category,
+      fodmap: isFodmap,
+      tags: recipeTags,
+    });
+  }
+}
 
 // Generate realistic kcal based on category
 recipes.forEach(r => {
@@ -224,7 +146,6 @@ recipes.forEach(r => {
   r.kcal = base;
 });
 
-// Generate the TS file
 const output = `// Auto-generated recipe database — ${recipes.length} recipes
 export interface StaticRecipe {
   id: number;
