@@ -46,14 +46,14 @@ export function parsePurchases(buffer: Buffer): PurchaseCategoryData[] {
   const ws = wb.Sheets[sheetName];
   if (!ws) { console.warn('[parse-purchases] Sheet not found'); return []; }
   
-  const data: any[][] = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+  const data: unknown[][] = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
   console.log('[parse-purchases] Total rows in sheet:', data.length);
   
   // Log first 10 rows for debugging
   for (let i = 0; i < Math.min(data.length, 10); i++) {
     const row = data[i];
     if (!row) continue;
-    const rowStr = row.slice(0, 8).map((c: any) => String(c || '').substring(0, 20)).join(' | ');
+    const rowStr = row.slice(0, 8).map((c: unknown) => String(c || '').substring(0, 20)).join(' | ');
     console.log(`[parse-purchases]   Row ${i}: ${rowStr}`);
   }
   
@@ -62,7 +62,7 @@ export function parsePurchases(buffer: Buffer): PurchaseCategoryData[] {
   for (let i = 0; i < Math.min(data.length, 15); i++) {
     const row = data[i];
     if (!row) continue;
-    const rowStr = row.map((c: any) => String(c || '')).join('|');
+    const rowStr = row.map((c: unknown) => String(c || '')).join('|');
     if (rowStr.includes('PARTIE ACHATS') || rowStr.includes('Initiales PE')) {
       headerRowIdx = i;
       break;
@@ -75,7 +75,7 @@ export function parsePurchases(buffer: Buffer): PurchaseCategoryData[] {
   }
   console.log('[parse-purchases] Header row found at index:', headerRowIdx);
   
-  const header = data[headerRowIdx].map((c: any) => String(c || '').trim());
+  const header = data[headerRowIdx].map((c: unknown) => String(c || '').trim());
   
   // Find column indices dynamically
   const findCol = (keywords: string[]): number => {

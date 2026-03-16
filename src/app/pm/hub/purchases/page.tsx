@@ -34,7 +34,10 @@ export default function PurchasesPage() {
   const [filter, setFilter] = useState<'all' | 'active' | 'pending'>('all');
 
   useEffect(() => {
-    if (!projectId) { setLoading(false); return; }
+    if (!projectId) { 
+      const timer = setTimeout(() => setLoading(false), 0);
+      return () => clearTimeout(timer);
+    }
     fetch(`/api/hub/purchases?projectId=${projectId}`)
       .then(r => r.json())
       .then(d => { setCategories(d.categories || []); setLoading(false); })

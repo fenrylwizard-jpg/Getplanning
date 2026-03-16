@@ -79,6 +79,6 @@ export function validate<T>(schema: z.ZodSchema<T>, data: unknown): { success: t
     }
     return {
         success: false,
-        errors: (result as any).error.errors.map((e: any) => `${e.path.join('.')}: ${e.message}`),
+        errors: result.error.issues.map(e => `${e.path.join('.')}: ${e.message}`),
     };
 }

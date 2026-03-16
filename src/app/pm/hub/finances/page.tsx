@@ -42,7 +42,10 @@ export default function FinancesPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!projectId) { setLoading(false); return; }
+    if (!projectId) { 
+      const timer = setTimeout(() => setLoading(false), 0);
+      return () => clearTimeout(timer);
+    }
     fetch(`/api/hub/finances?projectId=${projectId}`)
       .then(r => r.json())
       .then(d => { setSnapshots(d.snapshots || []); setLoading(false); })

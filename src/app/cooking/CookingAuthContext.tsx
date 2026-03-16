@@ -38,6 +38,9 @@ export interface CookingUser {
     pantryItems: PantryItem[];
     shoppingList: ShoppingItem[];
     symptomLog: SymptomEntry[];
+    // Gamification
+    selectedFairy?: 'fire' | 'water' | 'nature';
+    fairyXp: number;
 }
 
 export interface PantryItem {
@@ -61,6 +64,7 @@ interface CookingAuthContextType {
     login: (username: string, password: string) => boolean;
     logout: () => void;
     updateUser: (updates: Partial<CookingUser>) => void;
+    addXp: (amount: number, reason: string) => void;
 }
 
 const CookingAuthContext = createContext<CookingAuthContextType | null>(null);
@@ -83,6 +87,8 @@ const USERS_DB: Record<string, { password: string; profile: CookingUser }> = {
                 goalDuration: 12,
                 dailyKcalTarget: 1750,
             },
+            selectedFairy: 'nature',
+            fairyXp: 1250, // Level 3 Example
             mealPrepEnabled: true,
             pantryItems: [
                 { id: 1, name: 'Carottes', category: 'Légumes', emoji: '🥕', qty: '500g' },
@@ -191,6 +197,8 @@ export function CookingAuthProvider({ children }: { children: ReactNode }) {
                     pantryItems: parsed.pantryItems ?? [],
                     shoppingList: parsed.shoppingList ?? [],
                     symptomLog: parsed.symptomLog ?? [],
+                    selectedFairy: parsed.selectedFairy ?? undefined,
+                    fairyXp: parsed.fairyXp ?? 0,
                 };
                 
                 // Defer to avoid React cascading render warning
@@ -262,10 +270,38 @@ export function CookingAuthProvider({ children }: { children: ReactNode }) {
         });
     };
 
+    const addXp = (amount: number, reason: string) => {
+        // Here we could also log the reason if we wanted an XP history table
+        console.log(`Earned ${amount} XP! Reason: ${reason}`);
+        setUser(prev => {
+            if (!prev) return null;
+            
+            const newXp = (prev.fairyXp || 0) + amount;
+            const updatedProfile = { ...prev, fairyXp: newXp };
+            
+            // Sync to permanent storage
+            const storedDb = localStorage.getItem(USERS_DB_STORAGE_KEY);
+            let currentDb = USERS_DB;
+            if (storedDb) {
+                try {
+                    currentDb = JSON.parse(storedDb);
+                } catch { /* ignore */ }
+            }
+            const usernameKey = updatedProfile.username.toLowerCase();
+            currentDb[usernameKey] = {
+                ...currentDb[usernameKey],
+                profile: updatedProfile
+            };
+            localStorage.setItem(USERS_DB_STORAGE_KEY, JSON.stringify(currentDb));
+            
+            return updatedProfile;
+        });
+    };
+
     if (!loaded) return null;
 
     return (
-        <CookingAuthContext.Provider value={{ user, login, logout, updateUser }}>
+        <CookingAuthContext.Provider value={{ user, login, logout, updateUser, addXp }}>
             {children}
         </CookingAuthContext.Provider>
     );

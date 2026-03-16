@@ -25,6 +25,9 @@ export default function ProfilePage() {
     // State for multiple protocols
     const [selectedProtocols, setSelectedProtocols] = useState<string[]>([]);
     
+    // Gamification
+    const [selectedFairy, setSelectedFairy] = useState<'fire' | 'water' | 'nature' | undefined>();
+    
     // Personal Params State
     const [weight, setWeight] = useState<string>('');
     const [height, setHeight] = useState<string>('');
@@ -39,20 +42,23 @@ export default function ProfilePage() {
 
     // Only seed form state ONCE on initial mount (not on every user change)
     useEffect(() => {
-        setMounted(true);
-        if (user && !seeded.current) {
-            seeded.current = true;
-            setSelectedProtocols(user.protocols || []);
-            if (user.personalParams) {
-                setWeight(user.personalParams.weight?.toString() || '');
-                setHeight(user.personalParams.height?.toString() || '');
-                setAge(user.personalParams.age?.toString() || '');
-                setGender(user.personalParams.gender || 'F');
-                setActivity(user.personalParams.activityLevel || 1.2);
-                setGoalWeight(user.personalParams.goalWeight?.toString() || '');
-                setGoalDurationWeeks(user.personalParams.goalDurationWeeks?.toString() || user.personalParams.goalDuration?.toString() || '12');
+        setTimeout(() => {
+            setMounted(true);
+            if (user && !seeded.current) {
+                seeded.current = true;
+                setSelectedProtocols(user.protocols || []);
+                setSelectedFairy(user.selectedFairy);
+                if (user.personalParams) {
+                    setWeight(user.personalParams.weight?.toString() || '');
+                    setHeight(user.personalParams.height?.toString() || '');
+                    setAge(user.personalParams.age?.toString() || '');
+                    setGender(user.personalParams.gender || 'F');
+                    setActivity(user.personalParams.activityLevel || 1.2);
+                    setGoalWeight(user.personalParams.goalWeight?.toString() || '');
+                    setGoalDurationWeeks(user.personalParams.goalDurationWeeks?.toString() || user.personalParams.goalDuration?.toString() || '12');
+                }
             }
-        }
+        }, 0);
     }, [user]);
 
     if (!user || !mounted) {
@@ -122,6 +128,7 @@ export default function ProfilePage() {
         const dailyKcalTarget = calculateDailyKcal();
         
         updateUser({
+            selectedFairy,
             protocols: selectedProtocols,
             personalParams: {
                 weight: weight ? parseFloat(weight) : undefined,
@@ -256,6 +263,43 @@ export default function ProfilePage() {
                             </label>
                             <input className="ck-input" type="number" placeholder="Ex: 12" value={goalDurationWeeks} onChange={e => setGoalDurationWeeks(e.target.value)} />
                         </div>
+                    </div>
+                </div>
+
+                <div style={{ padding: '1.5rem', background: 'rgba(0,0,0,0.02)', borderRadius: '1rem', border: '1px solid rgba(0,0,0,0.05)', marginBottom: '2rem' }}>
+                    <h3 style={{ fontWeight: 800, marginBottom: '1rem', fontSize: '1.1rem' }}>✨ Compagnon de Voyage</h3>
+                    <p style={{ color: 'var(--ck-text-muted)', marginBottom: '1rem', fontSize: '0.9rem' }}>
+                        Choisissez la fée élémentaire qui vous accompagnera. Elle évoluera au fur et à mesure que vous atteignez vos objectifs !
+                    </p>
+                    
+                    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)', gap: '1rem' }}>
+                        {[
+                            { id: 'fire', name: 'Ignis', emoji: '🔥', desc: 'Fée du Feu', color: 'var(--ck-orange)' },
+                            { id: 'water', name: 'Aqua', emoji: '💧', desc: "Fée de l'Eau", color: '#3b82f6' },
+                            { id: 'nature', name: 'Terra', emoji: '🌿', desc: 'Fée de la Nature', color: '#10b981' }
+                        ].map(fairy => {
+                            const isSelected = selectedFairy === fairy.id;
+                            return (
+                                <div 
+                                    key={fairy.id}
+                                    onClick={() => setSelectedFairy(fairy.id as 'fire'|'water'|'nature')}
+                                    style={{
+                                        padding: '1rem',
+                                        borderRadius: '1rem',
+                                        border: isSelected ? `2px solid ${fairy.color}` : '1px solid rgba(0,0,0,0.08)',
+                                        background: isSelected ? `${fairy.color}15` : 'white',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s ease',
+                                        transform: isSelected ? 'translateY(-2px)' : 'none',
+                                        textAlign: 'center'
+                                    }}
+                                >
+                                    <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>{fairy.emoji}</div>
+                                    <h4 style={{ fontWeight: 800, margin: '0 0 0.25rem 0' }}>{fairy.name}</h4>
+                                    <p style={{ fontSize: '0.75rem', color: 'var(--ck-text-muted)', margin: 0 }}>{fairy.desc}</p>
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
 

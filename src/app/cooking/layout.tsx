@@ -109,6 +109,8 @@ function CookingNavbar() {
     );
 }
 
+import FloatingFairy from './components/FloatingFairy';
+
 export default function CookingLayout({
     children,
 }: {
@@ -119,6 +121,7 @@ export default function CookingLayout({
             <div className="ck-app">
                 <div className="ck-content">
                     <CookingNavbar />
+                    <FloatingFairy />
                     <main style={{ paddingBottom: '5rem' }}>
                         {children}
                     </main>

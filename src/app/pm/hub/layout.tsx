@@ -52,14 +52,18 @@ export default function HubLayout({ children }: { children: React.ReactNode }) {
   // Load upload status when project changes
   useEffect(() => {
     if (!projectId) {
-      setUploadStatus(null);
-      return;
+      const timer = setTimeout(() => setUploadStatus(null), 0);
+      return () => clearTimeout(timer);
     }
-    setLoadingStatus(true);
+    // Defer the loading state to avoid synchronous cascading render
+    const loadingTimer = setTimeout(() => setLoadingStatus(true), 0);
+    
     fetch(`/api/hub/upload-status?projectId=${projectId}`)
       .then(r => r.json())
       .then(d => { setUploadStatus(d); setLoadingStatus(false); })
       .catch(() => setLoadingStatus(false));
+      
+    return () => clearTimeout(loadingTimer);
   }, [projectId]);
 
   const handleProjectChange = (newProjectId: string) => {
@@ -107,6 +111,7 @@ export default function HubLayout({ children }: { children: React.ReactNode }) {
             <select
               value={projectId}
               onChange={e => handleProjectChange(e.target.value)}
+              title="Sélectionner un projet"
               className="flex-1 w-full sm:w-auto bg-[#060d1f] border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
             >
               <option value="">Sélectionnez un projet...</option>

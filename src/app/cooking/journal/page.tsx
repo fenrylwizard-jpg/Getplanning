@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { useCookingAuth, SymptomEntry } from '../CookingAuthContext';
 import Link from 'next/link';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 const symptomOptions = [
     { name: 'Ballonnements', emoji: '🫧' },
@@ -20,11 +21,13 @@ const symptomOptions = [
 const mealTypes = ['Petit-déj', 'Déjeuner', 'Dîner', 'Collation'] as const;
 const feelingEmojis = ['😫', '😞', '😐', '🙂', '😊'];
 const severityLabels = ['', 'Léger', 'Modéré', 'Moyen', 'Fort', 'Sévère'];
+const EMPTY_LOG: SymptomEntry[] = [];
 
 export default function JournalPage() {
-    const { user, updateUser } = useCookingAuth();
+    const { user, updateUser, addXp } = useCookingAuth();
     const [showAddForm, setShowAddForm] = useState(false);
     const [filterDays, setFilterDays] = useState(7);
+    const [activeTab, setActiveTab] = useState<'daily' | 'weekly' | 'monthly'>('daily');
 
     // New entry form state
     const [newMealType, setNewMealType] = useState<typeof mealTypes[number]>('Déjeuner');
@@ -35,22 +38,7 @@ export default function JournalPage() {
     const [newFeeling, setNewFeeling] = useState<1 | 2 | 3 | 4 | 5>(3);
     const [newNotes, setNewNotes] = useState('');
 
-    if (!user) {
-        return (
-            <div className="ck-glass-section" style={{ paddingTop: '4rem' }}>
-                <div className="ck-empty-state">
-                    <div className="ck-empty-state-icon">🔐</div>
-                    <h3 style={{ fontWeight: 800, marginBottom: '0.5rem' }}>Connexion requise</h3>
-                    <p style={{ color: 'var(--ck-text-muted)', marginBottom: '1.5rem' }}>
-                        Connectez-vous pour suivre vos symptômes.
-                    </p>
-                    <Link href="/cooking/login" className="ck-btn ck-btn-primary">🍴 Se connecter</Link>
-                </div>
-            </div>
-        );
-    }
-
-    const log = user.symptomLog || [];
+    const log = user?.symptomLog || EMPTY_LOG;
 
     // Filtered entries
     const filteredLog = useMemo(() => {
@@ -73,6 +61,38 @@ export default function JournalPage() {
         });
         return { totalKcal, entriesCount: todaysEntries.length };
     }, [log]);
+
+    // Chart Data for Graphs
+    const chartData = useMemo(() => {
+        const dataMap = new Map<string, number>();
+        const now = new Date();
+        const daysToShow = activeTab === 'weekly' ? 7 : 30;
+
+        // Initialize array with zeros for the selected timeframe
+        for (let i = daysToShow - 1; i >= 0; i--) {
+            const d = new Date(now);
+            d.setDate(d.getDate() - i);
+            const dateStr = d.toISOString().split('T')[0];
+            dataMap.set(dateStr, 0);
+        }
+
+        log.forEach(entry => {
+            const dateStr = entry.date.split('T')[0];
+            if (dataMap.has(dateStr)) {
+                const kcal = entry.foodsEaten.reduce((sum, food) => sum + food.kcal, 0);
+                dataMap.set(dateStr, dataMap.get(dateStr)! + kcal);
+            }
+        });
+
+        return Array.from(dataMap.entries()).map(([date, totalKcal]) => {
+            const d = new Date(date);
+            return {
+                name: `${d.getDate()}/${d.getMonth() + 1}`,
+                kcal: totalKcal,
+                date: date
+            };
+        });
+    }, [log, activeTab]);
 
     // Analytics
     const analytics = useMemo(() => {
@@ -108,6 +128,21 @@ export default function JournalPage() {
 
         return { topSymptoms, suspectFoods, avgFeeling, totalEntries: log.length };
     }, [log]);
+
+    if (!user) {
+        return (
+            <div className="ck-glass-section" style={{ paddingTop: '4rem' }}>
+                <div className="ck-empty-state">
+                    <div className="ck-empty-state-icon">🔐</div>
+                    <h3 style={{ fontWeight: 800, marginBottom: '0.5rem' }}>Connexion requise</h3>
+                    <p style={{ color: 'var(--ck-text-muted)', marginBottom: '1.5rem' }}>
+                        Connectez-vous pour utiliser le journal.
+                    </p>
+                    <Link href="/cooking/login" className="ck-btn ck-btn-primary">🍴 Se connecter</Link>
+                </div>
+            </div>
+        );
+    }
 
     const toggleSymptom = (symptom: typeof symptomOptions[0]) => {
         const exists = newSymptoms.find(s => s.name === symptom.name);
@@ -147,6 +182,20 @@ export default function JournalPage() {
         };
 
         updateUser({ symptomLog: [entry, ...log] });
+
+        // Gamification XP Award
+        const kcalValue = newFoods.reduce((sum, f) => sum + f.kcal, 0);
+        let xpReward = 150; // Base XR for logging
+        const targetKcal = user.personalParams?.dailyKcalTarget || 2000;
+        const newTotalKcal = todayStats.totalKcal + kcalValue;
+        
+        if (newTotalKcal <= targetKcal + 100 && newTotalKcal >= targetKcal - 400) {
+            xpReward += 100; // Bonus for sticking to targets
+        } else if (newTotalKcal > targetKcal + 500) {
+            xpReward = 50; // Penalty (or less bonus) for overeating significantly
+        }
+        addXp(xpReward, `Journal: ${newMealType}`);
+
         setShowAddForm(false);
         setNewFoods([]);
         setNewSymptoms([]);
@@ -167,7 +216,7 @@ export default function JournalPage() {
         <>
             <div className="ck-page-header">
                 <div className="ck-hero-badge ck-fade-up">
-                    <span>📋</span> Suivi des symptômes
+                    <span>📋</span> Suivi & Gamification
                 </div>
                 <h1 className="ck-fade-up-1">
                     Mon{' '}
@@ -176,8 +225,31 @@ export default function JournalPage() {
                     </span>
                 </h1>
                 <p className="ck-fade-up-2">
-                    Notez vos repas et symptômes pour identifier vos déclencheurs alimentaires.
+                    Notez vos repas pour faire évoluer votre compagnon et surveiller vos macros !
                 </p>
+            </div>
+
+            <div style={{ padding: '0 1rem', display: 'flex', gap: '1rem', marginBottom: '1.5rem', borderBottom: '2px solid rgba(0,0,0,0.05)' }}>
+                {['daily', 'weekly', 'monthly'].map(tab => (
+                    <button
+                        key={tab}
+                        onClick={() => setActiveTab(tab as 'daily' | 'weekly' | 'monthly')}
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            padding: '0.5rem 1rem',
+                            fontSize: '1rem',
+                            fontWeight: activeTab === tab ? 800 : 600,
+                            color: activeTab === tab ? 'var(--ck-text)' : 'var(--ck-text-muted)',
+                            borderBottom: activeTab === tab ? '3px solid var(--ck-orange)' : '3px solid transparent',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            transform: 'translateY(2px)' // align with bottom border
+                        }}
+                    >
+                        {tab === 'daily' ? "Aujourd'hui" : tab === 'weekly' ? 'Semaine' : 'Mois'}
+                    </button>
+                ))}
             </div>
 
             <div className="ck-glass-section">
@@ -278,6 +350,30 @@ export default function JournalPage() {
                                 </div>
                             </div>
                         )}
+                    </div>
+                )}
+                
+                {/* Graphs (Only in Weekly/Monthly mode) */}
+                {activeTab !== 'daily' && user.personalParams?.dailyKcalTarget && (
+                    <div className="ck-glass-card ck-fade-up-2" style={{ marginBottom: '2rem', height: 300, padding: '1.5rem' }}>
+                        <h2 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '1rem' }}>
+                            📈 Historique des Calories ({activeTab === 'weekly' ? '7 derniers jours' : '30 derniers jours'})
+                        </h2>
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={chartData}>
+                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: 'var(--ck-text-muted)', fontSize: 12 }} dy={10} />
+                                <YAxis hide domain={[0, 'dataMax + 500']} />
+                                <Tooltip
+                                    cursor={{ fill: 'rgba(0,0,0,0.02)' }}
+                                    contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}
+                                />
+                                <Bar dataKey="kcal" radius={[6, 6, 6, 6]}>
+                                    {chartData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={entry.kcal > (user.personalParams?.dailyKcalTarget || 2000) ? 'var(--ck-coral)' : 'var(--ck-orange)'} />
+                                    ))}
+                                </Bar>
+                            </BarChart>
+                        </ResponsiveContainer>
                     </div>
                 )}
 

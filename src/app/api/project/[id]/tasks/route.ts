@@ -18,7 +18,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
         let subLocs: string[] = [];
         try {
             if (project?.subLocations && Array.isArray(project.subLocations)) {
-                subLocs = (project.subLocations as any[]).map(s => s.name);
+                subLocs = (project.subLocations as { name: string }[]).map(s => s.name);
             }
         } catch(e) { console.error("Could not parse sublocations", e) }
 

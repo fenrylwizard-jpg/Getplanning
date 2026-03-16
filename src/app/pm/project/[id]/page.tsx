@@ -80,12 +80,12 @@ export default async function ProjectHub({ params, searchParams }: { params: Pro
 
             {/* Tab Content */}
             <div className="max-w-7xl w-full px-4 sm:px-8 py-8">
-                {activeTab === "overview" && <OverviewTab project={project as any} />}
-                {activeTab === "finances" && <FinancesTab project={project as any} />}
-                {activeTab === "achats" && <AchatsTab project={project as any} />}
-                {activeTab === "production" && <ProductionTab project={project as any} />}
-                {activeTab === "technique" && <DossierTechniqueTab project={project as any} />}
-                {activeTab === "planning" && <PlanningTab project={project as any} />}
+                {activeTab === "overview" && <OverviewTab project={project as unknown as React.ComponentProps<typeof OverviewTab>['project']} />}
+                {activeTab === "finances" && <FinancesTab project={project as unknown as React.ComponentProps<typeof FinancesTab>['project']} />}
+                {activeTab === "achats" && <AchatsTab project={project as unknown as React.ComponentProps<typeof AchatsTab>['project']} />}
+                {activeTab === "production" && <ProductionTab project={project as unknown as React.ComponentProps<typeof ProductionTab>['project']} />}
+                {activeTab === "technique" && <DossierTechniqueTab project={project as unknown as React.ComponentProps<typeof DossierTechniqueTab>['project']} />}
+                {activeTab === "planning" && <PlanningTab project={project as unknown as React.ComponentProps<typeof PlanningTab>['project']} />}
             </div>
         </div>
     );

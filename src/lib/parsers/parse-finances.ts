@@ -77,7 +77,7 @@ export function parseFinances(buffer: Buffer): FinanceSnapshotData[] {
     console.log(`[parse-finances] Processing EoC sheet: "${sheetName}"`);
     
     // Parse month from the sheet header row 7 (État des lieux date)
-    let month: Date;
+    let month: Date = new Date();
     const row7 = data[7];
     // Search for a date in row 7 - it's typically in the "État des lieux DD/MM/YYYY" cell
     let dateFound = false;
@@ -132,8 +132,6 @@ export function parseFinances(buffer: Buffer): FinanceSnapshotData[] {
     const settlementsRow = findRow('glements approuv', 10, 25);
     const approvedSettlements = settlementsRow >= 0 ? getNum(settlementsRow, finCol) : null;
     
-    // Revenue with settlements: Find second "Revenu total:" after settlements
-    const revenueTotalRow = findRow('Revenu total:', revenueRow > 0 ? revenueRow + 1 : 15, 30);
     
     // Labor: Find "# heures des ouvriers" or "heures"
     const laborHoursRow = findRow('heures des ouvriers', 18, 35);
