@@ -155,6 +155,7 @@ const USERS_DB: Record<string, { password: string; profile: CookingUser }> = {
 };
 
 const STORAGE_KEY = 'cooking-auth-user';
+const USERS_DB_STORAGE_KEY = 'cooking-users-db';
 
 export function CookingAuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<CookingUser | null>(null);
@@ -162,6 +163,19 @@ export function CookingAuthProvider({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         let isMounted = true;
+        
+        // Initialize or load the persistent DB
+        const storedDb = localStorage.getItem(USERS_DB_STORAGE_KEY);
+        let currentDb = USERS_DB; 
+        if (storedDb) {
+            try {
+                const parsedDb = JSON.parse(storedDb);
+                currentDb = { ...USERS_DB, ...parsedDb };
+            } catch { /* ignore */ }
+        } else {
+             localStorage.setItem(USERS_DB_STORAGE_KEY, JSON.stringify(currentDb));
+        }
+
         const stored = localStorage.getItem(STORAGE_KEY);
         if (stored && isMounted) {
             try {
@@ -178,11 +192,17 @@ export function CookingAuthProvider({ children }: { children: ReactNode }) {
                     shoppingList: parsed.shoppingList ?? [],
                     symptomLog: parsed.symptomLog ?? [],
                 };
-                setUser(normalized);
+                
+                // Defer to avoid React cascading render warning
+                setTimeout(() => {
+                    setUser(normalized);
+                }, 0);
             } catch { /* ignore */ }
         }
         if (isMounted) {
-            setLoaded(true);
+            setTimeout(() => {
+                setLoaded(true);
+            }, 0);
         }
         return () => { isMounted = false; };
     }, []);
@@ -198,7 +218,15 @@ export function CookingAuthProvider({ children }: { children: ReactNode }) {
     }, [user, loaded]);
 
     const login = (username: string, password: string): boolean => {
-        const entry = USERS_DB[username.toLowerCase()];
+        const storedDb = localStorage.getItem(USERS_DB_STORAGE_KEY);
+        let currentDb = USERS_DB;
+        if (storedDb) {
+            try {
+                currentDb = JSON.parse(storedDb);
+            } catch { /* ignore */ }
+        }
+
+        const entry = currentDb[username.toLowerCase()];
         if (entry && entry.password === password) {
             setUser(entry.profile);
             return true;
@@ -209,7 +237,29 @@ export function CookingAuthProvider({ children }: { children: ReactNode }) {
     const logout = () => setUser(null);
 
     const updateUser = (updates: Partial<CookingUser>) => {
-        setUser(prev => prev ? { ...prev, ...updates } : null);
+        setUser(prev => {
+            if (!prev) return null;
+            const updatedProfile = { ...prev, ...updates };
+            
+            // Also update the persistent DB
+            const storedDb = localStorage.getItem(USERS_DB_STORAGE_KEY);
+            let currentDb = USERS_DB;
+            if (storedDb) {
+                try {
+                    currentDb = JSON.parse(storedDb);
+                } catch { /* ignore */ }
+            }
+            
+            const usernameKey = updatedProfile.username.toLowerCase();
+            currentDb[usernameKey] = {
+                ...currentDb[usernameKey],
+                profile: updatedProfile
+            };
+            
+            localStorage.setItem(USERS_DB_STORAGE_KEY, JSON.stringify(currentDb));
+            
+            return updatedProfile;
+        });
     };
 
     if (!loaded) return null;
