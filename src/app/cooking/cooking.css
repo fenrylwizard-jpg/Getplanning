@@ -768,10 +768,34 @@
   color: white;
 }
 
+/* ── Responsive Grids ── */
+.ck-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+.ck-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.ck-grid-auto {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
 /* ── Responsive ── */
 @media (max-width: 768px) {
-  .ck-features-grid {
+  .ck-features-grid,
+  .ck-grid-2 {
     grid-template-columns: 1fr;
+  }
+
+  .ck-grid-3 {
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .ck-calendar {
@@ -794,5 +818,9 @@
 
   .ck-glass-card {
     padding: 1.25rem;
+  }
+
+  .ck-grid-3 {
+    grid-template-columns: 1fr;
   }
 }

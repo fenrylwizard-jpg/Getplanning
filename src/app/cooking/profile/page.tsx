@@ -169,7 +169,7 @@ export default function ProfilePage() {
                     Sélectionnez vos contraintes et objectifs diététiques (plusieurs choix possibles).
                 </p>
                 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1rem', marginBottom: '3rem' }}>
+                <div className="ck-grid-auto" style={{ marginBottom: '3rem' }}>
                     {AVAILABLE_PROTOCOLS.map(proto => {
                         const isSelected = selectedProtocols.includes(proto.id);
                         return (
@@ -201,7 +201,7 @@ export default function ProfilePage() {
 
                 <h2 style={{ fontWeight: 800, marginBottom: '1.5rem', fontSize: '1.3rem' }}>⚖️ Paramètres Physiques & Objectifs</h2>
                 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '2rem' }}>
+                <div className="ck-grid-2" style={{ marginBottom: '2rem' }}>
                     <div>
                         <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ck-text-muted)', marginBottom: '0.5rem' }}>
                             Poids (kg)
@@ -216,7 +216,7 @@ export default function ProfilePage() {
                     </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '2rem' }}>
+                <div className="ck-grid-2" style={{ marginBottom: '2rem' }}>
                     <div>
                         <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ck-text-muted)', marginBottom: '0.5rem' }}>
                             Âge
@@ -250,7 +250,7 @@ export default function ProfilePage() {
                 <div style={{ padding: '1.5rem', background: 'rgba(0,0,0,0.02)', borderRadius: '1rem', border: '1px solid rgba(0,0,0,0.05)', marginBottom: '2rem' }}>
                     <h3 style={{ fontWeight: 800, marginBottom: '1rem', fontSize: '1.1rem' }}>🎯 Vos Objectifs</h3>
                     
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                    <div className="ck-grid-2">
                         <div>
                             <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ck-text-muted)', marginBottom: '0.5rem' }}>
                                 Poids cible (kg)
@@ -272,7 +272,7 @@ export default function ProfilePage() {
                         Choisissez la fée élémentaire qui vous accompagnera. Elle évoluera au fur et à mesure que vous atteignez vos objectifs !
                     </p>
                     
-                    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)', gap: '1rem' }}>
+                    <div className="ck-grid-3">
                         {[
                             { id: 'fire', name: 'Ignis', emoji: '🔥', desc: 'Fée du Feu', color: 'var(--ck-orange)' },
                             { id: 'water', name: 'Aqua', emoji: '💧', desc: "Fée de l'Eau", color: '#3b82f6' },
