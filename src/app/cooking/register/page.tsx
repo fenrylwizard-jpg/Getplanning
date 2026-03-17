@@ -5,11 +5,13 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useCookingAuth } from '../CookingAuthContext';
 
-export default function CookingLoginPage() {
+export default function CookingRegisterPage() {
     const router = useRouter();
-    const { login, user } = useCookingAuth();
+    const { register, user } = useCookingAuth();
     const [username, setUsername] = useState('');
+    const [displayName, setDisplayName] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -21,14 +23,19 @@ export default function CookingLoginPage() {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
-        setLoading(true);
 
+        if (password !== confirmPassword) {
+            setError('Les mots de passe ne correspondent pas.');
+            return;
+        }
+
+        setLoading(true);
         setTimeout(() => {
-            const success = login(username, password);
-            if (success) {
+            const result = register(username, displayName, password);
+            if (result.success) {
                 router.push('/cooking');
             } else {
-                setError('Identifiants incorrects. Veuillez réessayer.');
+                setError(result.error || 'Erreur lors de l\'inscription.');
             }
             setLoading(false);
         }, 500);
@@ -41,16 +48,30 @@ export default function CookingLoginPage() {
                 <div className="ck-auth-header">
                     <div className="ck-auth-logo">🍳</div>
                     <h1 className="ck-auth-title">
-                        Bienvenue sur{' '}
+                        Rejoindre{' '}
                         <span className="ck-auth-brand">Saveur</span>
                     </h1>
                     <p className="ck-auth-subtitle">
-                        Connectez-vous pour accéder à vos recettes et protocoles
+                        Créez votre compte pour accéder aux recettes et protocoles
                     </p>
                 </div>
 
-                {/* Login Form */}
+                {/* Register Form */}
                 <form onSubmit={handleSubmit} className="ck-auth-form">
+                    <div>
+                        <label className="ck-auth-label">
+                            Nom d&apos;affichage
+                        </label>
+                        <input
+                            className="ck-input"
+                            type="text"
+                            placeholder="Ex: Marie Dupont"
+                            value={displayName}
+                            onChange={e => setDisplayName(e.target.value)}
+                            required
+                        />
+                    </div>
+
                     <div>
                         <label className="ck-auth-label">
                             Nom d&apos;utilisateur
@@ -58,7 +79,7 @@ export default function CookingLoginPage() {
                         <input
                             className="ck-input"
                             type="text"
-                            placeholder="Ex: victoria"
+                            placeholder="Ex: marie"
                             value={username}
                             onChange={e => setUsername(e.target.value)}
                             autoComplete="username"
@@ -76,7 +97,22 @@ export default function CookingLoginPage() {
                             placeholder="••••••••"
                             value={password}
                             onChange={e => setPassword(e.target.value)}
-                            autoComplete="current-password"
+                            autoComplete="new-password"
+                            required
+                        />
+                    </div>
+
+                    <div>
+                        <label className="ck-auth-label">
+                            Confirmer le mot de passe
+                        </label>
+                        <input
+                            className="ck-input"
+                            type="password"
+                            placeholder="••••••••"
+                            value={confirmPassword}
+                            onChange={e => setConfirmPassword(e.target.value)}
+                            autoComplete="new-password"
                             required
                         />
                     </div>
@@ -92,16 +128,16 @@ export default function CookingLoginPage() {
                         className="ck-btn ck-btn-primary ck-auth-submit"
                         disabled={loading}
                     >
-                        {loading ? '⏳ Connexion...' : '🍴 Se connecter'}
+                        {loading ? '⏳ Inscription...' : '✨ Créer mon compte'}
                     </button>
                 </form>
 
-                {/* Link to register */}
+                {/* Link to login */}
                 <div className="ck-auth-footer">
                     <p>
-                        Pas encore de compte ?{' '}
-                        <Link href="/cooking/register" className="ck-auth-link">
-                            Créer un compte ✨
+                        Déjà un compte ?{' '}
+                        <Link href="/cooking/login" className="ck-auth-link">
+                            Se connecter 🔑
                         </Link>
                     </p>
                 </div>

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { CookingAuthProvider, useCookingAuth } from './CookingAuthContext';
 import './cooking.css';
 
@@ -16,6 +16,9 @@ const navItems = [
     { href: '/cooking/mealprep', label: 'Meal Prep', icon: '🍱' },
     { href: '/cooking/profile', label: 'Profil', icon: '👤' },
 ];
+
+// Routes that don't require authentication
+const PUBLIC_ROUTES = ['/cooking/login', '/cooking/register'];
 
 function CookingNavbar() {
     const pathname = usePathname();
@@ -73,25 +76,51 @@ function CookingNavbar() {
             </nav>
 
             {/* ── Bottom Navigation (Mobile) ── */}
-            <div className="ck-bottom-nav">
-                <div className="ck-bottom-nav-inner">
-                    {navItems.map(item => (
-                        <Link
-                            key={item.href}
-                            href={item.href}
-                            className={`ck-bottom-nav-item ${pathname === item.href ? 'active' : ''}`}
-                        >
-                            <span>{item.icon}</span>
-                            {item.label}
-                        </Link>
-                    ))}
+            {user && (
+                <div className="ck-bottom-nav">
+                    <div className="ck-bottom-nav-inner">
+                        {navItems.map(item => (
+                            <Link
+                                key={item.href}
+                                href={item.href}
+                                className={`ck-bottom-nav-item ${pathname === item.href ? 'active' : ''}`}
+                            >
+                                <span>{item.icon}</span>
+                                {item.label}
+                            </Link>
+                        ))}
+                    </div>
                 </div>
-            </div>
+            )}
         </>
     );
 }
 
 import FloatingFairy from './components/FloatingFairy';
+
+function AuthGuard({ children }: { children: React.ReactNode }) {
+    const pathname = usePathname();
+    const router = useRouter();
+    const { user } = useCookingAuth();
+
+    const isPublicRoute = PUBLIC_ROUTES.some(route => pathname === route);
+
+    // If not logged in and not on a public route, redirect to login
+    if (!user && !isPublicRoute) {
+        // Use setTimeout to avoid React render-during-render
+        if (typeof window !== 'undefined') {
+            setTimeout(() => router.push('/cooking/login'), 0);
+        }
+        return (
+            <div className="ck-auth-guard">
+                <div className="ck-auth-guard-icon">🔒</div>
+                <p className="ck-auth-guard-text">Redirection vers la page de connexion...</p>
+            </div>
+        );
+    }
+
+    return <>{children}</>;
+}
 
 export default function CookingLayout({
     children,
@@ -105,7 +134,9 @@ export default function CookingLayout({
                     <CookingNavbar />
                     <FloatingFairy />
                     <main className="ck-main-padded">
-                        {children}
+                        <AuthGuard>
+                            {children}
+                        </AuthGuard>
                     </main>
                 </div>
             </div>

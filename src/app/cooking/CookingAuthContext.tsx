@@ -62,6 +62,7 @@ export interface ShoppingItem {
 interface CookingAuthContextType {
     user: CookingUser | null;
     login: (username: string, password: string) => boolean;
+    register: (username: string, displayName: string, password: string) => { success: boolean; error?: string };
     logout: () => void;
     updateUser: (updates: Partial<CookingUser>) => void;
     addXp: (amount: number, reason: string) => void;
@@ -70,6 +71,21 @@ interface CookingAuthContextType {
 const CookingAuthContext = createContext<CookingAuthContextType | null>(null);
 
 const USERS_DB: Record<string, { password: string; profile: CookingUser }> = {
+    admin: {
+        password: 'admin2026',
+        profile: {
+            username: 'admin',
+            displayName: 'Admin',
+            protocols: [],
+            protocolPhase: 1,
+            mealPrepEnabled: false,
+            pantryItems: [],
+            shoppingList: [],
+            symptomLog: [],
+            selectedFairy: 'fire',
+            fairyXp: 0,
+        },
+    },
     victoria: {
         password: 'password',
         profile: {
@@ -244,6 +260,40 @@ export function CookingAuthProvider({ children }: { children: ReactNode }) {
 
     const logout = () => setUser(null);
 
+    const register = (username: string, displayName: string, password: string): { success: boolean; error?: string } => {
+        const key = username.toLowerCase().trim();
+        if (!key || key.length < 3) return { success: false, error: 'Le nom d\'utilisateur doit contenir au moins 3 caractères.' };
+        if (!password || password.length < 4) return { success: false, error: 'Le mot de passe doit contenir au moins 4 caractères.' };
+        if (!displayName.trim()) return { success: false, error: 'Le nom d\'affichage est requis.' };
+
+        // Check if username already exists
+        const storedDb = localStorage.getItem(USERS_DB_STORAGE_KEY);
+        let currentDb = { ...USERS_DB };
+        if (storedDb) {
+            try { currentDb = { ...USERS_DB, ...JSON.parse(storedDb) }; } catch { /* ignore */ }
+        }
+        if (currentDb[key]) return { success: false, error: 'Ce nom d\'utilisateur existe déjà.' };
+
+        // Create the new user
+        const newProfile: CookingUser = {
+            username: key,
+            displayName: displayName.trim(),
+            protocols: [],
+            protocolPhase: 1,
+            mealPrepEnabled: false,
+            pantryItems: [],
+            shoppingList: [],
+            symptomLog: [],
+            fairyXp: 0,
+        };
+        currentDb[key] = { password, profile: newProfile };
+        localStorage.setItem(USERS_DB_STORAGE_KEY, JSON.stringify(currentDb));
+
+        // Auto-login
+        setUser(newProfile);
+        return { success: true };
+    };
+
     const updateUser = (updates: Partial<CookingUser>) => {
         setUser(prev => {
             if (!prev) return null;
@@ -301,7 +351,7 @@ export function CookingAuthProvider({ children }: { children: ReactNode }) {
     if (!loaded) return null;
 
     return (
-        <CookingAuthContext.Provider value={{ user, login, logout, updateUser, addXp }}>
+        <CookingAuthContext.Provider value={{ user, login, register, logout, updateUser, addXp }}>
             {children}
         </CookingAuthContext.Provider>
     );
