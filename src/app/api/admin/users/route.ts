@@ -13,9 +13,6 @@ export async function GET(req: Request) {
         }
 
         const users = await prisma.user.findMany({
-            where: {
-                role: { not: 'ADMIN' }
-            },
             orderBy: {
                 createdAt: 'desc'
             },

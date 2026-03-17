@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
     ShieldCheck, CheckCircle, XCircle, Clock, UserIcon, LogOut,
-    TrendingUp, Euro, Activity, Folder, Target, RefreshCw, Globe, ListOrdered
+    TrendingUp, Euro, Activity, Folder, Target, RefreshCw, Globe, ListOrdered, Trash2, AlertTriangle
 } from 'lucide-react';
 import { toast } from 'sonner';
 import AvatarDisplay from '@/components/AvatarDisplay';
@@ -45,6 +45,8 @@ export default function AdminDashboard() {
     const [loading, setLoading] = useState(true);
     const [cronRunning, setCronRunning] = useState(false);
     const [cronResult, setCronResult] = useState<string | null>(null);
+    const [deleteConfirm, setDeleteConfirm] = useState<{ type: 'user' | 'project'; id: string; name: string } | null>(null);
+    const [deleting, setDeleting] = useState(false);
 
     const fetchData = useCallback(async () => {
         try {
@@ -83,6 +85,44 @@ export default function AdminDashboard() {
             fetchData();
         }
         else toast.error(t('action_error'));
+    };
+
+    const handleDeleteUser = async (userId: string) => {
+        setDeleting(true);
+        try {
+            const res = await fetch(`/api/admin/users/${userId}`, { method: 'DELETE' });
+            if (res.ok) {
+                toast.success('Utilisateur supprimé ✓');
+                fetchData();
+            } else {
+                const data = await res.json();
+                toast.error(data.error || 'Erreur lors de la suppression');
+            }
+        } catch {
+            toast.error('Erreur serveur');
+        } finally {
+            setDeleting(false);
+            setDeleteConfirm(null);
+        }
+    };
+
+    const handleDeleteProject = async (projectId: string) => {
+        setDeleting(true);
+        try {
+            const res = await fetch(`/api/project/${projectId}`, { method: 'DELETE' });
+            if (res.ok) {
+                toast.success('Projet supprimé ✓');
+                fetchData();
+            } else {
+                const data = await res.json();
+                toast.error(data.error || 'Erreur lors de la suppression');
+            }
+        } catch {
+            toast.error('Erreur serveur');
+        } finally {
+            setDeleting(false);
+            setDeleteConfirm(null);
+        }
     };
 
     const handleLogout = async () => {
@@ -233,7 +273,8 @@ export default function AdminDashboard() {
                                     <th className="pb-3 pr-4"><T k="labor_budget" /></th>
                                     <th className="pb-3 pr-4"><T k="achieved_value" /></th>
                                     <th className="pb-3 pr-4"><T k="progress" /></th>
-                                    <th className="pb-3"><T k="targets" /></th>
+                                    <th className="pb-3 pr-4"><T k="targets" /></th>
+                                    <th className="pb-3 text-center">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -254,8 +295,17 @@ export default function AdminDashboard() {
                                                 <span className="text-xs text-gray-400">{p.pct}%</span>
                                             </div>
                                         </td>
-                                        <td className="py-3 text-gray-400 text-xs">
+                                        <td className="py-3 pr-4 text-gray-400 text-xs">
                                             {p.weeksHit}/{p.weeksClosed} sem.
+                                        </td>
+                                        <td className="py-3 text-center">
+                                            <button
+                                                onClick={() => setDeleteConfirm({ type: 'project', id: p.id, name: p.name })}
+                                                className="p-1.5 rounded-lg border border-red-500/20 text-red-400/60 hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/40 transition-all"
+                                                title="Supprimer le projet"
+                                            >
+                                                <Trash2 size={14} />
+                                            </button>
                                         </td>
                                     </tr>
                                 ))}
@@ -316,6 +366,7 @@ export default function AdminDashboard() {
                                         <th className="pb-3 pr-4 text-center"><T k="role" /></th>
                                         <th className="pb-3 pr-4 pl-4 text-center"><T k="level" /></th>
                                         <th className="pb-3 pr-4 text-center"><T k="admin_status" /></th>
+                                        <th className="pb-3 text-center">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -349,6 +400,15 @@ export default function AdminDashboard() {
                                                 {user.status === 'APPROVED' ? t('approved') : user.status === 'REJECTED' ? t('rejected') : user.status}
                                             </span>
                                         </td>
+                                        <td className="py-4 text-center">
+                                            <button
+                                                onClick={() => setDeleteConfirm({ type: 'user', id: user.id, name: user.name || user.email })}
+                                                className="p-1.5 rounded-lg border border-red-500/20 text-red-400/60 hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/40 transition-all"
+                                                title="Supprimer l'utilisateur"
+                                            >
+                                                <Trash2 size={14} />
+                                            </button>
+                                        </td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -357,6 +417,56 @@ export default function AdminDashboard() {
                     )}
                 </div>
         </div>
+
+            {/* Delete Confirmation Modal */}
+            {deleteConfirm && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={() => !deleting && setDeleteConfirm(null)}>
+                    <div className="bg-[#0c1225] border border-white/10 rounded-3xl p-8 max-w-md w-full mx-4 shadow-2xl" onClick={e => e.stopPropagation()}>
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center justify-center">
+                                <AlertTriangle size={24} className="text-red-400" />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-black text-white">Confirmer la suppression</h3>
+                                <p className="text-xs text-gray-500">Cette action est irréversible</p>
+                            </div>
+                        </div>
+                        <p className="text-sm text-gray-300 mb-6">
+                            Voulez-vous vraiment supprimer {deleteConfirm.type === 'user' ? "l'utilisateur" : 'le projet'}{' '}
+                            <strong className="text-white">{deleteConfirm.name}</strong> ?
+                            {deleteConfirm.type === 'user' && (
+                                <span className="block mt-2 text-red-400/80 text-xs">Toutes les données associées (projets PM, badges, données cuisine) seront également supprimées.</span>
+                            )}
+                            {deleteConfirm.type === 'project' && (
+                                <span className="block mt-2 text-red-400/80 text-xs">Tous les rapports, tâches, plans et données associées seront supprimés.</span>
+                            )}
+                        </p>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setDeleteConfirm(null)}
+                                disabled={deleting}
+                                className="flex-1 py-3 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10 transition-all font-bold text-sm disabled:opacity-50"
+                            >
+                                Annuler
+                            </button>
+                            <button
+                                onClick={() => {
+                                    if (deleteConfirm.type === 'user') handleDeleteUser(deleteConfirm.id);
+                                    else handleDeleteProject(deleteConfirm.id);
+                                }}
+                                disabled={deleting}
+                                className="flex-1 py-3 rounded-xl bg-red-500/20 border border-red-500/40 text-red-400 hover:bg-red-500/30 transition-all font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+                            >
+                                {deleting ? (
+                                    <div className="w-4 h-4 border-2 border-red-400 border-t-transparent rounded-full animate-spin" />
+                                ) : (
+                                    <><Trash2 size={14} /> Supprimer</>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
             </main>
         </div>
     );
