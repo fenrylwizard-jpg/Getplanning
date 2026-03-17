@@ -158,6 +158,7 @@ export default function FileUploadZone({
                 accept={acceptTypes}
                 onChange={handleFileSelect}
                 className="hidden"
+                title="Upload file"
             />
 
             <div className="relative z-10 flex flex-col items-center text-center gap-4">

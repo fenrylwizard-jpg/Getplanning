@@ -20,6 +20,17 @@ interface AIRecipe {
     kcalPerServing?: number;
 }
 
+const GRADIENT_BGS = [
+    'linear-gradient(135deg, #FFE5E5, #FFDADA)',
+    'linear-gradient(135deg, #E8F5E9, #D5ECD6)',
+    'linear-gradient(135deg, #EDE7F6, #E0D4F5)',
+    'linear-gradient(135deg, #FFF3E0, #FFE8CC)',
+    'linear-gradient(135deg, #FCE4EC, #F9D0E0)',
+    'linear-gradient(135deg, #E1F5FE, #D0ECFA)',
+    'linear-gradient(135deg, #FFF8E1, #FFECB3)',
+    'linear-gradient(135deg, #F3E5F5, #E1BEE7)',
+];
+
 export default function RecipesPage() {
     const { user } = useCookingAuth();
     const [aiRecipes, setAiRecipes] = useState<AIRecipe[]>([]);
@@ -89,7 +100,7 @@ export default function RecipesPage() {
                 </div>
                 <h1 className="ck-fade-up-1">
                     Idées de{' '}
-                    <span style={{ background: 'linear-gradient(135deg, var(--ck-lavender), var(--ck-plum))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                    <span className="ck-text-gradient-lavender">
                         Recettes
                     </span>
                 </h1>
@@ -100,30 +111,18 @@ export default function RecipesPage() {
 
             <div className="ck-glass-section">
                 {/* AI Search Toggle */}
-                <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', flexWrap: 'wrap' }} className="ck-fade-up-2">
+                <div className="ck-toggle-row ck-fade-up-2">
                     <button
-                        className="ck-btn"
+                        className={`ck-btn ${!showAI ? 'ck-btn-toggle-lavender' : 'ck-btn-toggle-inactive'}`}
                         title="Voir les recettes classiques"
                         onClick={() => setShowAI(false)}
-                        style={{
-                            background: !showAI ? 'linear-gradient(135deg, var(--ck-lavender), var(--ck-plum))' : 'rgba(255,255,255,0.5)',
-                            color: !showAI ? 'white' : 'var(--ck-text-soft)',
-                            border: !showAI ? 'none' : '1px solid rgba(0,0,0,0.06)',
-                            boxShadow: !showAI ? '0 4px 20px rgba(196, 167, 231, 0.3)' : 'none',
-                        }}
                     >
                         📖 Classiques
                     </button>
                     <button
-                        className="ck-btn"
+                        className={`ck-btn ${showAI ? 'ck-btn-toggle-orange' : 'ck-btn-toggle-inactive'}`}
                         title="Chercher avec l'IA Gemini"
                         onClick={() => setShowAI(true)}
-                        style={{
-                            background: showAI ? 'linear-gradient(135deg, var(--ck-orange), var(--ck-coral))' : 'rgba(255,255,255,0.5)',
-                            color: showAI ? 'white' : 'var(--ck-text-soft)',
-                            border: showAI ? 'none' : '1px solid rgba(0,0,0,0.06)',
-                            boxShadow: showAI ? '0 4px 20px rgba(245, 138, 61, 0.3)' : 'none',
-                        }}
                     >
                         ✨ Recherche IA
                     </button>
@@ -133,73 +132,60 @@ export default function RecipesPage() {
                 {!showAI && (
                     <div>
                         {/* Search & Filters */}
-                        <div style={{ marginBottom: '1.25rem' }}>
+                        <div className="ck-mb-lg">
                             <input
-                                className="ck-input"
+                                className="ck-input ck-mb-sm"
                                 placeholder="🔍 Rechercher une recette ou un tag..."
                                 value={searchQuery}
                                 onChange={e => setSearchQuery(e.target.value)}
-                                style={{ marginBottom: '0.75rem' }}
                             />
-                            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                            <div className="ck-filter-row">
                                 {recipeCategories.map(cat => (
                                     <button
                                         key={cat.name}
-                                        className="ck-tag"
+                                        className={`ck-tag ${activeCategory === cat.name ? 'ck-tag-active-lavender' : 'ck-tag-inactive'}`}
                                         title={`Filtrer par ${cat.name}`}
                                         onClick={() => setActiveCategory(cat.name)}
-                                        style={activeCategory === cat.name
-                                            ? { background: 'linear-gradient(135deg, var(--ck-lavender), var(--ck-plum))', color: 'white', borderColor: 'transparent' }
-                                            : { background: 'rgba(255,255,255,0.5)', color: 'var(--ck-text-soft)', borderColor: 'rgba(0,0,0,0.06)' }
-                                        }
                                     >
                                         {cat.emoji} {cat.name}
                                     </button>
                                 ))}
                                 <button
-                                    className="ck-tag"
+                                    className={`ck-tag ${fodmapOnly ? 'ck-tag-active-sage' : 'ck-tag-inactive'}`}
                                     title="Afficher uniquement les recettes Low-FODMAP"
                                     onClick={() => setFodmapOnly(!fodmapOnly)}
-                                    style={fodmapOnly
-                                        ? { background: 'var(--ck-sage)', color: 'white', borderColor: 'transparent' }
-                                        : { background: 'rgba(255,255,255,0.5)', color: 'var(--ck-text-soft)', borderColor: 'rgba(0,0,0,0.06)' }
-                                    }
                                 >
                                     🥦 FODMAP-safe
                                 </button>
                             </div>
                         </div>
 
-                        <p style={{ fontSize: '0.85rem', color: 'var(--ck-text-muted)', marginBottom: '1rem' }}>
+                        <p className="ck-recipe-count">
                             {filteredRecipes.length} recette{filteredRecipes.length > 1 ? 's' : ''} trouvée{filteredRecipes.length > 1 ? 's' : ''}
                         </p>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.25rem' }}>
+                        <div className="ck-recipe-grid">
                             {filteredRecipes.map((recipe, i) => (
                                 <div
                                     key={recipe.id}
                                     className="ck-recipe-card ck-fade-up"
-                                    style={{ animationDelay: `${(i % 12) * 0.04}s`, cursor: 'pointer', transition: 'transform 0.2s ease, box-shadow 0.2s ease' }}
+                                    style={{ animationDelay: `${(i % 12) * 0.04}s` }}
                                     onClick={() => setSelectedStaticRecipe(recipe)}
-                                    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(0,0,0,0.1)'; }}
-                                    onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = ''; }}
                                 >
-                                    <div className="ck-recipe-img" style={{
-                                        background: `linear-gradient(135deg, ${['#FFE5E5', '#E8F5E9', '#EDE7F6', '#FFF3E0', '#FCE4EC', '#E1F5FE', '#FFF8E1', '#F3E5F5'][i % 8]}, ${['#FFDADA', '#D5ECD6', '#E0D4F5', '#FFE8CC', '#F9D0E0', '#D0ECFA', '#FFECB3', '#E1BEE7'][i % 8]})`,
-                                    }}>
+                                    <div className="ck-recipe-img" style={{ background: GRADIENT_BGS[i % 8] }}>
                                         {recipe.emoji}
                                     </div>
                                     <div className="ck-recipe-body">
-                                        <h3 style={{ fontWeight: 800, marginBottom: '0.5rem', fontSize: '1.05rem' }}>{recipe.name}</h3>
-                                        <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.75rem', fontSize: '0.8rem', color: 'var(--ck-text-muted)' }}>
+                                        <h3 className="ck-recipe-title">{recipe.name}</h3>
+                                        <div className="ck-recipe-meta">
                                             <span>⏱ {recipe.time}</span>
                                             <span>📊 {recipe.difficulty}</span>
-                                            <span style={{ opacity: 0.6 }}>{recipe.category}</span>
-                                            <span style={{ fontWeight: 600, color: 'var(--ck-orange)' }}>🔥 {recipe.kcal} kcal</span>
+                                            <span className="ck-meta-dim">{recipe.category}</span>
+                                            <span className="ck-recipe-kcal">🔥 {recipe.kcal} kcal</span>
                                         </div>
-                                        <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+                                        <div className="ck-recipe-tags">
                                             {recipe.tags.slice(0, 3).map(tag => (
-                                                <span key={tag} className="ck-tag ck-tag-lavender" style={{ fontSize: '0.7rem', padding: '0.2rem 0.6rem' }}>
+                                                <span key={tag} className="ck-tag ck-tag-lavender ck-recipe-tag-sm">
                                                     {tag}
                                                 </span>
                                             ))}
@@ -212,8 +198,8 @@ export default function RecipesPage() {
                         {filteredRecipes.length === 0 && (
                             <div className="ck-empty-state">
                                 <div className="ck-empty-state-icon">🍽️</div>
-                                <h3 style={{ fontWeight: 800, marginBottom: '0.5rem' }}>Aucune recette trouvée</h3>
-                                <p style={{ color: 'var(--ck-text-muted)' }}>Essayez une autre catégorie ou un autre mot-clé.</p>
+                                <h3 className="ck-login-title">Aucune recette trouvée</h3>
+                                <p className="ck-login-desc">Essayez une autre catégorie ou un autre mot-clé.</p>
                             </div>
                         )}
                     </div>
@@ -223,10 +209,10 @@ export default function RecipesPage() {
                 {showAI && (
                     <div className="ck-fade-up-3">
                         {!user ? (
-                            <div className="ck-glass-card" style={{ textAlign: 'center', padding: '3rem' }}>
-                                <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔐</div>
-                                <h3 style={{ fontWeight: 800, marginBottom: '0.5rem' }}>Connexion requise</h3>
-                                <p style={{ color: 'var(--ck-text-muted)', marginBottom: '1.5rem' }}>
+                            <div className="ck-glass-card ck-login-prompt">
+                                <div className="ck-login-prompt-icon">🔐</div>
+                                <h3 className="ck-login-title">Connexion requise</h3>
+                                <p className="ck-login-desc">
                                     Connectez-vous pour accéder à la recherche IA personnalisée.
                                 </p>
                                 <Link href="/cooking/login" className="ck-btn ck-btn-primary">
@@ -236,37 +222,27 @@ export default function RecipesPage() {
                         ) : (
                             <>
                                 {/* AI Search Form */}
-                                <div className="ck-glass-card" style={{ marginBottom: '1.5rem' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
-                                        <div style={{
-                                            width: '48px', height: '48px', borderRadius: '16px',
-                                            background: 'linear-gradient(135deg, var(--ck-orange), var(--ck-coral))',
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            fontSize: '1.5rem', boxShadow: '0 4px 15px rgba(245, 138, 61, 0.3)',
-                                        }}>
+                                <div className="ck-glass-card ck-mb-lg">
+                                    <div className="ck-ai-header">
+                                        <div className="ck-ai-icon-box">
                                             ✨
                                         </div>
                                         <div>
-                                            <h3 style={{ fontWeight: 800, fontSize: '1.1rem' }}>Recherche IA — Gemini</h3>
-                                            <p style={{ fontSize: '0.8rem', color: 'var(--ck-text-muted)' }}>
+                                            <h3 className="ck-ai-title">Recherche IA — Gemini</h3>
+                                            <p className="ck-ai-subtitle">
                                                 Recettes personnalisées selon votre profil
                                             </p>
                                         </div>
                                     </div>
 
                                     {/* User Profile Summary */}
-                                    <div style={{
-                                        padding: '1rem', borderRadius: '1rem',
-                                        background: 'rgba(245, 138, 61, 0.06)',
-                                        border: '1px solid rgba(245, 138, 61, 0.1)',
-                                        marginBottom: '1.5rem',
-                                    }}>
-                                        <div style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ck-text-muted)', marginBottom: '0.5rem' }}>
+                                    <div className="ck-ai-profile-box">
+                                        <div className="ck-small-label">
                                             Votre profil
                                         </div>
-                                        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                        <div className="ck-profile-tags">
                                             {(user.protocols ?? []).length > 0 ? (user.protocols ?? []).map(p => (
-                                                <span key={p} className="ck-tag ck-tag-coral" style={{ textTransform: 'capitalize' }}>
+                                                <span key={p} className="ck-tag ck-tag-coral ck-text-capitalize">
                                                     {p.replace('-', ' ')} {p === 'low-fodmap' && `Phase ${user.protocolPhase ?? 1}`}
                                                 </span>
                                             )) : (
@@ -281,16 +257,15 @@ export default function RecipesPage() {
                                     </div>
 
                                     {/* Search Options */}
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+                                    <div className="ck-ai-options-grid">
                                         <div>
-                                            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--ck-text-muted)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+                                            <label className="ck-ai-search-label">
                                                 Type de repas
                                             </label>
                                             <select
-                                                className="ck-input"
+                                                className="ck-input ck-cursor-pointer"
                                                 value={mealType}
                                                 onChange={e => setMealType(e.target.value)}
-                                                style={{ cursor: 'pointer' }}
                                                 title="Type de repas"
                                             >
                                                 <option value="">Tous les types</option>
@@ -301,7 +276,7 @@ export default function RecipesPage() {
                                             </select>
                                         </div>
                                         <div>
-                                            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--ck-text-muted)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+                                            <label className="ck-ai-search-label">
                                                 Portions
                                             </label>
                                             <input
@@ -318,26 +293,18 @@ export default function RecipesPage() {
                                     </div>
 
                                     {/* Toggle Options */}
-                                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
+                                    <div className="ck-filter-row ck-mb-lg">
                                         <button
                                             title="Utiliser uniquement les ingrédients du cellier"
-                                            className="ck-tag"
+                                            className={`ck-tag ${usePantryOnly ? 'ck-tag-active-sage' : 'ck-tag-inactive'}`}
                                             onClick={() => setUsePantryOnly(!usePantryOnly)}
-                                            style={usePantryOnly
-                                                ? { background: 'var(--ck-sage)', color: 'white', borderColor: 'var(--ck-sage)' }
-                                                : { background: 'rgba(255,255,255,0.5)', color: 'var(--ck-text-soft)', borderColor: 'rgba(0,0,0,0.06)' }
-                                            }
                                         >
                                             🥫 Cellier uniquement
                                         </button>
                                         <button
                                             title="Optimiser pour le meal prep"
-                                            className="ck-tag"
+                                            className={`ck-tag ${mealPrepMode ? 'ck-tag-active-rose' : 'ck-tag-inactive'}`}
                                             onClick={() => setMealPrepMode(!mealPrepMode)}
-                                            style={mealPrepMode
-                                                ? { background: 'var(--ck-rose)', color: 'white', borderColor: 'var(--ck-rose)' }
-                                                : { background: 'rgba(255,255,255,0.5)', color: 'var(--ck-text-soft)', borderColor: 'rgba(0,0,0,0.06)' }
-                                            }
                                         >
                                             🍱 Mode Meal Prep
                                         </button>
@@ -345,18 +312,16 @@ export default function RecipesPage() {
 
                                     {/* Free text preferences */}
                                     <input
-                                        className="ck-input"
+                                        className="ck-input ck-mb-lg"
                                         placeholder="Envies spéciales ? Ex: cuisine asiatique, rapide, peu de cuisson..."
                                         value={preferences}
                                         onChange={e => setPreferences(e.target.value)}
-                                        style={{ marginBottom: '1.5rem' }}
                                     />
 
                                     <button
-                                        className="ck-btn ck-btn-primary"
+                                        className={`ck-btn ck-btn-primary ck-search-btn-full${loading ? ' ck-btn-loading' : ''}`}
                                         onClick={searchWithAI}
                                         disabled={loading}
-                                        style={{ width: '100%', padding: '1rem', fontSize: '1rem', opacity: loading ? 0.7 : 1 }}
                                     >
                                         {loading ? (
                                             <span>✨ Gemini réfléchit... Patienter</span>
@@ -367,14 +332,7 @@ export default function RecipesPage() {
                                 </div>
 
                                 {error && (
-                                    <div className="ck-glass-card" style={{
-                                        background: 'rgba(255, 107, 107, 0.06)',
-                                        border: '1px solid rgba(255, 107, 107, 0.2)',
-                                        marginBottom: '1.5rem',
-                                        padding: '1rem',
-                                        color: 'var(--ck-coral)',
-                                        fontWeight: 600,
-                                    }}>
+                                    <div className="ck-glass-card ck-error-card">
                                         ❌ {error}
                                     </div>
                                 )}
@@ -382,47 +340,42 @@ export default function RecipesPage() {
                                 {/* AI Results */}
                                 {aiRecipes.length > 0 && (
                                     <div>
-                                        <h2 style={{ fontWeight: 900, marginBottom: '1rem', fontSize: '1.3rem' }}>
+                                        <h2 className="ck-ai-results-title">
                                             ✨ {aiRecipes.length} recettes générées par Gemini
                                         </h2>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                        <div className="ck-ai-recipe-list">
                                             {aiRecipes.map((recipe, i) => (
                                                 <div
                                                     key={i}
-                                                    className="ck-glass-card ck-fade-up"
-                                                    style={{ animationDelay: `${i * 0.1}s`, cursor: 'pointer' }}
+                                                    className="ck-glass-card ck-fade-up ck-clickable"
+                                                    style={{ animationDelay: `${i * 0.1}s` }}
                                                     onClick={() => setExpandedRecipe(expandedRecipe === i ? null : i)}
                                                 >
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                                        <div style={{
-                                                            width: '56px', height: '56px', borderRadius: '16px',
-                                                            background: `linear-gradient(135deg, ${['#FFE5E5', '#E8F5E9', '#EDE7F6', '#FFF3E0', '#FCE4EC'][i % 5]}, ${['#FFDADA', '#D5ECD6', '#E0D4F5', '#FFE8CC', '#F9D0E0'][i % 5]})`,
-                                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                            fontSize: '1.75rem', flexShrink: 0,
-                                                        }}>
+                                                    <div className="ck-ai-recipe-row">
+                                                        <div className="ck-ai-recipe-icon" style={{ background: GRADIENT_BGS[i % 5] }}>
                                                             {recipe.emoji}
                                                         </div>
-                                                        <div style={{ flex: 1 }}>
-                                                            <h3 style={{ fontWeight: 800, fontSize: '1.05rem' }}>{recipe.name}</h3>
-                                                            <div style={{ display: 'flex', gap: '0.75rem', fontSize: '0.8rem', color: 'var(--ck-text-muted)', marginTop: '0.25rem' }}>
+                                                        <div className="ck-flex-1">
+                                                            <h3 className="ck-ai-recipe-title">{recipe.name}</h3>
+                                                            <div className="ck-ai-recipe-meta">
                                                                 <span>⏱ {recipe.time}</span>
                                                                 <span>📊 {recipe.difficulty}</span>
                                                                 <span>🍽️ {recipe.servings} portions</span>
-                                                                {recipe.kcalPerServing && <span style={{ fontWeight: 600, color: 'var(--ck-orange)' }}>🔥 {recipe.kcalPerServing} kcal</span>}
+                                                                {recipe.kcalPerServing && <span className="ck-recipe-kcal">🔥 {recipe.kcalPerServing} kcal</span>}
                                                             </div>
                                                         </div>
-                                                        <span style={{ fontSize: '1.25rem', transition: 'transform 0.3s', transform: expandedRecipe === i ? 'rotate(180deg)' : 'rotate(0)' }}>
+                                                        <span className={`ck-ai-expand-arrow${expandedRecipe === i ? ' open' : ''}`}>
                                                             ▾
                                                         </span>
                                                     </div>
 
                                                     {/* Tags */}
-                                                    <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', marginTop: '0.75rem' }}>
+                                                    <div className="ck-recipe-tags ck-mt-sm">
                                                         {recipe.fodmapSafe && (
-                                                            <span className="ck-tag ck-tag-sage" style={{ fontSize: '0.7rem', padding: '0.2rem 0.6rem' }}>🥦 FODMAP-safe</span>
+                                                            <span className="ck-tag ck-tag-sage ck-recipe-tag-sm">🥦 FODMAP-safe</span>
                                                         )}
                                                         {recipe.tags?.map(tag => (
-                                                            <span key={tag} className="ck-tag ck-tag-lavender" style={{ fontSize: '0.7rem', padding: '0.2rem 0.6rem' }}>
+                                                            <span key={tag} className="ck-tag ck-tag-lavender ck-recipe-tag-sm">
                                                                 {tag}
                                                             </span>
                                                         ))}
@@ -430,32 +383,27 @@ export default function RecipesPage() {
 
                                                     {/* Expanded details */}
                                                     {expandedRecipe === i && (
-                                                        <div style={{ marginTop: '1rem', borderTop: '1px solid rgba(0,0,0,0.05)', paddingTop: '1rem' }}>
+                                                        <div className="ck-detail-section">
                                                             {/* Ingredients */}
-                                                            <h4 style={{ fontSize: '0.85rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ck-orange)', marginBottom: '0.5rem' }}>
+                                                            <h4 className="ck-detail-heading ck-detail-heading-orange">
                                                                 🧂 Ingrédients
                                                             </h4>
-                                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', marginBottom: '1rem' }}>
+                                                            <div className="ck-ingredient-list">
                                                                 {recipe.ingredients?.map((ing, j) => (
-                                                                    <div key={j} style={{ fontSize: '0.9rem', paddingLeft: '1rem', borderLeft: '2px solid var(--ck-peach-deep)' }}>
+                                                                    <div key={j} className="ck-ingredient-item">
                                                                         {ing}
                                                                     </div>
                                                                 ))}
                                                             </div>
 
                                                             {/* Steps */}
-                                                            <h4 style={{ fontSize: '0.85rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ck-sage-deep)', marginBottom: '0.5rem' }}>
+                                                            <h4 className="ck-detail-heading ck-detail-heading-sage">
                                                                 👩‍🍳 Étapes
                                                             </h4>
-                                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1rem' }}>
+                                                            <div className="ck-steps-list">
                                                                 {recipe.steps?.map((step, j) => (
-                                                                    <div key={j} style={{ display: 'flex', gap: '0.75rem', fontSize: '0.9rem' }}>
-                                                                        <span style={{
-                                                                            width: '24px', height: '24px', borderRadius: '50%', flexShrink: 0,
-                                                                            background: 'linear-gradient(135deg, var(--ck-sage), var(--ck-teal))',
-                                                                            color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                                            fontSize: '0.7rem', fontWeight: 800,
-                                                                        }}>
+                                                                    <div key={j} className="ck-step-row">
+                                                                        <span className="ck-step-number">
                                                                             {j + 1}
                                                                         </span>
                                                                         <span>{step}</span>
@@ -465,12 +413,7 @@ export default function RecipesPage() {
 
                                                             {/* Tips */}
                                                             {recipe.tips && (
-                                                                <div style={{
-                                                                    padding: '0.75rem 1rem', borderRadius: '0.75rem',
-                                                                    background: 'rgba(196, 167, 231, 0.08)',
-                                                                    border: '1px solid rgba(196, 167, 231, 0.15)',
-                                                                    fontSize: '0.85rem', color: 'var(--ck-lavender-deep)',
-                                                                }}>
+                                                                <div className="ck-tips-box">
                                                                     💡 {recipe.tips}
                                                                 </div>
                                                             )}
@@ -486,8 +429,8 @@ export default function RecipesPage() {
                                 {!loading && aiRecipes.length === 0 && !error && (
                                     <div className="ck-empty-state">
                                         <div className="ck-empty-state-icon">✨</div>
-                                        <h3 style={{ fontWeight: 800, marginBottom: '0.5rem' }}>Prêt à cuisiner ?</h3>
-                                        <p style={{ color: 'var(--ck-text-muted)', maxWidth: '400px', margin: '0 auto' }}>
+                                        <h3 className="ck-login-title">Prêt à cuisiner ?</h3>
+                                        <p className="ck-login-desc ck-empty-centered">
                                             Cliquez sur &quot;Générer&quot; pour que Gemini crée des recettes personnalisées basées sur votre profil, votre cellier et vos préférences.
                                         </p>
                                     </div>

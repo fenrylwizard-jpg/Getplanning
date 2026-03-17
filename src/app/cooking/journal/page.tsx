@@ -74,7 +74,6 @@ export default function JournalPage() {
         const now = new Date();
         const daysToShow = activeTab === 'weekly' ? 7 : 30;
 
-        // Initialize array with zeros for the selected timeframe
         for (let i = daysToShow - 1; i >= 0; i--) {
             const d = new Date(now);
             d.setDate(d.getDate() - i);
@@ -122,14 +121,12 @@ export default function JournalPage() {
     const analytics = useMemo(() => {
         if (log.length === 0) return null;
 
-        // Count symptom frequency
         const symptomFreq: Record<string, number> = {};
         const foodSymptomMap: Record<string, { count: number; totalSeverity: number }> = {};
 
         log.forEach(entry => {
             entry.symptoms.forEach(s => {
                 symptomFreq[s.name] = (symptomFreq[s.name] || 0) + 1;
-                // Map foods to symptoms
                 entry.foodsEaten.forEach(food => {
                     const key = food.name.toLowerCase().trim();
                     if (!foodSymptomMap[key]) foodSymptomMap[key] = { count: 0, totalSeverity: 0 };
@@ -155,11 +152,11 @@ export default function JournalPage() {
 
     if (!user) {
         return (
-            <div className="ck-glass-section" style={{ paddingTop: '4rem' }}>
+            <div className="ck-glass-section ck-pt-4">
                 <div className="ck-empty-state">
                     <div className="ck-empty-state-icon">🔐</div>
-                    <h3 style={{ fontWeight: 800, marginBottom: '0.5rem' }}>Connexion requise</h3>
-                    <p style={{ color: 'var(--ck-text-muted)', marginBottom: '1.5rem' }}>
+                    <h3 className="ck-login-title">Connexion requise</h3>
+                    <p className="ck-login-desc">
                         Connectez-vous pour utiliser le journal.
                     </p>
                     <Link href="/cooking/login" className="ck-btn ck-btn-primary">🍴 Se connecter</Link>
@@ -207,16 +204,15 @@ export default function JournalPage() {
 
         updateUser({ symptomLog: [entry, ...log] });
 
-        // Gamification XP Award
         const kcalValue = newFoods.reduce((sum, f) => sum + f.kcal, 0);
-        let xpReward = 150; // Base XR for logging
+        let xpReward = 150;
         const targetKcal = user.personalParams?.dailyKcalTarget || 2000;
         const newTotalKcal = todayStats.totalKcal + kcalValue;
         
         if (newTotalKcal <= targetKcal + 100 && newTotalKcal >= targetKcal - 400) {
-            xpReward += 100; // Bonus for sticking to targets
+            xpReward += 100;
         } else if (newTotalKcal > targetKcal + 500) {
-            xpReward = 50; // Penalty (or less bonus) for overeating significantly
+            xpReward = 50;
         }
         addXp(xpReward, `Journal: ${newMealType}`);
 
@@ -240,11 +236,11 @@ export default function JournalPage() {
         <>
             <div className="ck-page-header">
                 <div className="ck-hero-badge ck-fade-up">
-                    <span>📋</span> Suivi & Gamification
+                    <span>📋</span> Suivi &amp; Gamification
                 </div>
                 <h1 className="ck-fade-up-1">
                     Mon{' '}
-                    <span style={{ background: 'linear-gradient(135deg, var(--ck-coral), var(--ck-rose))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                    <span className="ck-text-gradient-coral">
                         Journal
                     </span>
                 </h1>
@@ -253,23 +249,12 @@ export default function JournalPage() {
                 </p>
             </div>
 
-            <div style={{ padding: '0 1rem', display: 'flex', gap: '1rem', marginBottom: '1.5rem', borderBottom: '2px solid rgba(0,0,0,0.05)' }}>
+            <div className="ck-journal-tabs-bar">
                 {['daily', 'weekly', 'monthly'].map(tab => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab as 'daily' | 'weekly' | 'monthly')}
-                        style={{
-                            background: 'none',
-                            border: 'none',
-                            padding: '0.5rem 1rem',
-                            fontSize: '1rem',
-                            fontWeight: activeTab === tab ? 800 : 600,
-                            color: activeTab === tab ? 'var(--ck-text)' : 'var(--ck-text-muted)',
-                            borderBottom: activeTab === tab ? '3px solid var(--ck-orange)' : '3px solid transparent',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s ease',
-                            transform: 'translateY(2px)' // align with bottom border
-                        }}
+                        className={`ck-journal-tabs-btn ${activeTab === tab ? 'active' : ''}`}
                     >
                         {tab === 'daily' ? "Aujourd'hui" : tab === 'weekly' ? 'Semaine' : 'Mois'}
                     </button>
@@ -280,26 +265,24 @@ export default function JournalPage() {
                 
                 {/* Daily Calorie Summary */}
                 {user.personalParams?.dailyKcalTarget && (
-                    <div className="ck-glass-card ck-fade-up-2" style={{ marginBottom: '2rem', padding: '1.5rem', background: 'linear-gradient(135deg, rgba(255,160,122,0.1), rgba(255,107,107,0.05))', border: '1px solid rgba(255,160,122,0.2)' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                            <h2 style={{ fontSize: '1.2rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <div className="ck-glass-card ck-fade-up-2 ck-kcal-summary ck-mb-xl">
+                        <div className="ck-kcal-summary-header">
+                            <h2 className="ck-kcal-summary-title">
                                 🔥 Calories du Jour
                             </h2>
-                            <span style={{ fontWeight: 700, color: 'var(--ck-orange)', fontSize: '1.1rem' }}>
+                            <span className="ck-kcal-summary-value">
                                 {todayStats.totalKcal} / {user.personalParams.dailyKcalTarget} kcal
                             </span>
                         </div>
                         
                         {/* Progress Bar */}
-                        <div style={{ width: '100%', height: '12px', background: 'rgba(0,0,0,0.05)', borderRadius: '6px', overflow: 'hidden', marginBottom: '0.5rem' }}>
-                            <div style={{ 
-                                height: '100%', 
-                                width: `${Math.min(100, (todayStats.totalKcal / user.personalParams.dailyKcalTarget) * 100)}%`,
-                                background: todayStats.totalKcal > user.personalParams.dailyKcalTarget ? 'var(--ck-coral)' : 'linear-gradient(90deg, var(--ck-orange), var(--ck-peach))',
-                                transition: 'width 0.5s ease-out'
-                            }} />
+                        <div className="ck-kcal-progress-track">
+                            <div
+                                className={`ck-kcal-progress-fill ${todayStats.totalKcal > user.personalParams.dailyKcalTarget ? 'over' : ''}`}
+                                style={{ width: `${Math.min(100, (todayStats.totalKcal / user.personalParams.dailyKcalTarget) * 100)}%` }}
+                            />
                         </div>
-                        <p style={{ fontSize: '0.8rem', color: 'var(--ck-text-muted)', margin: 0 }}>
+                        <p className="ck-kcal-progress-note">
                             {todayStats.totalKcal > user.personalParams.dailyKcalTarget 
                                 ? `Vous avez dépassé votre objectif de ${todayStats.totalKcal - user.personalParams.dailyKcalTarget} kcal.` 
                                 : `Il vous reste ${user.personalParams.dailyKcalTarget - todayStats.totalKcal} kcal pour aujourd'hui. (${todayStats.entriesCount} repas partagés)`}
@@ -308,45 +291,41 @@ export default function JournalPage() {
                 )}
                 {/* Analytics Dashboard */}
                 {analytics && analytics.totalEntries > 0 && (
-                    <div className="ck-fade-up-2" style={{ marginBottom: '2rem' }}>
-                        <h2 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '1rem' }}>📊 Aperçu</h2>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+                    <div className="ck-fade-up-2 ck-mb-xl">
+                        <h2 className="ck-chart-heading">📊 Aperçu</h2>
+                        <div className="ck-analytics-auto-grid ck-mb-lg">
                             <div className="ck-stat-card">
-                                <div style={{ fontSize: '1.5rem' }}>📝</div>
-                                <div className="ck-stat-value" style={{ color: 'var(--ck-orange)', fontSize: '1.5rem' }}>{analytics.totalEntries}</div>
+                                <div className="ck-entry-feeling">📝</div>
+                                <div className="ck-stat-value ck-stat-value-orange">{analytics.totalEntries}</div>
                                 <div className="ck-stat-label">Entrées</div>
                             </div>
                             <div className="ck-stat-card">
-                                <div style={{ fontSize: '1.5rem' }}>{feelingEmojis[Math.round(analytics.avgFeeling) - 1]}</div>
-                                <div className="ck-stat-value" style={{ color: analytics.avgFeeling >= 3.5 ? 'var(--ck-sage)' : 'var(--ck-coral)', fontSize: '1.5rem' }}>
+                                <div className="ck-entry-feeling">{feelingEmojis[Math.round(analytics.avgFeeling) - 1]}</div>
+                                <div className={`ck-stat-value ${analytics.avgFeeling >= 3.5 ? 'ck-stat-value-sage' : 'ck-stat-value-coral'}`}>
                                     {analytics.avgFeeling.toFixed(1)}/5
                                 </div>
                                 <div className="ck-stat-label">Bien-être moyen</div>
                             </div>
                             <div className="ck-stat-card">
-                                <div style={{ fontSize: '1.5rem' }}>⚠️</div>
-                                <div className="ck-stat-value" style={{ color: 'var(--ck-coral)', fontSize: '1.5rem' }}>{analytics.topSymptoms.length}</div>
+                                <div className="ck-entry-feeling">⚠️</div>
+                                <div className="ck-stat-value ck-stat-value-coral">{analytics.topSymptoms.length}</div>
                                 <div className="ck-stat-label">Types de symptômes</div>
                             </div>
                         </div>
 
                         {/* Suspect Foods */}
                         {analytics.suspectFoods.length > 0 && (
-                            <div className="ck-glass-card" style={{ marginBottom: '1rem' }}>
-                                <h3 style={{ fontSize: '0.85rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ck-coral)', marginBottom: '0.75rem' }}>
+                            <div className="ck-glass-card ck-mb-md">
+                                <h3 className="ck-detail-heading ck-detail-heading-coral">
                                     🔍 Aliments suspects
                                 </h3>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                <div className="ck-suspect-foods-list">
                                     {analytics.suspectFoods.map(sf => (
-                                        <div key={sf.food} className="ck-list-item" style={{ borderLeft: `3px solid ${sf.avgSeverity >= 3 ? 'var(--ck-coral)' : 'var(--ck-orange)'}` }}>
-                                            <span style={{ fontWeight: 700, flex: 1, textTransform: 'capitalize' }}>{sf.food}</span>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                <span style={{ fontSize: '0.75rem', color: 'var(--ck-text-muted)' }}>{sf.count}× symptômes</span>
-                                                <div style={{
-                                                    padding: '0.2rem 0.6rem', borderRadius: '9999px', fontSize: '0.7rem', fontWeight: 700,
-                                                    background: sf.avgSeverity >= 3 ? 'rgba(255, 107, 107, 0.15)' : 'rgba(245, 138, 61, 0.15)',
-                                                    color: sf.avgSeverity >= 3 ? 'var(--ck-coral)' : 'var(--ck-orange)',
-                                                }}>
+                                        <div key={sf.food} className="ck-list-item ck-suspect-item" style={{ borderLeft: `3px solid ${sf.avgSeverity >= 3 ? 'var(--ck-coral)' : 'var(--ck-orange)'}` }}>
+                                            <span className="ck-suspect-name">{sf.food}</span>
+                                            <div className="ck-suspect-info">
+                                                <span className="ck-suspect-count">{sf.count}× symptômes</span>
+                                                <div className={`ck-suspect-severity ${sf.avgSeverity >= 3 ? 'high' : 'med'}`}>
                                                     Sév. {sf.avgSeverity.toFixed(1)}
                                                 </div>
                                             </div>
@@ -359,14 +338,14 @@ export default function JournalPage() {
                         {/* Top Symptoms */}
                         {analytics.topSymptoms.length > 0 && (
                             <div className="ck-glass-card">
-                                <h3 style={{ fontSize: '0.85rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ck-lavender-deep)', marginBottom: '0.75rem' }}>
+                                <h3 className="ck-detail-heading ck-detail-heading-lavender">
                                     📈 Symptômes fréquents
                                 </h3>
-                                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                <div className="ck-symptom-grid">
                                     {analytics.topSymptoms.map(([name, count]) => {
                                         const opt = symptomOptions.find(s => s.name === name);
                                         return (
-                                            <span key={name} className="ck-tag ck-tag-coral" style={{ fontSize: '0.8rem' }}>
+                                            <span key={name} className="ck-tag ck-tag-coral">
                                                 {opt?.emoji} {name} ({count}×)
                                             </span>
                                         );
@@ -379,8 +358,8 @@ export default function JournalPage() {
                 
                 {/* Graphs (Only in Weekly/Monthly mode) */}
                 {activeTab !== 'daily' && user.personalParams?.dailyKcalTarget && (
-                    <div className="ck-glass-card ck-fade-up-2" style={{ marginBottom: '2rem', height: 300, padding: '1.5rem' }}>
-                        <h2 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '1rem' }}>
+                    <div className="ck-glass-card ck-fade-up-2 ck-chart-container ck-mb-xl">
+                        <h2 className="ck-chart-heading">
                             📈 Historique des Calories ({activeTab === 'weekly' ? '7 derniers jours' : '30 derniers jours'})
                         </h2>
                         <ResponsiveContainer width="100%" height="100%">
@@ -402,7 +381,7 @@ export default function JournalPage() {
                 )}
 
                 {/* Add Entry Button */}
-                <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', flexWrap: 'wrap', alignItems: 'center' }} className="ck-fade-up-3">
+                <div className="ck-fade-up-3 ck-journal-action-row">
                     <button
                         className="ck-btn ck-btn-primary"
                         onClick={() => setShowAddForm(!showAddForm)}
@@ -412,17 +391,13 @@ export default function JournalPage() {
                     </button>
 
                     {/* Filter */}
-                    <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.35rem' }}>
+                    <div className="ck-journal-filters">
                         {[3, 7, 14, 30].map(days => (
                             <button
                                 key={days}
-                                className="ck-tag"
+                                className={`ck-tag ${filterDays === days ? 'ck-tag-active-lavender' : 'ck-tag-inactive'}`}
                                 title={`Afficher les ${days} derniers jours`}
                                 onClick={() => setFilterDays(days)}
-                                style={filterDays === days
-                                    ? { background: 'var(--ck-lavender)', color: 'white', borderColor: 'var(--ck-lavender)' }
-                                    : { background: 'rgba(255,255,255,0.5)', color: 'var(--ck-text-soft)', borderColor: 'rgba(0,0,0,0.06)' }
-                                }
                             >
                                 {days}j
                             </button>
@@ -432,27 +407,23 @@ export default function JournalPage() {
 
                 {/* Add Entry Form */}
                 {showAddForm && (
-                    <div className="ck-glass-card ck-fade-up" style={{ marginBottom: '1.5rem', borderLeft: '4px solid var(--ck-orange)' }}>
-                        <h3 style={{ fontWeight: 800, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <span style={{ fontSize: '1.5rem' }}>📝</span> Nouveau repas
+                    <div className="ck-glass-card ck-fade-up ck-entry-form ck-mb-lg">
+                        <h3 className="ck-entry-form-title">
+                            <span className="ck-entry-feeling">📝</span> Nouveau repas
                         </h3>
 
                         {/* Meal Type */}
-                        <div style={{ marginBottom: '1rem' }}>
-                            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ck-text-muted)', marginBottom: '0.5rem' }}>
+                        <div className="ck-mb-md">
+                            <label className="ck-field-label">
                                 Type de repas
                             </label>
-                            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                            <div className="ck-symptom-grid">
                                 {mealTypes.map(mt => (
                                     <button
                                         key={mt}
-                                        className="ck-tag"
+                                        className={`ck-tag ${newMealType === mt ? 'ck-tag-active-orange' : 'ck-tag-inactive'}`}
                                         title={`Sélectionner ${mt}`}
                                         onClick={() => setNewMealType(mt)}
-                                        style={newMealType === mt
-                                            ? { background: 'var(--ck-orange)', color: 'white', borderColor: 'var(--ck-orange)' }
-                                            : { background: 'rgba(255,255,255,0.5)', color: 'var(--ck-text-soft)', borderColor: 'rgba(0,0,0,0.06)' }
-                                        }
                                     >
                                         {mt === 'Petit-déj' ? '☀️' : mt === 'Déjeuner' ? '🌤️' : mt === 'Dîner' ? '🌙' : '🍪'} {mt}
                                     </button>
@@ -461,32 +432,24 @@ export default function JournalPage() {
                         </div>
 
                         {/* Foods Eaten with Calories */}
-                        <div style={{ marginBottom: '1rem' }}>
-                            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ck-text-muted)', marginBottom: '0.5rem' }}>
-                                Aliments & Calories
+                        <div className="ck-mb-md">
+                            <label className="ck-field-label">
+                                Aliments &amp; Calories
                             </label>
 
                             {/* Recipe picker toggle */}
-                            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                            <div className="ck-journal-tab-row">
                                 <button
-                                    className="ck-tag"
+                                    className={`ck-tag ck-journal-tab-btn ${showRecipePicker ? 'ck-journal-tab-active' : 'ck-journal-tab-inactive'}`}
                                     title="Ajouter depuis les recettes"
                                     onClick={() => { setShowRecipePicker(!showRecipePicker); setRecipeSearch(''); }}
-                                    style={showRecipePicker
-                                        ? { background: 'linear-gradient(135deg, var(--ck-lavender), var(--ck-plum))', color: 'white', borderColor: 'transparent', fontSize: '0.85rem', padding: '0.4rem 0.85rem' }
-                                        : { background: 'rgba(255,255,255,0.5)', color: 'var(--ck-text-soft)', borderColor: 'rgba(0,0,0,0.06)', fontSize: '0.85rem', padding: '0.4rem 0.85rem' }
-                                    }
                                 >
                                     📖 Ajouter une recette
                                 </button>
                                 <button
-                                    className="ck-tag"
+                                    className={`ck-tag ck-journal-tab-btn ${!showRecipePicker ? 'ck-journal-tab-orange-active' : 'ck-journal-tab-inactive'}`}
                                     title="Saisie manuelle"
                                     onClick={() => setShowRecipePicker(false)}
-                                    style={!showRecipePicker
-                                        ? { background: 'var(--ck-orange)', color: 'white', borderColor: 'transparent', fontSize: '0.85rem', padding: '0.4rem 0.85rem' }
-                                        : { background: 'rgba(255,255,255,0.5)', color: 'var(--ck-text-soft)', borderColor: 'rgba(0,0,0,0.06)', fontSize: '0.85rem', padding: '0.4rem 0.85rem' }
-                                    }
                                 >
                                     ✏️ Saisie manuelle
                                 </button>
@@ -494,29 +457,24 @@ export default function JournalPage() {
 
                             {/* Recipe Picker */}
                             {showRecipePicker && (
-                                <div style={{ marginBottom: '0.75rem' }}>
+                                <div className="ck-journal-picker-wrap">
                                     <input
-                                        className="ck-input"
+                                        className="ck-input ck-mb-sm"
                                         placeholder="🔍 Chercher une recette (ex: poulet, salade, risotto…)"
                                         value={recipeSearch}
                                         onChange={e => setRecipeSearch(e.target.value)}
-                                        style={{ marginBottom: '0.5rem' }}
                                         autoFocus
                                     />
 
                                     {/* Portion selector */}
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-                                        <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--ck-text-muted)', textTransform: 'uppercase', letterSpacing: '0.03em' }}>Portion:</span>
+                                    <div className="ck-journal-portion-row">
+                                        <span className="ck-journal-portion-label">Portion:</span>
                                         {[0.5, 1, 1.5, 2, 3].map(p => (
                                             <button
                                                 key={p}
-                                                className="ck-tag"
+                                                className={`ck-tag ck-journal-portion-btn ${selectedPortion === p ? 'ck-journal-portion-active' : 'ck-journal-portion-inactive'}`}
                                                 title={`${p}× portion`}
                                                 onClick={() => setSelectedPortion(p)}
-                                                style={selectedPortion === p
-                                                    ? { background: 'var(--ck-orange)', color: 'white', borderColor: 'transparent', fontWeight: 800, minWidth: '42px' }
-                                                    : { background: 'rgba(255,255,255,0.5)', color: 'var(--ck-text-soft)', borderColor: 'rgba(0,0,0,0.06)', fontWeight: 600, minWidth: '42px' }
-                                                }
                                             >
                                                 {p}×
                                             </button>
@@ -525,35 +483,27 @@ export default function JournalPage() {
 
                                     {/* Recipe search results */}
                                     {recipeResults.length > 0 && (
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', background: 'rgba(0,0,0,0.02)', padding: '0.5rem', borderRadius: '0.75rem', maxHeight: '280px', overflow: 'auto' }}>
+                                        <div className="ck-journal-results-list">
                                             {recipeResults.map(recipe => (
                                                 <button
                                                     key={recipe.id}
                                                     onClick={() => addRecipeAsFood(recipe)}
-                                                    style={{
-                                                        display: 'flex', alignItems: 'center', gap: '0.75rem',
-                                                        padding: '0.65rem 0.75rem', borderRadius: '0.75rem',
-                                                        border: '1px solid rgba(0,0,0,0.04)', background: 'white',
-                                                        cursor: 'pointer', transition: 'all 0.15s ease',
-                                                        textAlign: 'left', width: '100%',
-                                                    }}
-                                                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(245,138,61,0.05)'; e.currentTarget.style.borderColor = 'var(--ck-orange)'; }}
-                                                    onMouseLeave={e => { e.currentTarget.style.background = 'white'; e.currentTarget.style.borderColor = 'rgba(0,0,0,0.04)'; }}
+                                                    className="ck-journal-recipe-btn"
                                                 >
-                                                    <span style={{ fontSize: '1.5rem', width: '36px', textAlign: 'center' }}>{recipe.emoji}</span>
-                                                    <div style={{ flex: 1 }}>
-                                                        <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{recipe.name}</div>
-                                                        <div style={{ fontSize: '0.75rem', color: 'var(--ck-text-muted)', display: 'flex', gap: '0.5rem' }}>
+                                                    <span className="ck-journal-recipe-emoji">{recipe.emoji}</span>
+                                                    <div className="ck-flex-1">
+                                                        <div className="ck-journal-recipe-name">{recipe.name}</div>
+                                                        <div className="ck-journal-recipe-meta">
                                                             <span>⏱ {recipe.time}</span>
                                                             <span>{recipe.category}</span>
                                                         </div>
                                                     </div>
-                                                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                                                        <div style={{ fontWeight: 800, color: 'var(--ck-orange)', fontSize: '0.95rem' }}>
+                                                    <div className="ck-journal-recipe-kcal">
+                                                        <div className="ck-journal-recipe-kcal-val">
                                                             {Math.round(recipe.kcal * selectedPortion)} kcal
                                                         </div>
                                                         {selectedPortion !== 1 && (
-                                                            <div style={{ fontSize: '0.7rem', color: 'var(--ck-text-muted)' }}>
+                                                            <div className="ck-journal-recipe-kcal-sub">
                                                                 {recipe.kcal} × {selectedPortion}
                                                             </div>
                                                         )}
@@ -564,43 +514,40 @@ export default function JournalPage() {
                                     )}
 
                                     {recipeSearch.trim() && recipeResults.length === 0 && (
-                                        <p style={{ fontSize: '0.85rem', color: 'var(--ck-text-muted)', textAlign: 'center', padding: '1rem 0' }}>
+                                        <p className="ck-journal-empty-msg">
                                             Aucune recette trouvée pour &quot;{recipeSearch}&quot;
                                         </p>
                                     )}
 
                                     {!recipeSearch.trim() && (
-                                        <p style={{ fontSize: '0.85rem', color: 'var(--ck-text-muted)', textAlign: 'center', padding: '0.75rem 0' }}>
+                                        <p className="ck-journal-hint-msg">
                                             Tapez pour rechercher parmi les 1000 recettes
                                         </p>
                                     )}
                                 </div>
                             )}
 
-                            {/* Manual food entry (always visible when not in recipe mode) */}
+                            {/* Manual food entry */}
                             {!showRecipePicker && (
-                            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                            <div className="ck-food-row">
                                 <input
-                                    className="ck-input"
+                                    className="ck-input ck-food-input-name"
                                     placeholder="Nom de l'aliment (ex: Poulet rôti)"
                                     value={currentFoodName}
                                     onChange={e => setCurrentFoodName(e.target.value)}
-                                    style={{ flex: 2 }}
                                     onKeyDown={e => e.key === 'Enter' && addFoodItem()}
                                 />
                                 <input
-                                    className="ck-input"
+                                    className="ck-input ck-food-input-kcal"
                                     placeholder="kcal (ex: 250)"
                                     type="number"
                                     value={currentFoodKcal}
                                     onChange={e => setCurrentFoodKcal(e.target.value === '' ? '' : Number(e.target.value))}
-                                    style={{ flex: 1 }}
                                     onKeyDown={e => e.key === 'Enter' && addFoodItem()}
                                 />
                                 <button 
-                                    className="ck-btn ck-btn-primary" 
+                                    className="ck-btn ck-btn-primary ck-food-add-btn"
                                     onClick={addFoodItem}
-                                    style={{ padding: '0 1rem' }}
                                 >
                                     +
                                 </button>
@@ -609,46 +556,42 @@ export default function JournalPage() {
 
                             {/* List of added foods */}
                             {newFoods.length > 0 && (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', background: 'rgba(0,0,0,0.02)', padding: '0.75rem', borderRadius: '0.5rem' }}>
+                                <div className="ck-food-list-wrap">
                                     {newFoods.map((food, idx) => (
-                                        <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem' }}>
-                                            <span style={{ fontWeight: 600 }}>{food.name}</span>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                                <span style={{ color: 'var(--ck-orange)', fontWeight: 600 }}>{food.kcal} kcal</span>
+                                        <div key={idx} className="ck-food-item">
+                                            <span className="ck-food-item-name">{food.name}</span>
+                                            <div className="ck-food-item-actions">
+                                                <span className="ck-food-item-kcal">{food.kcal} kcal</span>
                                                 <button 
                                                     onClick={() => removeFoodItem(idx)}
-                                                    style={{ background: 'none', border: 'none', color: 'var(--ck-coral)', cursor: 'pointer', fontSize: '0.8rem' }}
+                                                    className="ck-food-item-remove"
                                                 >
                                                     ✕
                                                 </button>
                                             </div>
                                         </div>
                                     ))}
-                                    <div style={{ borderTop: '1px solid rgba(0,0,0,0.1)', paddingTop: '0.35rem', marginTop: '0.35rem', textAlign: 'right', fontSize: '0.8rem', fontWeight: 700 }}>
-                                        Total: <span style={{ color: 'var(--ck-orange)' }}>{newFoods.reduce((acc, curr) => acc + curr.kcal, 0)} kcal</span>
+                                    <div className="ck-food-total">
+                                        Total: <span className="ck-food-total-kcal">{newFoods.reduce((acc, curr) => acc + curr.kcal, 0)} kcal</span>
                                     </div>
                                 </div>
                             )}
                         </div>
 
                         {/* Symptoms */}
-                        <div style={{ marginBottom: '1rem' }}>
-                            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ck-text-muted)', marginBottom: '0.5rem' }}>
+                        <div className="ck-mb-md">
+                            <label className="ck-field-label">
                                 Symptômes (cliquez pour sélectionner)
                             </label>
-                            <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '0.75rem' }}>
+                            <div className="ck-symptom-grid ck-mb-md">
                                 {symptomOptions.map(s => {
                                     const selected = newSymptoms.find(ns => ns.name === s.name);
                                     return (
                                         <button
                                             key={s.name}
-                                            className="ck-tag"
+                                            className={`ck-tag ${selected ? 'ck-symptom-chip-active' : 'ck-symptom-chip-inactive'}`}
                                             title={`Ajouter ${s.name}`}
                                             onClick={() => toggleSymptom(s)}
-                                            style={selected
-                                                ? { background: 'var(--ck-coral)', color: 'white', borderColor: 'var(--ck-coral)' }
-                                                : { background: 'rgba(255,255,255,0.5)', color: 'var(--ck-text-soft)', borderColor: 'rgba(0,0,0,0.06)' }
-                                            }
                                         >
                                             {s.emoji} {s.name}
                                         </button>
@@ -658,36 +601,25 @@ export default function JournalPage() {
 
                             {/* Severity sliders for selected symptoms */}
                             {newSymptoms.length > 0 && (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                <div className="ck-severity-list">
                                     {newSymptoms.map(s => (
-                                        <div key={s.name} style={{
-                                            display: 'flex', alignItems: 'center', gap: '0.75rem',
-                                            padding: '0.5rem 0.75rem', borderRadius: '0.75rem',
-                                            background: 'rgba(255, 107, 107, 0.04)',
-                                        }}>
-                                            <span style={{ fontSize: '1.1rem' }}>{s.emoji}</span>
-                                            <span style={{ fontWeight: 600, fontSize: '0.85rem', width: '150px' }}>{s.name}</span>
-                                            <div style={{ display: 'flex', gap: '0.25rem', flex: 1 }}>
+                                        <div key={s.name} className="ck-severity-item">
+                                            <span className="ck-severity-emoji">{s.emoji}</span>
+                                            <span className="ck-severity-name">{s.name}</span>
+                                            <div className="ck-severity-btns">
                                                 {([1, 2, 3, 4, 5] as const).map(sev => (
                                                     <button
                                                         key={sev}
                                                         title={`Sévérité ${sev}: ${severityLabels[sev]}`}
                                                         onClick={() => updateSymptomSeverity(s.name, sev)}
-                                                        style={{
-                                                            width: '32px', height: '32px', borderRadius: '8px', border: 'none',
-                                                            cursor: 'pointer', fontWeight: 800, fontSize: '0.75rem',
-                                                            background: s.severity >= sev
-                                                                ? `rgba(255, 107, 107, ${0.15 + sev * 0.15})`
-                                                                : 'rgba(0,0,0,0.04)',
-                                                            color: s.severity >= sev ? 'var(--ck-coral)' : 'var(--ck-text-muted)',
-                                                            transition: 'all 0.2s ease',
-                                                        }}
+                                                        className={`ck-severity-btn ${s.severity >= sev ? 'active' : ''}`}
+                                                        style={{ background: s.severity >= sev ? `rgba(255, 107, 107, ${0.15 + sev * 0.15})` : undefined }}
                                                     >
                                                         {sev}
                                                     </button>
                                                 ))}
                                             </div>
-                                            <span style={{ fontSize: '0.7rem', color: 'var(--ck-text-muted)', width: '50px', textAlign: 'right' }}>
+                                            <span className="ck-severity-label-text">
                                                 {severityLabels[s.severity]}
                                             </span>
                                         </div>
@@ -697,11 +629,11 @@ export default function JournalPage() {
                         </div>
 
                         {/* Overall Feeling */}
-                        <div style={{ marginBottom: '1rem' }}>
-                            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ck-text-muted)', marginBottom: '0.5rem' }}>
+                        <div className="ck-mb-md">
+                            <label className="ck-field-label">
                                 Comment vous sentez-vous ?
                             </label>
-                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            <div className="ck-feeling-row">
                                 {feelingEmojis.map((emoji, i) => {
                                     const val = (i + 1) as 1 | 2 | 3 | 4 | 5;
                                     return (
@@ -709,15 +641,7 @@ export default function JournalPage() {
                                             key={i}
                                             title={`Niveau ${val}/5`}
                                             onClick={() => setNewFeeling(val)}
-                                            style={{
-                                                width: '48px', height: '48px', borderRadius: '14px',
-                                                border: newFeeling === val ? '2px solid var(--ck-orange)' : '2px solid rgba(0,0,0,0.06)',
-                                                background: newFeeling === val ? 'rgba(245, 138, 61, 0.1)' : 'rgba(255,255,255,0.5)',
-                                                cursor: 'pointer', fontSize: '1.5rem',
-                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                transition: 'all 0.2s ease',
-                                                transform: newFeeling === val ? 'scale(1.1)' : 'scale(1)',
-                                            }}
+                                            className={`ck-feeling-btn-item ${newFeeling === val ? 'active' : ''}`}
                                         >
                                             {emoji}
                                         </button>
@@ -727,8 +651,8 @@ export default function JournalPage() {
                         </div>
 
                         {/* Notes */}
-                        <div style={{ marginBottom: '1.25rem' }}>
-                            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ck-text-muted)', marginBottom: '0.5rem' }}>
+                        <div className="ck-mb-lg">
+                            <label className="ck-field-label">
                                 Notes (optionnel)
                             </label>
                             <input
@@ -740,9 +664,8 @@ export default function JournalPage() {
                         </div>
 
                         <button
-                            className="ck-btn ck-btn-rose"
+                            className="ck-btn ck-btn-rose ck-save-btn-full"
                             onClick={addEntry}
-                            style={{ width: '100%', padding: '0.875rem' }}
                             disabled={newFoods.length === 0}
                         >
                             ✓ Enregistrer le repas
@@ -752,36 +675,28 @@ export default function JournalPage() {
 
                 {/* Log Entries */}
                 {filteredLog.length > 0 ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div className="ck-modal-col-gap">
                         {filteredLog.map((entry, i) => (
                             <div key={entry.id} className="ck-glass-card ck-fade-up" style={{ animationDelay: `${i * 0.06}s` }}>
-                                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
+                                <div className="ck-entry-row">
                                     {/* Feeling Emoji */}
-                                    <div style={{
-                                        width: '48px', height: '48px', borderRadius: '16px', flexShrink: 0,
-                                        background: entry.overallFeeling >= 4 ? 'rgba(124, 185, 139, 0.1)' : entry.overallFeeling >= 3 ? 'rgba(245, 138, 61, 0.1)' : 'rgba(255, 107, 107, 0.1)',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem',
-                                    }}>
+                                    <div className={`ck-entry-feeling-box ${entry.overallFeeling >= 4 ? 'good' : entry.overallFeeling >= 3 ? 'ok' : 'bad'}`}>
                                         {feelingEmojis[entry.overallFeeling - 1]}
                                     </div>
-                                    <div style={{ flex: 1 }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
-                                            <h3 style={{ fontWeight: 800, fontSize: '1rem' }}>
+                                    <div className="ck-flex-1">
+                                        <div className="ck-entry-title-row">
+                                            <h3 className="ck-entry-meal-title">
                                                 {entry.mealType === 'Petit-déj' ? '☀️' : entry.mealType === 'Déjeuner' ? '🌤️' : entry.mealType === 'Dîner' ? '🌙' : '🍪'} {entry.mealType}
                                             </h3>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                <span style={{ fontSize: '0.75rem', color: 'var(--ck-orange)', fontWeight: 700 }}>
+                                            <div className="ck-entry-info-row">
+                                                <span className="ck-entry-kcal-badge">
                                                     🔥 {entry.foodsEaten.reduce((acc, f) => acc + f.kcal, 0)} kcal
                                                 </span>
-                                                <span style={{ fontSize: '0.75rem', color: 'var(--ck-text-muted)' }}>• {formatDate(entry.date)}</span>
+                                                <span className="ck-entry-date-text">• {formatDate(entry.date)}</span>
                                                 <button
                                                     onClick={() => deleteEntry(entry.id)}
                                                     title="Supprimer cette entrée"
-                                                    style={{
-                                                        background: 'rgba(255, 107, 107, 0.1)', border: 'none', borderRadius: '6px',
-                                                        padding: '0.2rem 0.4rem', color: 'var(--ck-coral)', cursor: 'pointer',
-                                                        fontWeight: 700, fontSize: '0.7rem',
-                                                    }}
+                                                    className="ck-entry-delete-btn"
                                                 >
                                                     ✕
                                                 </button>
@@ -789,23 +704,22 @@ export default function JournalPage() {
                                         </div>
 
                                         {/* Foods */}
-                                        <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
+                                        <div className="ck-entry-foods">
                                             {entry.foodsEaten.map((food, idx) => (
-                                                <span key={idx} className="ck-tag ck-tag-orange" style={{ fontSize: '0.7rem', padding: '0.15rem 0.5rem' }}>
-                                                    {food.name} <span style={{ opacity: 0.7 }}>({food.kcal} kcal)</span>
+                                                <span key={idx} className="ck-tag ck-tag-orange ck-tag-sm">
+                                                    {food.name} <span className="ck-opacity-60">({food.kcal} kcal)</span>
                                                 </span>
                                             ))}
                                         </div>
 
                                         {/* Symptoms */}
                                         {entry.symptoms.length > 0 ? (
-                                            <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap', marginBottom: '0.35rem' }}>
+                                            <div className="ck-entry-symptoms">
                                                 {entry.symptoms.map(s => (
                                                     <span
                                                         key={s.name}
-                                                        className="ck-tag"
+                                                        className="ck-tag ck-tag-sm"
                                                         style={{
-                                                            fontSize: '0.7rem', padding: '0.15rem 0.5rem',
                                                             background: `rgba(255, 107, 107, ${0.05 + s.severity * 0.04})`,
                                                             color: 'var(--ck-coral)',
                                                             borderColor: `rgba(255, 107, 107, ${0.1 + s.severity * 0.06})`,
@@ -816,12 +730,12 @@ export default function JournalPage() {
                                                 ))}
                                             </div>
                                         ) : (
-                                            <span style={{ fontSize: '0.8rem', color: 'var(--ck-sage-deep)', fontWeight: 600 }}>✅ Aucun symptôme</span>
+                                            <span className="ck-entry-no-symptom">✅ Aucun symptôme</span>
                                         )}
 
                                         {/* Notes */}
                                         {entry.notes && (
-                                            <p style={{ fontSize: '0.8rem', color: 'var(--ck-text-soft)', marginTop: '0.35rem', fontStyle: 'italic' }}>
+                                            <p className="ck-entry-notes">
                                                 💬 {entry.notes}
                                             </p>
                                         )}
@@ -833,8 +747,8 @@ export default function JournalPage() {
                 ) : (
                     <div className="ck-empty-state">
                         <div className="ck-empty-state-icon">📋</div>
-                        <h3 style={{ fontWeight: 800, marginBottom: '0.5rem' }}>Aucune entrée</h3>
-                        <p style={{ color: 'var(--ck-text-muted)' }}>
+                        <h3 className="ck-login-title">Aucune entrée</h3>
+                        <p className="ck-login-desc">
                             Commencez à noter vos repas pour suivre vos symptômes !
                         </p>
                     </div>

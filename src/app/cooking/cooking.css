@@ -824,3 +824,857 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ═══════════════════════════════════════════════════
+   UTILITY CLASSES — Profile & Recipes Pages
+   Replaces inline style= attributes for lint compliance
+   ═══════════════════════════════════════════════════ */
+
+/* ── Layout ── */
+.ck-page-wrap       { max-width: 800px; margin: 0 auto; padding-bottom: 3rem; }
+.ck-mb-sm           { margin-bottom: 0.5rem; }
+.ck-mb-md           { margin-bottom: 1rem; }
+.ck-mb-lg           { margin-bottom: 1.5rem; }
+.ck-mb-xl           { margin-bottom: 2rem; }
+.ck-mb-3            { margin-bottom: 3rem; }
+.ck-pt-4            { padding-top: 4rem; }
+.ck-text-center     { text-align: center; }
+.ck-w-full          { width: 100%; }
+
+/* ── Section Headings ── */
+.ck-section-title   { font-weight: 800; margin-bottom: 1.5rem; font-size: 1.3rem; }
+.ck-section-sub     { color: var(--ck-text-muted); margin-bottom: 1rem; font-size: 0.9rem; }
+.ck-subsection-title { font-weight: 800; margin-bottom: 1rem; font-size: 1.1rem; }
+
+/* ── Labels ── */
+.ck-field-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ck-text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.ck-small-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ck-text-muted);
+  margin-bottom: 0.5rem;
+}
+
+/* ── Protocol Card (selectable toggle card) ── */
+.ck-toggle-card {
+  padding: 1rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(0,0,0,0.08);
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.ck-toggle-card.selected {
+  border: 2px solid var(--ck-orange);
+  background: rgba(245, 138, 61, 0.05);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(245, 138, 61, 0.15);
+}
+.ck-toggle-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+.ck-toggle-card-emoji  { font-size: 1.5rem; }
+.ck-toggle-card-title  { font-weight: 700; margin: 0; font-size: 1.05rem; }
+.ck-toggle-card-desc   { font-size: 0.8rem; color: var(--ck-text-muted); padding-left: 2.25rem; }
+
+/* ── Inset Section (objectives, fairy selection) ── */
+.ck-inset-section {
+  padding: 1.5rem;
+  background: rgba(0,0,0,0.02);
+  border-radius: 1rem;
+  border: 1px solid rgba(0,0,0,0.05);
+  margin-bottom: 2rem;
+}
+
+/* ── Fairy Card ── */
+.ck-fairy-card {
+  padding: 1rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(0,0,0,0.08);
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.ck-fairy-card.selected { transform: translateY(-2px); }
+.ck-fairy-img   { position: relative; width: 80px; height: 80px; margin-bottom: 0.5rem; }
+.ck-fairy-name  { font-weight: 800; margin: 0 0 0.25rem 0; }
+.ck-fairy-desc  { font-size: 0.75rem; color: var(--ck-text-muted); margin: 0; }
+
+/* ── Kcal Banner ── */
+.ck-kcal-banner {
+  padding: 1.5rem;
+  border-radius: 1rem;
+  background: linear-gradient(135deg, var(--ck-orange), var(--ck-peach));
+  color: white;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 8px 30px rgba(245, 138, 61, 0.3);
+}
+.ck-kcal-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.9;
+  margin-bottom: 0.25rem;
+}
+.ck-kcal-sublabel { font-size: 0.9rem; opacity: 0.8; }
+.ck-kcal-value    { font-size: 2.5rem; font-weight: 900; }
+.ck-kcal-unit     { font-size: 1.25rem; font-weight: 700; opacity: 0.8; }
+
+/* ── Toast Notification ── */
+.ck-toast {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 1rem;
+  font-weight: 700;
+  font-size: 1rem;
+  box-shadow: 0 8px 30px rgba(34, 197, 94, 0.35);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  animation: ck-toast-in 0.4s ease-out;
+}
+.ck-toast-icon { font-size: 1.4rem; }
+
+/* ── Connexion Required ── */
+.ck-login-title   { font-weight: 800; margin-bottom: 0.5rem; }
+.ck-login-desc    { color: var(--ck-text-muted); margin-bottom: 1.5rem; }
+
+/* ── Recipes Page ── */
+.ck-toggle-row     { display: flex; gap: 0.75rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.ck-filter-row     { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+.ck-recipe-count   { font-size: 0.85rem; color: var(--ck-text-muted); margin-bottom: 1rem; }
+.ck-recipe-grid    { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.25rem; }
+.ck-recipe-title   { font-weight: 800; margin-bottom: 0.5rem; font-size: 1.05rem; }
+.ck-recipe-meta    { display: flex; gap: 0.75rem; margin-bottom: 0.75rem; font-size: 0.8rem; color: var(--ck-text-muted); }
+.ck-recipe-kcal    { font-weight: 600; color: var(--ck-orange); }
+.ck-recipe-tags    { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+.ck-recipe-tag-sm  { font-size: 0.7rem; padding: 0.2rem 0.6rem; }
+.ck-meta-dim       { opacity: 0.6; }
+
+/* ── AI Search Section ── */
+.ck-ai-header      { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; }
+.ck-ai-icon-box {
+  width: 48px; height: 48px; border-radius: 16px;
+  background: linear-gradient(135deg, var(--ck-orange), var(--ck-coral));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem; box-shadow: 0 4px 15px rgba(245, 138, 61, 0.3);
+}
+.ck-ai-title       { font-weight: 800; font-size: 1.1rem; }
+.ck-ai-subtitle    { font-size: 0.8rem; color: var(--ck-text-muted); }
+.ck-ai-profile-box {
+  padding: 1rem; border-radius: 1rem;
+  background: rgba(245, 138, 61, 0.06);
+  border: 1px solid rgba(245, 138, 61, 0.1);
+  margin-bottom: 1.5rem;
+}
+.ck-ai-options-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.ck-ai-search-label {
+  display: block; font-size: 0.8rem; font-weight: 700;
+  color: var(--ck-text-muted); margin-bottom: 0.5rem;
+  text-transform: uppercase; letter-spacing: 0.03em;
+}
+.ck-cursor-pointer { cursor: pointer; }
+
+/* ── AI Recipe Cards ── */
+.ck-ai-results-title { font-weight: 900; margin-bottom: 1rem; font-size: 1.3rem; }
+.ck-ai-recipe-list   { display: flex; flex-direction: column; gap: 1rem; }
+.ck-ai-recipe-row    { display: flex; align-items: center; gap: 1rem; }
+.ck-ai-recipe-icon {
+  width: 56px; height: 56px; border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.75rem; flex-shrink: 0;
+}
+.ck-ai-recipe-title  { font-weight: 800; font-size: 1.05rem; }
+.ck-ai-recipe-meta   { display: flex; gap: 0.75rem; font-size: 0.8rem; color: var(--ck-text-muted); margin-top: 0.25rem; }
+.ck-ai-expand-arrow  { font-size: 1.25rem; transition: transform 0.3s; }
+.ck-ai-expand-arrow.open { transform: rotate(180deg); }
+
+/* ── AI Recipe Detail ── */
+.ck-detail-section   { margin-top: 1rem; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 1rem; }
+.ck-detail-heading {
+  font-size: 0.85rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.05em; margin-bottom: 0.5rem;
+}
+.ck-detail-heading-orange { color: var(--ck-orange); }
+.ck-detail-heading-sage   { color: var(--ck-sage-deep); }
+.ck-ingredient-list  { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 1rem; }
+.ck-ingredient-item  { font-size: 0.9rem; padding-left: 1rem; border-left: 2px solid var(--ck-peach-deep); }
+.ck-steps-list       { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; }
+.ck-step-row         { display: flex; gap: 0.75rem; font-size: 0.9rem; }
+.ck-step-number {
+  width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--ck-sage), var(--ck-teal));
+  color: white; display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem; font-weight: 800;
+}
+.ck-tips-box {
+  padding: 0.75rem 1rem; border-radius: 0.75rem;
+  background: rgba(196, 167, 231, 0.08);
+  border: 1px solid rgba(196, 167, 231, 0.15);
+  font-size: 0.85rem; color: var(--ck-lavender-deep);
+}
+
+/* ── Error Card ── */
+.ck-error-card {
+  background: rgba(255, 107, 107, 0.06);
+  border: 1px solid rgba(255, 107, 107, 0.2);
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  color: var(--ck-coral);
+  font-weight: 600;
+}
+
+/* ── Login Prompt ── */
+.ck-login-prompt     { text-align: center; padding: 3rem; }
+.ck-login-prompt-icon { font-size: 3rem; margin-bottom: 1rem; }
+
+/* ── Save Button ── */
+.ck-save-btn-full { width: 100%; padding: 1rem; font-size: 1.1rem; }
+.ck-search-btn-full { width: 100%; padding: 1rem; font-size: 1rem; }
+
+/* ── Btn Toggle States ── */
+.ck-btn-toggle-active {
+  border: none;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+.ck-btn-toggle-inactive {
+  background: rgba(255,255,255,0.5);
+  color: var(--ck-text-soft);
+  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: none;
+}
+
+/* ── Category Tag states ── */
+.ck-tag-active-lavender {
+  background: linear-gradient(135deg, var(--ck-lavender), var(--ck-plum));
+  color: white;
+  border-color: transparent;
+}
+.ck-tag-active-sage {
+  background: var(--ck-sage);
+  color: white;
+  border-color: transparent;
+}
+.ck-tag-active-rose {
+  background: var(--ck-rose);
+  color: white;
+  border-color: var(--ck-rose);
+}
+.ck-tag-inactive {
+  background: rgba(255,255,255,0.5);
+  color: var(--ck-text-soft);
+  border-color: rgba(0,0,0,0.06);
+}
+
+/* ── Profile Tags ── */
+.ck-profile-tags { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.ck-text-capitalize { text-transform: capitalize; }
+
+/* ── Gradient Text ── */
+.ck-text-gradient-lavender {
+  background: linear-gradient(135deg, var(--ck-lavender), var(--ck-plum));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Hub DossierTechnique / Finances inline style fixes ── */
+.hub-progress-bar-width { transition: all duration-700; }
+
+/* ── Flex-1 helper ── */
+.ck-flex-1 { flex: 1; }
+
+/* ── Toggle Button Specific Gradients ── */
+.ck-btn-toggle-lavender {
+  background: linear-gradient(135deg, var(--ck-lavender), var(--ck-plum));
+  color: white;
+  border: none;
+  box-shadow: 0 4px 20px rgba(196, 167, 231, 0.3);
+}
+.ck-btn-toggle-orange {
+  background: linear-gradient(135deg, var(--ck-orange), var(--ck-coral));
+  color: white;
+  border: none;
+  box-shadow: 0 4px 20px rgba(245, 138, 61, 0.3);
+}
+
+/* ── Loading State ── */
+.ck-btn-loading { opacity: 0.7; }
+
+/* ── Cursor ── */
+.ck-clickable { cursor: pointer; }
+
+/* ── Tag Spacing ── */
+.ck-mt-sm { margin-top: 0.75rem; }
+
+/* ── Empty State Centered ── */
+.ck-empty-centered {
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+/* ── Fairy Selected Colors ── */
+.ck-fairy-card.selected-fire   { border-color: var(--ck-orange); background: rgba(245, 138, 61, 0.08); }
+.ck-fairy-card.selected-water  { border-color: #3b82f6; background: rgba(59, 130, 246, 0.08); }
+.ck-fairy-card.selected-nature { border-color: #10b981; background: rgba(16, 185, 129, 0.08); }
+
+/* ═══════════════════════════════════════════════════
+   RECIPE DETAIL MODAL
+   ═══════════════════════════════════════════════════ */
+
+/* Keyframes */
+@keyframes ck-modal-backdrop-in  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ck-modal-backdrop-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes ck-modal-slide-up     { from { opacity: 0; transform: translateY(40px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes ck-modal-slide-down   { from { opacity: 1; transform: translateY(0) scale(1); } to { opacity: 0; transform: translateY(40px) scale(0.97); } }
+@keyframes ck-skeleton-pulse     { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.8; } }
+@keyframes ck-stagger-in         { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Backdrop */
+.ck-modal-backdrop {
+  position: fixed; inset: 0; z-index: 9990;
+  background: rgba(0,0,0,0.45);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 1rem;
+}
+.ck-modal-backdrop-in  { animation: ck-modal-backdrop-in 0.3s ease-out; }
+.ck-modal-backdrop-out { animation: ck-modal-backdrop-out 0.28s ease-out forwards; }
+
+/* Panel */
+.ck-modal-panel {
+  background: white;
+  border-radius: 1.5rem;
+  width: 100%;
+  max-width: 600px;
+  max-height: 85vh;
+  overflow: auto;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.2);
+}
+.ck-modal-panel-in   { animation: ck-modal-slide-up 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
+.ck-modal-panel-out  { animation: ck-modal-slide-down 0.28s ease-out forwards; }
+
+/* Hero header inside modal */
+.ck-modal-hero {
+  padding: 2.5rem 2rem 2rem;
+  position: relative;
+  border-radius: 1.5rem 1.5rem 0 0;
+}
+
+/* Close button */
+.ck-modal-close {
+  position: absolute; top: 1rem; right: 1rem;
+  width: 36px; height: 36px; border-radius: 50%;
+  background: rgba(255,255,255,0.7); border: none;
+  cursor: pointer; font-size: 1.1rem; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
+}
+.ck-modal-close:hover { background: rgba(255,255,255,0.95); transform: scale(1.1); }
+
+/* Modal content sections */
+.ck-modal-emoji    { font-size: 4rem; margin-bottom: 0.75rem; line-height: 1; }
+.ck-modal-title    { font-weight: 900; font-size: 1.5rem; margin-bottom: 0.75rem; line-height: 1.2; }
+.ck-modal-meta     { display: flex; gap: 0.75rem; flex-wrap: wrap; font-size: 0.85rem; color: rgba(0,0,0,0.6); }
+.ck-modal-kcal     { font-weight: 700; color: var(--ck-orange); }
+.ck-opacity-60     { opacity: 0.6; }
+.ck-modal-tags     { display: flex; gap: 0.35rem; flex-wrap: wrap; margin-top: 0.75rem; }
+.ck-tag-fodmap {
+  padding: 0.2rem 0.6rem; border-radius: 9999px; font-size: 0.7rem; font-weight: 700;
+  background: rgba(124,185,139,0.2); color: #2d7a4a;
+}
+.ck-tag-modal {
+  padding: 0.2rem 0.6rem; border-radius: 9999px; font-size: 0.7rem; font-weight: 600;
+  background: rgba(196,167,231,0.2); color: #6b4fa0;
+}
+.ck-modal-body     { padding: 1.5rem 2rem 2rem; }
+.ck-modal-col-gap  { display: flex; flex-direction: column; gap: 1.5rem; }
+
+/* Loading skeleton */
+.ck-skel-heading {
+  width: 140px; height: 14px; border-radius: 7px;
+  background: rgba(0,0,0,0.06); margin-bottom: 0.75rem;
+  animation: ck-skeleton-pulse 1.5s ease-in-out infinite;
+}
+.ck-skel-heading-sm {
+  width: 100px; height: 14px; border-radius: 7px;
+  background: rgba(0,0,0,0.06); margin-bottom: 0.75rem;
+  animation: ck-skeleton-pulse 1.5s ease-in-out 0.3s infinite;
+}
+.ck-skel-line {
+  height: 12px; border-radius: 6px;
+  background: rgba(0,0,0,0.04); margin-bottom: 0.5rem;
+}
+.ck-skel-loading-text {
+  text-align: center; font-size: 0.85rem;
+  color: var(--ck-text-muted); font-weight: 600;
+}
+
+/* Detail sections */
+.ck-modal-ingredients-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.4rem;
+}
+.ck-modal-ingredient {
+  font-size: 0.88rem; padding: 0.4rem 0.75rem;
+  border-left: 3px solid var(--ck-peach);
+  background: rgba(245,138,61,0.03);
+  border-radius: 0 0.5rem 0.5rem 0;
+}
+.ck-modal-steps-col { display: flex; flex-direction: column; gap: 0.6rem; }
+.ck-modal-step-row  { display: flex; gap: 0.75rem; font-size: 0.88rem; }
+.ck-modal-step-num {
+  width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--ck-sage), var(--ck-teal));
+  color: white; display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem; font-weight: 800;
+}
+.ck-modal-step-text { line-height: 1.5; padding-top: 0.15rem; }
+.ck-modal-tips-box {
+  padding: 1rem 1.25rem; border-radius: 1rem;
+  background: linear-gradient(135deg, rgba(196,167,231,0.08), rgba(196,167,231,0.03));
+  border: 1px solid rgba(196,167,231,0.15);
+  font-size: 0.88rem; color: var(--ck-lavender-deep); line-height: 1.5;
+}
+.ck-modal-tips-label { font-weight: 800; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.03em; }
+.ck-modal-tips-p    { margin: 0.4rem 0 0; }
+
+/* Animation helpers */
+.ck-stagger-in { animation: ck-stagger-in 0.4s ease-out; }
+
+/* ═══════════════════════════════════════════════════
+   LAYOUT — Navbar inline style replacements
+   ═══════════════════════════════════════════════════ */
+.ck-navbar-profile-wrap { display: flex; align-items: center; gap: 0.75rem; margin-left: 0.5rem; }
+.ck-navbar-profile-link {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.4rem 0.75rem; border-radius: 12px;
+  text-decoration: none; transition: all 0.2s ease;
+}
+.ck-navbar-profile-link-active {
+  background: var(--ck-rose); color: white;
+}
+.ck-navbar-profile-link-inactive {
+  background: rgba(245, 138, 61, 0.08); color: inherit;
+}
+.ck-navbar-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.8rem; color: white; font-weight: 800;
+}
+.ck-navbar-avatar-active   { background: rgba(255,255,255,0.2); }
+.ck-navbar-avatar-inactive { background: linear-gradient(135deg, var(--ck-rose), var(--ck-coral)); }
+.ck-navbar-username     { font-weight: 700; font-size: 0.85rem; }
+.ck-navbar-username-white { color: white; }
+.ck-navbar-username-dark  { color: var(--ck-text); }
+.ck-navbar-logout {
+  padding: 0.4rem 0.6rem; cursor: pointer;
+  background: none; border: none; font-family: inherit;
+}
+.ck-navbar-login-btn { padding: 0.5rem 1.25rem; font-size: 0.85rem; }
+.ck-main-padded      { padding-bottom: 5rem; }
+
+/* ═══════════════════════════════════════════════════
+   JOURNAL — Recipe picker & entry form
+   ═══════════════════════════════════════════════════ */
+.ck-journal-section-box {
+  max-width: 1200px; margin: 0 auto; padding: 0 1.5rem 3rem;
+}
+.ck-journal-tab-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+.ck-journal-tab-btn { font-size: 0.85rem; padding: 0.4rem 0.85rem; }
+.ck-journal-tab-active {
+  background: linear-gradient(135deg, var(--ck-lavender), var(--ck-plum));
+  color: white; border-color: transparent;
+}
+.ck-journal-tab-orange-active {
+  background: var(--ck-orange); color: white; border-color: transparent;
+}
+.ck-journal-tab-inactive {
+  background: rgba(255,255,255,0.5); color: var(--ck-text-soft); border-color: rgba(0,0,0,0.06);
+}
+.ck-journal-picker-wrap   { margin-bottom: 0.75rem; }
+.ck-journal-portion-row   { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
+.ck-journal-portion-label { font-size: 0.8rem; font-weight: 700; color: var(--ck-text-muted); text-transform: uppercase; letter-spacing: 0.03em; }
+.ck-journal-portion-btn   { min-width: 42px; }
+.ck-journal-portion-active { background: var(--ck-orange); color: white; border-color: transparent; font-weight: 800; }
+.ck-journal-portion-inactive { background: rgba(255,255,255,0.5); color: var(--ck-text-soft); border-color: rgba(0,0,0,0.06); font-weight: 600; }
+.ck-journal-results-list {
+  display: flex; flex-direction: column; gap: 0.35rem;
+  background: rgba(0,0,0,0.02); padding: 0.5rem;
+  border-radius: 0.75rem; max-height: 280px; overflow: auto;
+}
+.ck-journal-recipe-btn {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.65rem 0.75rem; border-radius: 0.75rem;
+  border: 1px solid rgba(0,0,0,0.04); background: white;
+  cursor: pointer; transition: all 0.15s ease;
+  text-align: left; width: 100%;
+}
+.ck-journal-recipe-btn:hover {
+  background: rgba(245,138,61,0.05); border-color: var(--ck-orange);
+}
+.ck-journal-recipe-emoji { font-size: 1.5rem; width: 36px; text-align: center; }
+.ck-journal-recipe-name  { font-weight: 700; font-size: 0.9rem; }
+.ck-journal-recipe-meta  { font-size: 0.75rem; color: var(--ck-text-muted); display: flex; gap: 0.5rem; }
+.ck-journal-recipe-kcal  { text-align: right; flex-shrink: 0; }
+.ck-journal-recipe-kcal-val { font-weight: 800; color: var(--ck-orange); font-size: 0.95rem; }
+.ck-journal-recipe-kcal-sub { font-size: 0.7rem; color: var(--ck-text-muted); }
+.ck-journal-empty-msg    { font-size: 0.85rem; color: var(--ck-text-muted); text-align: center; padding: 1rem 0; }
+.ck-journal-hint-msg     { font-size: 0.85rem; color: var(--ck-text-muted); text-align: center; padding: 0.75rem 0; }
+
+/* Food entry rows */
+.ck-food-row            { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; }
+.ck-food-add-btn        { padding: 0 1rem; }
+.ck-food-list           { display: flex; flex-direction: column; gap: 0.25rem; margin-bottom: 1rem; }
+.ck-food-item           { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0.75rem; border-radius: 0.75rem; background: rgba(0,0,0,0.02); }
+.ck-food-item-name      { font-weight: 600; font-size: 0.9rem; }
+.ck-food-item-kcal      { color: var(--ck-orange); font-weight: 700; font-size: 0.85rem; }
+.ck-food-item-remove    { background: none; border: none; cursor: pointer; font-size: 0.75rem; opacity: 0.5; }
+.ck-food-item-remove:hover { opacity: 1; }
+
+/* Symptom / feeling section */
+.ck-symptom-grid        { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.ck-symptom-chip-active { background: var(--ck-coral); color: white; border-color: transparent; }
+.ck-symptom-chip-inactive { background: rgba(255,255,255,0.5); color: var(--ck-text-soft); border-color: rgba(0,0,0,0.06); }
+.ck-severity-row        { display: flex; gap: 0.35rem; margin-top: 0.35rem; }
+.ck-severity-dot        { width: 8px; height: 8px; border-radius: 50%; }
+.ck-severity-dot-active { background: var(--ck-coral); }
+.ck-severity-dot-muted  { background: rgba(0,0,0,0.1); }
+.ck-feeling-row         { display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 1rem; }
+.ck-feeling-btn         { font-size: 1.5rem; padding: 0.5rem; border-radius: 12px; cursor: pointer; background: none; border: 2px solid transparent; transition: all 0.2s ease; }
+.ck-feeling-btn-active  { background: rgba(245,138,61,0.1); border-color: var(--ck-orange); transform: scale(1.1); }
+
+/* Entry card in history */
+.ck-entry-card          { padding: 1.5rem; margin-bottom: 1rem; }
+.ck-entry-header        { display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem; }
+.ck-entry-date          { font-weight: 800; font-size: 0.95rem; margin-bottom: 0.25rem; }
+.ck-entry-feeling       { font-size: 1.5rem; }
+.ck-entry-foods         { display: flex; gap: 0.35rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
+.ck-entry-symptoms      { display: flex; gap: 0.35rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
+.ck-entry-notes         { font-size: 0.88rem; color: var(--ck-text-soft); font-style: italic; }
+.ck-entry-kcal-total    { font-size: 0.8rem; color: var(--ck-text-muted); margin-bottom: 0.5rem; }
+.ck-entry-kcal-bold     { font-weight: 700; color: var(--ck-orange); }
+
+/* Analytics section */
+.ck-analytics-grid      { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; }
+.ck-analytics-title     { font-weight: 900; font-size: 1.3rem; margin-bottom: 1.5rem; }
+.ck-chart-heading       { font-weight: 800; font-size: 1.1rem; margin-bottom: 1rem; }
+.ck-top-triggers        { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem; }
+.ck-trigger-row         { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid rgba(0,0,0,0.04); }
+.ck-trigger-name        { font-weight: 600; font-size: 0.9rem; }
+.ck-trigger-count       { font-weight: 800; color: var(--ck-coral); }
+
+/* ═══════════════════════════════════════════════════
+   PROFILE PAGE
+   ═══════════════════════════════════════════════════ */
+.ck-profile-select {
+  width: 100%; padding: 0.875rem 1.25rem;
+  background: rgba(255,255,255,0.7);
+  border: 1.5px solid rgba(0,0,0,0.06);
+  border-radius: 1rem; font-size: 0.95rem;
+  color: var(--ck-text); outline: none;
+  transition: all 0.3s ease; font-family: inherit;
+}
+.ck-profile-select:focus { border-color: var(--ck-orange); box-shadow: 0 0 0 3px rgba(245,138,61,0.12); }
+
+/* ═══════════════════════════════════════════════════
+   HUB PAGES — Etudes, Finances
+   ═══════════════════════════════════════════════════ */
+.hub-gantt-bar          { transition: all 0.7s ease; }
+.hub-percent-bar        { height: 100%; border-radius: 9999px; transition: all 0.7s ease; }
+.hub-progress-container { width: 100%; height: 8px; border-radius: 9999px; background: rgba(0,0,0,0.05); overflow: hidden; }
+
+/* ═══════════════════════════════════════════════════
+   AVATAR DISPLAY — Transparent bg
+   ═══════════════════════════════════════════════════ */
+.avatar-bg-transparent { background: transparent; }
+
+/* ═══════════════════════════════════════════════════
+   FLOATING FAIRY — Progress bar width
+   ═══════════════════════════════════════════════════ */
+/* Width set dynamically via style — acceptable for data-driven values */
+
+/* ═══════════════════════════════════════════════════
+   UTILITY — Misc helpers
+   ═══════════════════════════════════════════════════ */
+.ck-btn-pad-sm     { padding: 0 1rem; }
+.ck-d-flex         { display: flex; }
+.ck-flex-col       { flex-direction: column; }
+.ck-items-center   { align-items: center; }
+.ck-gap-sm         { gap: 0.5rem; }
+.ck-gap-md         { gap: 0.75rem; }
+.ck-gap-lg         { gap: 1rem; }
+.ck-gap-xl         { gap: 1.5rem; }
+.ck-fw-600         { font-weight: 600; }
+.ck-fw-700         { font-weight: 700; }
+.ck-fw-800         { font-weight: 800; }
+.ck-fw-900         { font-weight: 900; }
+.ck-fs-xs          { font-size: 0.7rem; }
+.ck-fs-sm          { font-size: 0.8rem; }
+.ck-fs-md          { font-size: 0.85rem; }
+.ck-fs-base        { font-size: 0.9rem; }
+.ck-fs-lg          { font-size: 0.95rem; }
+.ck-fs-xl          { font-size: 1.05rem; }
+.ck-fs-2xl         { font-size: 1.1rem; }
+.ck-fs-3xl         { font-size: 1.3rem; }
+
+/* ── Gradient Text Helpers ── */
+.ck-text-gradient-coral {
+  background: linear-gradient(135deg, var(--ck-coral), var(--ck-rose));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Journal Tab Bar ── */
+.ck-journal-tabs-bar {
+  padding: 0 1rem; display: flex; gap: 1rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid rgba(0,0,0,0.05);
+}
+.ck-journal-tabs-btn {
+  background: none; border: none;
+  padding: 0.5rem 1rem; font-size: 1rem;
+  font-weight: 600; color: var(--ck-text-muted);
+  border-bottom: 3px solid transparent;
+  cursor: pointer; transition: all 0.2s ease;
+  transform: translateY(2px);
+}
+.ck-journal-tabs-btn.active {
+  font-weight: 800; color: var(--ck-text);
+  border-bottom-color: var(--ck-orange);
+}
+
+/* ── Kcal Summary Card ── */
+.ck-kcal-summary {
+  padding: 1.5rem;
+  background: linear-gradient(135deg, rgba(255,160,122,0.1), rgba(255,107,107,0.05));
+  border: 1px solid rgba(255,160,122,0.2);
+}
+.ck-kcal-summary-header {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;
+}
+.ck-kcal-summary-title {
+  font-size: 1.2rem; font-weight: 800; margin: 0;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.ck-kcal-summary-value { font-weight: 700; color: var(--ck-orange); font-size: 1.1rem; }
+.ck-kcal-progress-track {
+  width: 100%; height: 12px; background: rgba(0,0,0,0.05);
+  border-radius: 6px; overflow: hidden; margin-bottom: 0.5rem;
+}
+.ck-kcal-progress-fill {
+  height: 100%; background: linear-gradient(90deg, var(--ck-orange), var(--ck-peach));
+  transition: width 0.5s ease-out;
+}
+.ck-kcal-progress-fill.over { background: var(--ck-coral); }
+.ck-kcal-progress-note { font-size: 0.8rem; color: var(--ck-text-muted); margin: 0; }
+
+/* ── Analytics Auto Grid ── */
+.ck-analytics-auto-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;
+}
+.ck-stat-value-orange { color: var(--ck-orange); font-size: 1.5rem; }
+.ck-stat-value-sage   { color: var(--ck-sage); font-size: 1.5rem; }
+.ck-stat-value-coral  { color: var(--ck-coral); font-size: 1.5rem; }
+
+/* ── Suspect Foods ── */
+.ck-suspect-foods-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.ck-suspect-item { }
+.ck-suspect-name { font-weight: 700; flex: 1; text-transform: capitalize; }
+.ck-suspect-info { display: flex; align-items: center; gap: 0.5rem; }
+.ck-suspect-count { font-size: 0.75rem; color: var(--ck-text-muted); }
+.ck-suspect-severity {
+  padding: 0.2rem 0.6rem; border-radius: 9999px; font-size: 0.7rem; font-weight: 700;
+}
+.ck-suspect-severity.high { background: rgba(255,107,107,0.15); color: var(--ck-coral); }
+.ck-suspect-severity.med  { background: rgba(245,138,61,0.15); color: var(--ck-orange); }
+
+/* ── Detail Heading Variants ── */
+.ck-detail-heading-coral    { color: var(--ck-coral); }
+.ck-detail-heading-lavender { color: var(--ck-lavender-deep); }
+
+/* ── Chart Container ── */
+.ck-chart-container { height: 300px; padding: 1.5rem; }
+
+/* ── Journal Action Row ── */
+.ck-journal-action-row {
+  display: flex; gap: 0.75rem; margin-bottom: 1.5rem;
+  flex-wrap: wrap; align-items: center;
+}
+.ck-journal-filters { margin-left: auto; display: flex; gap: 0.35rem; }
+
+/* ── Entry Form ── */
+.ck-entry-form { border-left: 4px solid var(--ck-orange); }
+.ck-entry-form-title {
+  font-weight: 800; margin-bottom: 1.25rem;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+
+/* ── Tag Active Variants ── */
+.ck-tag-active-orange {
+  background: var(--ck-orange); color: white; border-color: var(--ck-orange);
+}
+
+/* ── Food Input Flex ── */
+.ck-food-input-name { flex: 2; }
+.ck-food-input-kcal { flex: 1; }
+
+/* ── Food List Wrap ── */
+.ck-food-list-wrap {
+  display: flex; flex-direction: column; gap: 0.35rem;
+  background: rgba(0,0,0,0.02); padding: 0.75rem; border-radius: 0.5rem;
+}
+.ck-food-item-actions { display: flex; align-items: center; gap: 0.75rem; }
+.ck-food-total {
+  border-top: 1px solid rgba(0,0,0,0.1); padding-top: 0.35rem; margin-top: 0.35rem;
+  text-align: right; font-size: 0.8rem; font-weight: 700;
+}
+.ck-food-total-kcal { color: var(--ck-orange); }
+
+/* ── Severity Controls ── */
+.ck-severity-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.ck-severity-item {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.5rem 0.75rem; border-radius: 0.75rem;
+  background: rgba(255,107,107,0.04);
+}
+.ck-severity-emoji { font-size: 1.1rem; }
+.ck-severity-name  { font-weight: 600; font-size: 0.85rem; width: 150px; }
+.ck-severity-btns  { display: flex; gap: 0.25rem; flex: 1; }
+.ck-severity-btn {
+  width: 32px; height: 32px; border-radius: 8px; border: none;
+  cursor: pointer; font-weight: 800; font-size: 0.75rem;
+  background: rgba(0,0,0,0.04); color: var(--ck-text-muted);
+  transition: all 0.2s ease;
+}
+.ck-severity-btn.active { color: var(--ck-coral); }
+.ck-severity-label-text {
+  font-size: 0.7rem; color: var(--ck-text-muted); width: 50px; text-align: right;
+}
+
+/* ── Feeling Buttons ── */
+.ck-feeling-btn-item {
+  width: 48px; height: 48px; border-radius: 14px;
+  border: 2px solid rgba(0,0,0,0.06);
+  background: rgba(255,255,255,0.5);
+  cursor: pointer; font-size: 1.5rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s ease;
+}
+.ck-feeling-btn-item.active {
+  border-color: var(--ck-orange);
+  background: rgba(245,138,61,0.1);
+  transform: scale(1.1);
+}
+
+/* ── Entry Log Items ── */
+.ck-entry-row { display: flex; align-items: flex-start; gap: 1rem; }
+.ck-entry-feeling-box {
+  width: 48px; height: 48px; border-radius: 16px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
+}
+.ck-entry-feeling-box.good { background: rgba(124,185,139,0.1); }
+.ck-entry-feeling-box.ok   { background: rgba(245,138,61,0.1); }
+.ck-entry-feeling-box.bad  { background: rgba(255,107,107,0.1); }
+.ck-entry-title-row {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;
+}
+.ck-entry-meal-title { font-weight: 800; font-size: 1rem; }
+.ck-entry-info-row   { display: flex; align-items: center; gap: 0.5rem; }
+.ck-entry-kcal-badge { font-size: 0.75rem; color: var(--ck-orange); font-weight: 700; }
+.ck-entry-date-text  { font-size: 0.75rem; color: var(--ck-text-muted); }
+.ck-entry-delete-btn {
+  background: rgba(255,107,107,0.1); border: none; border-radius: 6px;
+  padding: 0.2rem 0.4rem; color: var(--ck-coral); cursor: pointer;
+  font-weight: 700; font-size: 0.7rem;
+}
+.ck-entry-delete-btn:hover { background: rgba(255,107,107,0.25); }
+.ck-tag-sm { font-size: 0.7rem; padding: 0.15rem 0.5rem; }
+.ck-entry-no-symptom { font-size: 0.8rem; color: var(--ck-sage-deep); font-weight: 600; }
+.ck-entry-notes {
+  font-size: 0.8rem; color: var(--ck-text-soft); margin-top: 0.35rem; font-style: italic;
+}
+
+/* ── Fairy Image Fit ── */
+.ck-fairy-img-fit { object-fit: contain; }
+
+/* ── Tag Active Lavender ── */
+.ck-tag-active-lavender {
+  background: var(--ck-lavender); color: white; border-color: var(--ck-lavender);
+}
+.ck-tag-inactive {
+  background: rgba(255,255,255,0.5); color: var(--ck-text-soft); border-color: rgba(0,0,0,0.06);
+}
+
+/* ── Toast Animation ── */
+@keyframes ck-toast-in {
+  0% { opacity: 0; transform: translateX(-50%) translateY(1rem); }
+  100% { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* ── Utility Spacing ── */
+.ck-pt-4         { padding-top: 4rem; }
+.ck-mb-sm        { margin-bottom: 0.5rem; }
+.ck-mb-md        { margin-bottom: 0.75rem; }
+.ck-mb-lg        { margin-bottom: 1.25rem; }
+.ck-mb-xl        { margin-bottom: 2rem; }
+.ck-mb-3         { margin-bottom: 3rem; }
+.ck-flex-1       { flex: 1; }
+
+/* ── Login Prompt Helpers ── */
+.ck-login-title  { font-weight: 800; margin-bottom: 0.5rem; }
+.ck-login-desc   { color: var(--ck-text-muted); margin-bottom: 1.5rem; }
+
+/* ── Field Label ── */
+.ck-field-label {
+  display: block; font-size: 0.8rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--ck-text-muted); margin-bottom: 0.5rem;
+}
+
+/* ── Save Button Full-width ── */
+.ck-save-btn-full { width: 100%; padding: 0.875rem; }
+
+/* ── Detail Heading ── */
+.ck-detail-heading {
+  font-size: 0.85rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  margin-bottom: 0.75rem;
+}
+

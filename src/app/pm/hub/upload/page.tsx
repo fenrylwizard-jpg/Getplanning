@@ -95,8 +95,10 @@ export default function HubUploadPage() {
         <div className="max-w-xs">
           <label className="block text-gray-400 text-xs font-medium uppercase tracking-wider mb-2">Mois</label>
           <input
-            type="month"
-            title="Mois"
+            type="text"
+            title="Mois (format: YYYY-MM)"
+            placeholder="YYYY-MM"
+            pattern="\d{4}-\d{2}"
             value={month}
             onChange={e => setMonth(e.target.value)}
             className="w-full bg-[#060d1f] border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"

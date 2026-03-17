@@ -64,11 +64,11 @@ export default function ProfilePage() {
 
     if (!user || !mounted) {
         return (
-            <div className="ck-glass-section" style={{ paddingTop: '4rem' }}>
+            <div className="ck-glass-section ck-pt-4">
                 <div className="ck-empty-state">
                     <div className="ck-empty-state-icon">🔐</div>
-                    <h3 style={{ fontWeight: 800, marginBottom: '0.5rem' }}>Connexion requise</h3>
-                    <p style={{ color: 'var(--ck-text-muted)', marginBottom: '1.5rem' }}>
+                    <h3 className="ck-login-title">Connexion requise</h3>
+                    <p className="ck-login-desc">
                         Connectez-vous pour accéder à votre profil.
                     </p>
                     <Link href="/cooking/login" className="ck-btn ck-btn-primary">🍴 Se connecter</Link>
@@ -151,7 +151,7 @@ export default function ProfilePage() {
     const kcalTarget = calculateDailyKcal();
 
     return (
-        <div style={{ maxWidth: '800px', margin: '0 auto', paddingBottom: '3rem' }}>
+        <div className="ck-page-wrap">
             <div className="ck-page-header">
                 <div className="ck-hero-badge ck-fade-up">
                     <span>👤</span> Mon Profil Santé
@@ -165,34 +165,25 @@ export default function ProfilePage() {
             </div>
 
             <div className="ck-glass-section ck-fade-up-2">
-                <h2 style={{ fontWeight: 800, marginBottom: '1.5rem', fontSize: '1.3rem' }}>🥗 Régimes & Protocoles</h2>
-                <p style={{ color: 'var(--ck-text-muted)', marginBottom: '1rem', fontSize: '0.9rem' }}>
+                <h2 className="ck-section-title">🥗 Régimes &amp; Protocoles</h2>
+                <p className="ck-section-sub">
                     Sélectionnez vos contraintes et objectifs diététiques (plusieurs choix possibles).
                 </p>
                 
-                <div className="ck-grid-auto" style={{ marginBottom: '3rem' }}>
+                <div className="ck-grid-auto ck-mb-3">
                     {AVAILABLE_PROTOCOLS.map(proto => {
                         const isSelected = selectedProtocols.includes(proto.id);
                         return (
                             <div 
                                 key={proto.id}
                                 onClick={() => toggleProtocol(proto.id)}
-                                style={{
-                                    padding: '1rem',
-                                    borderRadius: '1rem',
-                                    border: isSelected ? '2px solid var(--ck-orange)' : '1px solid rgba(0,0,0,0.08)',
-                                    background: isSelected ? 'rgba(245, 138, 61, 0.05)' : 'white',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s ease',
-                                    transform: isSelected ? 'translateY(-2px)' : 'none',
-                                    boxShadow: isSelected ? '0 4px 15px rgba(245, 138, 61, 0.15)' : 'none'
-                                }}
+                                className={`ck-toggle-card${isSelected ? ' selected' : ''}`}
                             >
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.25rem' }}>
-                                    <span style={{ fontSize: '1.5rem' }}>{proto.emoji}</span>
-                                    <h3 style={{ fontWeight: 700, margin: 0, fontSize: '1.05rem' }}>{proto.name}</h3>
+                                <div className="ck-toggle-card-header">
+                                    <span className="ck-toggle-card-emoji">{proto.emoji}</span>
+                                    <h3 className="ck-toggle-card-title">{proto.name}</h3>
                                 </div>
-                                <div style={{ fontSize: '0.8rem', color: 'var(--ck-text-muted)', paddingLeft: '2.25rem' }}>
+                                <div className="ck-toggle-card-desc">
                                     {proto.desc}
                                 </div>
                             </div>
@@ -200,46 +191,46 @@ export default function ProfilePage() {
                     })}
                 </div>
 
-                <h2 style={{ fontWeight: 800, marginBottom: '1.5rem', fontSize: '1.3rem' }}>⚖️ Paramètres Physiques & Objectifs</h2>
+                <h2 className="ck-section-title">⚖️ Paramètres Physiques &amp; Objectifs</h2>
                 
-                <div className="ck-grid-2" style={{ marginBottom: '2rem' }}>
+                <div className="ck-grid-2 ck-mb-xl">
                     <div>
-                        <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ck-text-muted)', marginBottom: '0.5rem' }}>
+                        <label className="ck-field-label">
                             Poids (kg)
                         </label>
                         <input className="ck-input" type="number" placeholder="Ex: 70" value={weight} onChange={e => setWeight(e.target.value)} />
                     </div>
                     <div>
-                        <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ck-text-muted)', marginBottom: '0.5rem' }}>
+                        <label className="ck-field-label">
                             Taille (cm)
                         </label>
                         <input className="ck-input" type="number" placeholder="Ex: 175" value={height} onChange={e => setHeight(e.target.value)} />
                     </div>
                 </div>
 
-                <div className="ck-grid-2" style={{ marginBottom: '2rem' }}>
+                <div className="ck-grid-2 ck-mb-xl">
                     <div>
-                        <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ck-text-muted)', marginBottom: '0.5rem' }}>
+                        <label className="ck-field-label">
                             Âge
                         </label>
                         <input className="ck-input" type="number" placeholder="Ex: 30" value={age} onChange={e => setAge(e.target.value)} />
                     </div>
                     <div>
-                        <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ck-text-muted)', marginBottom: '0.5rem' }}>
+                        <label className="ck-field-label">
                             Sexe biologique
                         </label>
-                        <select className="ck-input" value={gender} onChange={e => setGender(e.target.value as 'M' | 'F')}>
+                        <select className="ck-input" value={gender} onChange={e => setGender(e.target.value as 'M' | 'F')} title="Sexe biologique">
                             <option value="F">Femme</option>
                             <option value="M">Homme</option>
                         </select>
                     </div>
                 </div>
 
-                <div style={{ marginBottom: '2rem' }}>
-                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ck-text-muted)', marginBottom: '0.5rem' }}>
-                        Niveau d'activité physique
+                <div className="ck-mb-xl">
+                    <label className="ck-field-label">
+                        Niveau d&apos;activité physique
                     </label>
-                    <select className="ck-input" value={activity} onChange={e => setActivity(parseFloat(e.target.value) as 1.2 | 1.375 | 1.55 | 1.725 | 1.9)}>
+                    <select className="ck-input" value={activity} onChange={e => setActivity(parseFloat(e.target.value) as 1.2 | 1.375 | 1.55 | 1.725 | 1.9)} title="Niveau d'activité physique">
                         <option value={1.2}>Sédentaire (Peu ou pas d&apos;exercice)</option>
                         <option value={1.375}>Léger (Exercice 1-3 fois/semaine)</option>
                         <option value={1.55}>Modéré (Exercice 3-5 fois/semaine)</option>
@@ -248,18 +239,18 @@ export default function ProfilePage() {
                     </select>
                 </div>
 
-                <div style={{ padding: '1.5rem', background: 'rgba(0,0,0,0.02)', borderRadius: '1rem', border: '1px solid rgba(0,0,0,0.05)', marginBottom: '2rem' }}>
-                    <h3 style={{ fontWeight: 800, marginBottom: '1rem', fontSize: '1.1rem' }}>🎯 Vos Objectifs</h3>
+                <div className="ck-inset-section">
+                    <h3 className="ck-subsection-title">🎯 Vos Objectifs</h3>
                     
                     <div className="ck-grid-2">
                         <div>
-                            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ck-text-muted)', marginBottom: '0.5rem' }}>
+                            <label className="ck-field-label">
                                 Poids cible (kg)
                             </label>
                             <input className="ck-input" type="number" placeholder="Ex: 65 (Optionnel)" value={goalWeight} onChange={e => setGoalWeight(e.target.value)} />
                         </div>
                         <div>
-                            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ck-text-muted)', marginBottom: '0.5rem' }}>
+                            <label className="ck-field-label">
                                 Durée visée (semaines)
                             </label>
                             <input className="ck-input" type="number" placeholder="Ex: 12" value={goalDurationWeeks} onChange={e => setGoalDurationWeeks(e.target.value)} />
@@ -267,9 +258,9 @@ export default function ProfilePage() {
                     </div>
                 </div>
 
-                <div style={{ padding: '1.5rem', background: 'rgba(0,0,0,0.02)', borderRadius: '1rem', border: '1px solid rgba(0,0,0,0.05)', marginBottom: '2rem' }}>
-                    <h3 style={{ fontWeight: 800, marginBottom: '1rem', fontSize: '1.1rem' }}>✨ Compagnon de Voyage</h3>
-                    <p style={{ color: 'var(--ck-text-muted)', marginBottom: '1rem', fontSize: '0.9rem' }}>
+                <div className="ck-inset-section">
+                    <h3 className="ck-subsection-title">✨ Compagnon de Voyage</h3>
+                    <p className="ck-section-sub">
                         Choisissez la fée élémentaire qui vous accompagnera. Elle évoluera au fur et à mesure que vous atteignez vos objectifs !
                     </p>
                     
@@ -284,31 +275,19 @@ export default function ProfilePage() {
                                 <div 
                                     key={fairy.id}
                                     onClick={() => setSelectedFairy(fairy.id as 'fire'|'water'|'nature')}
-                                    style={{
-                                        padding: '1rem',
-                                        borderRadius: '1rem',
-                                        border: isSelected ? `2px solid ${fairy.color}` : '1px solid rgba(0,0,0,0.08)',
-                                        background: isSelected ? `${fairy.color}15` : 'white',
-                                        cursor: 'pointer',
-                                        transition: 'all 0.2s ease',
-                                        transform: isSelected ? 'translateY(-2px)' : 'none',
-                                        textAlign: 'center',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        alignItems: 'center'
-                                    }}
+                                    className={`ck-fairy-card${isSelected ? ` selected selected-${fairy.id}` : ''}`}
                                 >
-                                    <div style={{ position: 'relative', width: '80px', height: '80px', marginBottom: '0.5rem' }}>
+                                    <div className="ck-fairy-img">
                                         <Image
                                             src={`/cooking/fairies/${fairy.id}_fairy_1.png`}
                                             alt={fairy.name}
                                             fill
                                             unoptimized
-                                            style={{ objectFit: 'contain' }}
+                                            className="ck-fairy-img-fit"
                                         />
                                     </div>
-                                    <h4 style={{ fontWeight: 800, margin: '0 0 0.25rem 0' }}>{fairy.name}</h4>
-                                    <p style={{ fontSize: '0.75rem', color: 'var(--ck-text-muted)', margin: 0 }}>{fairy.desc}</p>
+                                    <h4 className="ck-fairy-name">{fairy.name}</h4>
+                                    <p className="ck-fairy-desc">{fairy.desc}</p>
                                 </div>
                             );
                         })}
@@ -317,35 +296,24 @@ export default function ProfilePage() {
 
                 {/* Calculation Result */}
                 {kcalTarget && (
-                    <div style={{ 
-                        padding: '1.5rem', 
-                        borderRadius: '1rem', 
-                        background: 'linear-gradient(135deg, var(--ck-orange), var(--ck-peach))',
-                        color: 'white',
-                        marginBottom: '2rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        boxShadow: '0 8px 30px rgba(245, 138, 61, 0.3)'
-                    }}>
+                    <div className="ck-kcal-banner">
                         <div>
-                            <div style={{ fontSize: '0.85rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', opacity: 0.9, marginBottom: '0.25rem' }}>
+                            <div className="ck-kcal-label">
                                 Votre cible calorique journalière
                             </div>
-                            <div style={{ fontSize: '0.9rem', opacity: 0.8 }}>
+                            <div className="ck-kcal-sublabel">
                                 Calculée selon le métabolisme de base (Mifflin-St Jeor) et vos objectifs.
                             </div>
                         </div>
-                        <div style={{ fontSize: '2.5rem', fontWeight: 900 }}>
-                            {kcalTarget} <span style={{ fontSize: '1.25rem', fontWeight: 700, opacity: 0.8 }}>kcal</span>
+                        <div className="ck-kcal-value">
+                            {kcalTarget} <span className="ck-kcal-unit">kcal</span>
                         </div>
                     </div>
                 )}
 
                 <button 
-                    className="ck-btn ck-btn-rose" 
+                    className="ck-btn ck-btn-rose ck-save-btn-full" 
                     onClick={handleSave}
-                    style={{ width: '100%', padding: '1rem', fontSize: '1.1rem' }}
                 >
                     💾 Sauvegarder mon profil
                 </button>
@@ -353,34 +321,12 @@ export default function ProfilePage() {
 
             {/* Save Toast */}
             {showToast && (
-                <div style={{
-                    position: 'fixed',
-                    bottom: '2rem',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    background: 'linear-gradient(135deg, #22c55e, #16a34a)',
-                    color: 'white',
-                    padding: '1rem 2rem',
-                    borderRadius: '1rem',
-                    fontWeight: 700,
-                    fontSize: '1rem',
-                    boxShadow: '0 8px 30px rgba(34, 197, 94, 0.35)',
-                    zIndex: 9999,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.75rem',
-                    animation: 'ck-toast-in 0.4s ease-out',
-                }}>
-                    <span style={{ fontSize: '1.4rem' }}>✅</span>
+                <div className="ck-toast">
+                    <span className="ck-toast-icon">✅</span>
                     Profil sauvegardé avec succès !
                 </div>
             )}
-            <style jsx>{`
-                @keyframes ck-toast-in {
-                    0% { opacity: 0; transform: translateX(-50%) translateY(1rem); }
-                    100% { opacity: 1; transform: translateX(-50%) translateY(0); }
-                }
-            `}</style>
+
         </div>
     );
 }
