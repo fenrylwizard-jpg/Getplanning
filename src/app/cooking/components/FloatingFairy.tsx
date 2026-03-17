@@ -67,7 +67,7 @@ export default function FloatingFairy() {
     const colors = colorMap[type];
 
     return (
-        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-center group pointer-events-auto">
+        <div className="fixed bottom-20 right-4 z-40 flex flex-col items-center group pointer-events-auto md:bottom-6 md:right-6">
             
             {/* XP Tooltip / Bar appearing on hover */}
             <div className="absolute bottom-[100%] mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none w-48 bg-white/90 backdrop-blur-md px-3 py-2 rounded-xl shadow-lg border border-slate-200 flex flex-col items-center">

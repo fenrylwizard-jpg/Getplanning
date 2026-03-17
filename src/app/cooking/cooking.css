@@ -692,48 +692,61 @@
 
 /* ── Bottom Nav (Mobile) ── */
 .ck-bottom-nav {
+  display: none; /* hidden on desktop — top navbar handles navigation */
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  z-index: 50;
+  z-index: 100;
   -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
-  background: rgba(255, 248, 240, 0.85);
-  border-top: 1px solid rgba(245, 138, 61, 0.1);
-  padding: 0.5rem 0;
-  padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0));
+  background: rgba(255, 248, 240, 0.92);
+  border-top: 1px solid rgba(245, 138, 61, 0.12);
+  padding: 0.4rem 0;
+  padding-bottom: calc(0.4rem + env(safe-area-inset-bottom, 0));
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.04);
 }
 
 .ck-bottom-nav-inner {
   display: flex;
-  justify-content: space-around;
-  max-width: 500px;
-  margin: 0 auto;
+  justify-content: space-between;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;        /* Firefox */
+  -ms-overflow-style: none;     /* IE/Edge */
+  padding: 0 0.25rem;
+  gap: 0;
 }
+.ck-bottom-nav-inner::-webkit-scrollbar { display: none; }
 
 .ck-bottom-nav-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.15rem;
-  padding: 0.4rem 0.75rem;
-  border-radius: 12px;
+  gap: 0.1rem;
+  padding: 0.25rem 0.35rem;
+  border-radius: 10px;
   text-decoration: none;
   color: var(--ck-text-muted);
-  font-size: 0.65rem;
+  font-size: 0.55rem;
   font-weight: 700;
   transition: all 0.25s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 0;
+  flex: 1 0 auto;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .ck-bottom-nav-item:hover,
 .ck-bottom-nav-item.active {
   color: var(--ck-orange);
-  background: rgba(245, 138, 61, 0.08);
+  background: rgba(245, 138, 61, 0.1);
 }
 
 .ck-bottom-nav-item span:first-child {
-  font-size: 1.35rem;
+  font-size: 1.15rem;
+  line-height: 1;
 }
 
 /* ── Empty States ── */
@@ -804,6 +817,14 @@
 
   .ck-nav-links {
     display: none;
+  }
+
+  .ck-bottom-nav {
+    display: block;
+  }
+
+  .ck-main-padded {
+    padding-bottom: 5.5rem;
   }
 
   .ck-hero h1 {
