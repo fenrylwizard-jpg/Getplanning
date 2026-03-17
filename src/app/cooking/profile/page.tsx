@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useCookingAuth } from '../CookingAuthContext';
 import Link from 'next/link';
+import Image from 'next/image';
 
 const AVAILABLE_PROTOCOLS = [
     { id: 'low-fodmap', name: 'Low-FODMAP', emoji: '🥦', desc: 'Syndrome de l\'Intestin Irritable (SII)' },
@@ -291,10 +292,21 @@ export default function ProfilePage() {
                                         cursor: 'pointer',
                                         transition: 'all 0.2s ease',
                                         transform: isSelected ? 'translateY(-2px)' : 'none',
-                                        textAlign: 'center'
+                                        textAlign: 'center',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center'
                                     }}
                                 >
-                                    <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>{fairy.emoji}</div>
+                                    <div style={{ position: 'relative', width: '80px', height: '80px', marginBottom: '0.5rem' }}>
+                                        <Image
+                                            src={`/cooking/fairies/${fairy.id}_fairy_1.png`}
+                                            alt={fairy.name}
+                                            fill
+                                            unoptimized
+                                            style={{ objectFit: 'contain' }}
+                                        />
+                                    </div>
                                     <h4 style={{ fontWeight: 800, margin: '0 0 0.25rem 0' }}>{fairy.name}</h4>
                                     <p style={{ fontSize: '0.75rem', color: 'var(--ck-text-muted)', margin: 0 }}>{fairy.desc}</p>
                                 </div>
