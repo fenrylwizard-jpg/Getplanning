@@ -58,6 +58,11 @@ export async function middleware(req: NextRequest) {
         pathname.startsWith('/landing') ||
         pathname.startsWith('/presentation') ||
         pathname.startsWith('/cooking') ||
+        pathname.endsWith('.png') ||
+        pathname.endsWith('.jpg') ||
+        pathname.endsWith('.svg') ||
+        pathname.endsWith('.ico') ||
+        pathname.endsWith('.webp') ||
         pathname === '/'
     ) {
         return NextResponse.next();
