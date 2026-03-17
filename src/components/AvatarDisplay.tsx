@@ -41,8 +41,7 @@ export default function AvatarDisplay({ characterId, level, size = 120, classNam
                 alt={`${role} Tier ${tier + 1}`}
                 fill
                 unoptimized
-                className="object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]"
-                style={{ background: 'transparent' }}
+                className="object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] ck-avatar-transparent"
             />
             
             {/* Level Badge — only show if showLevel is true and size is large enough */}

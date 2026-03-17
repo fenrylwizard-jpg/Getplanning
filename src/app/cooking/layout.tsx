@@ -20,6 +20,7 @@ const navItems = [
 function CookingNavbar() {
     const pathname = usePathname();
     const { user, logout } = useCookingAuth();
+    const isProfileActive = pathname === '/cooking/profile';
 
     return (
         <>
@@ -42,47 +43,28 @@ function CookingNavbar() {
                             </Link>
                         ))}
                         {user ? (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginLeft: '0.5rem' }}>
-                                <Link href="/cooking/profile" style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '0.5rem',
-                                    padding: '0.4rem 0.75rem',
-                                    background: pathname === '/cooking/profile' ? 'var(--ck-rose)' : 'rgba(245, 138, 61, 0.08)',
-                                    color: pathname === '/cooking/profile' ? 'white' : 'inherit',
-                                    borderRadius: '12px',
-                                    textDecoration: 'none',
-                                    transition: 'all 0.2s ease',
-                                }}>
-                                    <span style={{
-                                        width: '28px',
-                                        height: '28px',
-                                        borderRadius: '50%',
-                                        background: pathname === '/cooking/profile' ? 'rgba(255,255,255,0.2)' : 'linear-gradient(135deg, var(--ck-rose), var(--ck-coral))',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        fontSize: '0.8rem',
-                                        color: 'white',
-                                        fontWeight: 800,
-                                    }}>
+                            <div className="ck-navbar-user-row">
+                                <Link
+                                    href="/cooking/profile"
+                                    className={`ck-navbar-profile-link ${isProfileActive ? 'active' : ''}`}
+                                >
+                                    <span className="ck-navbar-avatar">
                                         {user.displayName[0]}
                                     </span>
-                                    <span style={{ fontWeight: 700, fontSize: '0.85rem', color: pathname === '/cooking/profile' ? 'white' : 'var(--ck-text)' }}>
+                                    <span className="ck-navbar-user-name">
                                         {user.displayName}
                                     </span>
                                 </Link>
                                 <button
                                     onClick={logout}
                                     title="Se déconnecter"
-                                    className="ck-nav-link"
-                                    style={{ padding: '0.4rem 0.6rem', cursor: 'pointer', background: 'none', border: 'none', fontFamily: 'inherit' }}
+                                    className="ck-nav-link ck-navbar-logout"
                                 >
                                     🚪
                                 </button>
                             </div>
                         ) : (
-                            <Link href="/cooking/login" className="ck-btn ck-btn-primary" style={{ padding: '0.5rem 1.25rem', fontSize: '0.85rem' }}>
+                            <Link href="/cooking/login" className="ck-btn ck-btn-primary ck-navbar-login-btn">
                                 🍴 Connexion
                             </Link>
                         )}
@@ -122,7 +104,7 @@ export default function CookingLayout({
                 <div className="ck-content">
                     <CookingNavbar />
                     <FloatingFairy />
-                    <main style={{ paddingBottom: '5rem' }}>
+                    <main className="ck-main-padded">
                         {children}
                     </main>
                 </div>
