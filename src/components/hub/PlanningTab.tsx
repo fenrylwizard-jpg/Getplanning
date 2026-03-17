@@ -1,9 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarRange, Target, Flag, Clock, ChevronRight } from "lucide-react";
+import { CalendarRange, Target, Flag, Clock, ChevronRight, Save, Trash2, CheckCircle } from "lucide-react";
 import T from "@/components/T";
 import FileUploadZone from "@/components/hub/FileUploadZone";
+import { useRouter } from "next/navigation";
+
+interface PlanningMilestone {
+    name: string;
+    category: string;
+    startDate: string;
+    endDate: string;
+    progress: number;
+    color?: string;
+}
 
 interface PlanningTabProps {
     project: {
@@ -16,10 +26,19 @@ interface PlanningTabProps {
             isSubmitted: boolean;
             targetReached: boolean | null;
         }[];
+        planningMilestones?: {
+            id: string;
+            name: string;
+            category: string | null;
+            startDate: Date;
+            endDate: Date;
+            progress: number;
+            isComplete: boolean;
+        }[];
     };
+    readonlyMode?: boolean;
 }
 
-// Demo milestones to showcase the timeline design
 const DEMO_MILESTONES = [
     { name: "Terrassement & Fondations", category: "Gros Œuvre", startDate: "2025-09-01", endDate: "2025-11-15", progress: 1.0, color: "emerald" },
     { name: "Élévation Murs Porteurs", category: "Gros Œuvre", startDate: "2025-11-01", endDate: "2026-02-28", progress: 0.85, color: "emerald" },
@@ -37,167 +56,298 @@ const colorClasses: Record<string, { bg: string; bar: string; text: string; bord
     amber: { bg: "bg-amber-500/10", bar: "bg-gradient-to-r from-amber-500 to-orange-400", text: "text-amber-400", border: "border-amber-500/30" },
     purple: { bg: "bg-purple-500/10", bar: "bg-gradient-to-r from-purple-500 to-indigo-400", text: "text-purple-400", border: "border-purple-500/30" },
     rose: { bg: "bg-rose-500/10", bar: "bg-gradient-to-r from-rose-500 to-pink-400", text: "text-rose-400", border: "border-rose-500/30" },
+    default: { bg: "bg-white/10", bar: "bg-gradient-to-r from-gray-500 to-gray-400", text: "text-gray-400", border: "border-white/20" },
 };
 
-export default function PlanningTab({ project }: PlanningTabProps) {
-    const [showDemo] = useState(true);
+function assignColor(category: string) {
+    const c = category.toLowerCase();
+    if (c.includes("gros") || c.includes("fondation")) return "emerald";
+    if (c.includes("charpente") || c.includes("toiture")) return "blue";
+    if (c.includes("menuiserie") || c.includes("second") || c.includes("hvac") || c.includes("elec")) return "amber";
+    if (c.includes("finition")) return "purple";
+    if (c.includes("reception") || c.includes("livraison")) return "rose";
+    return "blue";
+}
 
-    // Calculate timeline bounds for demo
-    const allDates = DEMO_MILESTONES.flatMap(m => [new Date(m.startDate).getTime(), new Date(m.endDate).getTime()]);
+export default function PlanningTab({ project, readonlyMode }: PlanningTabProps) {
+    const { refresh } = useRouter();
+    
+    // Check if we have real DB milestones
+    const existingMilestones = project.planningMilestones && project.planningMilestones.length > 0 
+        ? project.planningMilestones.map(m => ({
+            name: m.name,
+            category: m.category || "Général",
+            startDate: new Date(m.startDate).toISOString().split('T')[0],
+            endDate: new Date(m.endDate).toISOString().split('T')[0],
+            progress: m.progress,
+            color: assignColor(m.category || "Général")
+          }))
+        : null;
+
+    const [milestones, setMilestones] = useState<PlanningMilestone[] | null>(existingMilestones);
+    const [isParsed, setIsParsed] = useState<boolean>(false);
+    const [submitting, setSubmitting] = useState(false);
+
+    // If no existing milestones and no parsed ones, show demo. Or show real ones.
+    const activeMilestones = milestones || DEMO_MILESTONES;
+    const isShowingRealData = milestones !== null;
+
+    // Calculate timeline bounds
+    const allDates = activeMilestones.flatMap(m => [new Date(m.startDate).getTime(), new Date(m.endDate).getTime()]).filter(d => !isNaN(d));
+    
+    // In case no dates could be parsed
+    if (allDates.length === 0) {
+        allDates.push(new Date().getTime());
+        allDates.push(new Date().getTime() + 30 * 24 * 60 * 60 * 1000);
+    }
+
     const minDate = Math.min(...allDates);
     const maxDate = Math.max(...allDates);
-    const totalSpan = maxDate - minDate;
+    const totalSpan = Math.max(86400000, maxDate - minDate); // Minimum 1 day pan
     const today = new Date().getTime();
     const todayPct = Math.max(0, Math.min(100, ((today - minDate) / totalSpan) * 100));
 
-    const completedCount = DEMO_MILESTONES.filter(m => m.progress >= 1).length;
-    const inProgressCount = DEMO_MILESTONES.filter(m => m.progress > 0 && m.progress < 1).length;
-    const upcomingCount = DEMO_MILESTONES.filter(m => m.progress === 0).length;
+    const completedCount = activeMilestones.filter(m => m.progress >= 1).length;
+    const inProgressCount = activeMilestones.filter(m => m.progress > 0 && m.progress < 1).length;
+    const upcomingCount = activeMilestones.filter(m => m.progress === 0).length;
+
+    const handleUploadComplete = (data: { data?: any[] }) => {
+        if (data.data && Array.isArray(data.data)) {
+            const processed = data.data.map((m: any) => ({
+                name: m.name || "Inconnu",
+                category: m.category || "Général",
+                // Fallback dates if Gemini hallucinated or failed
+                startDate: m.startDate || new Date().toISOString().split('T')[0],
+                endDate: m.endDate || new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0],
+                progress: m.progress || 0,
+                color: assignColor(m.category || "")
+            }));
+            
+            // Sort by start date
+            processed.sort((a: PlanningMilestone, b: PlanningMilestone) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+            
+            setMilestones(processed);
+            setIsParsed(true);
+        }
+    };
+
+    const handleConfirm = async () => {
+        if (!milestones) return;
+        setSubmitting(true);
+        
+        try {
+            const res = await fetch(`/api/project/${project.id}/planning/confirm`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ milestones })
+            });
+
+            if (res.ok) {
+                setIsParsed(false); // Accepted! Now it shows as real DB data
+                refresh();
+            } else {
+                alert("Erreur de sauvegarde");
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Erreur réseau requete API confirm");
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const clearParsed = () => {
+        setMilestones(existingMilestones);
+        setIsParsed(false);
+    };
 
     return (
         <div className="flex flex-col gap-8">
             {/* Upload Zone */}
-            <FileUploadZone
-                projectId={project.id}
-                module="planning"
-                acceptTypes=".pdf,.xlsx,.xls"
-                title="Importer le Planning"
-                subtitle="Glissez un PDF ou fichier Excel du planning projet pour extraire les jalons"
-                accentColor="purple"
-                icon={<CalendarRange size={36} className="text-purple-400" />}
-            />
+            {!readonlyMode && (
+                <div className={isParsed ? "opacity-50 pointer-events-none" : ""}>
+                    <FileUploadZone
+                        projectId={project.id}
+                        module="planning"
+                        acceptTypes=".pdf,.xlsx,.xls"
+                        title="Importer le Planning"
+                        subtitle={isParsed ? "Un planning est en cours de révision..." : "Glissez un PDF (Gantt) ou Excel pour laisser l'IA Gemini extraire les jalons"}
+                        accentColor="purple"
+                        onUploadComplete={handleUploadComplete}
+                        icon={<CalendarRange size={36} className="text-purple-400" />}
+                    />
+                </div>
+            )}
 
-            {/* Demo Timeline Section */}
-            {showDemo && (
-                <>
-                    {/* KPI Summary */}
-                    <div className="grid grid-cols-3 gap-4">
-                        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-5 flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center">
-                                <Flag size={22} className="text-emerald-400" />
-                            </div>
-                            <div>
-                                <div className="text-[10px] uppercase tracking-widest text-emerald-400 font-black"><T k="hub_milestones_completed" /></div>
-                                <div className="text-2xl font-black text-emerald-400">{completedCount}</div>
-                            </div>
-                        </div>
-                        <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-5 flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center">
-                                <Clock size={22} className="text-blue-400" />
-                            </div>
-                            <div>
-                                <div className="text-[10px] uppercase tracking-widest text-blue-400 font-black"><T k="hub_in_progress" /></div>
-                                <div className="text-2xl font-black text-blue-400">{inProgressCount}</div>
-                            </div>
-                        </div>
-                        <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-5 flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center">
-                                <Target size={22} className="text-amber-400" />
-                            </div>
-                            <div>
-                                <div className="text-[10px] uppercase tracking-widest text-amber-400 font-black"><T k="hub_upcoming" /></div>
-                                <div className="text-2xl font-black text-amber-400">{upcomingCount}</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Gantt Timeline */}
-                    <div className="bg-[#080d1a]/80 border border-white/5 rounded-2xl p-6 overflow-x-auto">
-                        <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 mb-6 flex items-center gap-2">
-                            <CalendarRange size={16} className="text-purple-400" />
-                            <T k="hub_project_timeline" />
-                        </h3>
-
-                        {/* Timeline header with months */}
-                        <div className="relative min-w-[800px]">
-                            {/* Month markers */}
-                            <div className="flex mb-4 ml-[220px]">
-                                {Array.from({ length: 16 }, (_, i) => {
-                                    const d = new Date(2025, 8 + i, 1);
-                                    return (
-                                        <div key={i} className="flex-1 text-center">
-                                            <span className="text-[9px] uppercase tracking-widest text-gray-500 font-bold">
-                                                {d.toLocaleString("fr", { month: "short" })}
-                                            </span>
-                                            <span className="text-[8px] text-gray-600 ml-1">{d.getFullYear().toString().slice(2)}</span>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-
-                            {/* Today marker */}
-                            <div
-                                className="absolute top-0 bottom-0 w-0.5 bg-red-500/60 z-20"
-                                style={{ left: `calc(220px + ${todayPct}% * (100% - 220px) / 100)` }}
-                            >
-                                <div className="absolute -top-1 -left-3 px-1.5 py-0.5 rounded bg-red-500 text-[8px] font-black text-white uppercase tracking-wider whitespace-nowrap">
-                                    Aujourd&apos;hui
-                                </div>
-                            </div>
-
-                            {/* Gantt bars */}
-                            <div className="flex flex-col gap-2">
-                                {DEMO_MILESTONES.map((milestone, idx) => {
-                                    const startPct = ((new Date(milestone.startDate).getTime() - minDate) / totalSpan) * 100;
-                                    const widthPct = ((new Date(milestone.endDate).getTime() - new Date(milestone.startDate).getTime()) / totalSpan) * 100;
-                                    const c = colorClasses[milestone.color] || colorClasses.blue;
-
-                                    return (
-                                        <div key={idx} className="flex items-center gap-4 group hover:bg-white/5 rounded-xl p-1.5 transition-colors">
-                                            {/* Label */}
-                                            <div className="w-[200px] flex-shrink-0">
-                                                <div className="text-xs font-bold text-gray-200 truncate">{milestone.name}</div>
-                                                <div className={`text-[9px] uppercase tracking-widest ${c.text} font-bold`}>{milestone.category}</div>
-                                            </div>
-                                            {/* Bar area */}
-                                            <div className="flex-1 relative h-8">
-                                                {/* Background track */}
-                                                <div
-                                                    className={`absolute top-1 h-6 rounded-lg ${c.bg} border ${c.border} overflow-hidden transition-all`}
-                                                    style={{ left: `${startPct}%`, width: `${widthPct}%` }}
-                                                >
-                                                    {/* Progress fill */}
-                                                    <div
-                                                        className={`h-full ${c.bar} rounded-lg transition-all duration-700`}
-                                                        style={{ width: `${milestone.progress * 100}%` }}
-                                                    />
-                                                    {/* Progress label */}
-                                                    <div className="absolute inset-0 flex items-center justify-center">
-                                                        <span className="text-[9px] font-black text-white/80 drop-shadow">
-                                                            {Math.round(milestone.progress * 100)}%
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            {/* Status icon */}
-                                            <div className="w-6 flex-shrink-0 flex justify-center">
-                                                {milestone.progress >= 1 ? (
-                                                    <div className="w-5 h-5 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center">
-                                                        <ChevronRight size={10} className="text-emerald-400" />
-                                                    </div>
-                                                ) : milestone.progress > 0 ? (
-                                                    <div className="w-5 h-5 rounded-full bg-blue-500/20 border border-blue-500/40 flex items-center justify-center animate-pulse">
-                                                        <div className="w-2 h-2 rounded-full bg-blue-400" />
-                                                    </div>
-                                                ) : (
-                                                    <div className="w-5 h-5 rounded-full bg-white/5 border border-white/10" />
-                                                )}
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Info banner */}
-                    <div className="bg-purple-500/5 border border-purple-500/20 rounded-2xl p-4 text-center">
-                        <p className="text-xs text-purple-300">
-                            <T k="hub_demo_data_notice" /> — <T k="hub_upload_to_replace" />
+            {/* AI Confirmation Banner */}
+            {isParsed && (
+                <div className="bg-purple-900/30 border border-purple-500/40 rounded-2xl p-6 flex flex-col md:flex-row gap-4 items-center justify-between">
+                    <div>
+                        <h4 className="flex items-center gap-2 text-purple-300 font-bold mb-1">
+                            <span className="text-lg">✨</span> IA Gemini a analysé le document
+                        </h4>
+                        <p className="text-sm text-purple-200/80">
+                            {milestones?.length} jalons extraits. Veuillez vérifier le résultat ci-dessous.
                         </p>
                     </div>
-                </>
+                    <div className="flex gap-3">
+                        <button 
+                            onClick={clearParsed} 
+                            className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium text-sm transition-colors flex items-center gap-2"
+                        >
+                            <Trash2 size={16} /> Annuler
+                        </button>
+                        <button 
+                            onClick={handleConfirm}
+                            disabled={submitting}
+                            className="px-6 py-2 rounded-xl bg-purple-500 hover:bg-purple-400 text-white font-bold text-sm transition-colors flex items-center gap-2 disabled:opacity-50"
+                        >
+                            {submitting ? <span className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white rounded-full"/> : <Save size={16} />}
+                            Sauvegarder et Valider
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* KPI Summary */}
+            <div className="grid grid-cols-3 gap-4">
+                <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-5 flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center">
+                        <Flag size={22} className="text-emerald-400" />
+                    </div>
+                    <div>
+                        <div className="text-[10px] uppercase tracking-widest text-emerald-400 font-black"><T k="hub_milestones_completed" /></div>
+                        <div className="text-2xl font-black text-emerald-400">{completedCount}</div>
+                    </div>
+                </div>
+                <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-5 flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center">
+                        <Clock size={22} className="text-blue-400" />
+                    </div>
+                    <div>
+                        <div className="text-[10px] uppercase tracking-widest text-blue-400 font-black"><T k="hub_in_progress" /></div>
+                        <div className="text-2xl font-black text-blue-400">{inProgressCount}</div>
+                    </div>
+                </div>
+                <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-5 flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center">
+                        <Target size={22} className="text-amber-400" />
+                    </div>
+                    <div>
+                        <div className="text-[10px] uppercase tracking-widest text-amber-400 font-black"><T k="hub_upcoming" /></div>
+                        <div className="text-2xl font-black text-amber-400">{upcomingCount}</div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Gantt Timeline */}
+            <div className={`bg-[#080d1a]/80 border ${isParsed ? 'border-purple-500/50 shadow-[0_0_30px_rgba(168,85,247,0.15)]' : 'border-white/5'} rounded-2xl p-6 overflow-x-auto transition-all`}>
+                <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 mb-6 flex items-center gap-2">
+                    <CalendarRange size={16} className={isParsed ? "text-purple-400" : "text-blue-400"} />
+                    <T k="hub_project_timeline" />
+                    {isParsed && <span className="ml-2 px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 text-[10px] border border-purple-500/30">PREVIEW IA</span>}
+                </h3>
+
+                {/* Timeline header with months */}
+                <div className="relative min-w-[800px]">
+                    {/* Month markers dynamically based on min/max */}
+                    <div className="flex mb-4 ml-[220px]">
+                        {Array.from({ length: Math.ceil(totalSpan / (30*24*60*60*1000)) + 1 }, (_, i) => {
+                            const d = new Date(minDate + i * 30 * 24 * 60 * 60 * 1000);
+                            return (
+                                <div key={i} className="flex-1 text-center">
+                                    <span className="text-[9px] uppercase tracking-widest text-gray-500 font-bold">
+                                        {d.toLocaleString("fr", { month: "short" })}
+                                    </span>
+                                    <span className="text-[8px] text-gray-600 ml-1">{d.getFullYear().toString().slice(2)}</span>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* Today marker */}
+                    <div
+                        className="absolute top-0 bottom-0 w-0.5 bg-red-500/60 z-20"
+                        style={{ left: `calc(220px + ${todayPct}% * (100% - 220px) / 100)` }}
+                    >
+                        <div className="absolute -top-1 -left-3 px-1.5 py-0.5 rounded bg-red-500 text-[8px] font-black text-white uppercase tracking-wider whitespace-nowrap">
+                            Aujourd&apos;hui
+                        </div>
+                    </div>
+
+                    {/* Gantt bars */}
+                    <div className="flex flex-col gap-2">
+                        {activeMilestones.map((milestone, idx) => {
+                            const startNum = new Date(milestone.startDate).getTime();
+                            const endNum = new Date(milestone.endDate).getTime();
+                            
+                            // Safe math in case invalid dates
+                            const safeStart = isNaN(startNum) ? minDate : startNum;
+                            const safeEnd = isNaN(endNum) ? maxDate : endNum;
+
+                            const startPct = Math.max(0, Math.min(100, ((safeStart - minDate) / totalSpan) * 100));
+                            const widthPct = Math.max(1, Math.min(100, ((safeEnd - safeStart) / totalSpan) * 100));
+                            
+                            const c = colorClasses[milestone.color || "blue"] || colorClasses.blue;
+
+                            return (
+                                <div key={idx} className="flex items-center gap-4 group hover:bg-white/5 rounded-xl p-1.5 transition-colors">
+                                    {/* Label */}
+                                    <div className="w-[200px] flex-shrink-0">
+                                        <div className="text-xs font-bold text-gray-200 truncate">{milestone.name}</div>
+                                        <div className={`text-[9px] uppercase tracking-widest ${c.text} font-bold`}>{milestone.category}</div>
+                                    </div>
+                                    {/* Bar area */}
+                                    <div className="flex-1 relative h-8">
+                                        {/* Background track */}
+                                        <div
+                                            className={`absolute top-1 h-6 rounded-lg ${c.bg} border ${c.border} overflow-hidden transition-all`}
+                                            style={{ left: `${startPct}%`, width: `${widthPct}%` }}
+                                        >
+                                            {/* Progress fill */}
+                                            <div
+                                                className={`h-full ${c.bar} rounded-lg transition-all duration-700`}
+                                                style={{ width: `${Math.min(100, milestone.progress * 100)}%` }}
+                                            />
+                                            {/* Progress label */}
+                                            <div className="absolute inset-0 flex items-center justify-center">
+                                                <span className="text-[9px] font-black text-white/80 drop-shadow">
+                                                    {Math.round(milestone.progress * 100)}%
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {/* Status icon */}
+                                    <div className="w-6 flex-shrink-0 flex justify-center">
+                                        {milestone.progress >= 1 ? (
+                                            <div className="w-5 h-5 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center">
+                                                <ChevronRight size={10} className="text-emerald-400" />
+                                            </div>
+                                        ) : milestone.progress > 0 ? (
+                                            <div className="w-5 h-5 rounded-full bg-blue-500/20 border border-blue-500/40 flex items-center justify-center animate-pulse">
+                                                <div className="w-2 h-2 rounded-full bg-blue-400" />
+                                            </div>
+                                        ) : (
+                                            <div className="w-5 h-5 rounded-full bg-white/5 border border-white/10" />
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            </div>
+
+            {/* Info banner if no REAL data and not currently previewing */}
+            {!isShowingRealData && !isParsed && (
+                <div className="bg-purple-500/5 border border-purple-500/20 rounded-2xl p-4 text-center">
+                    <p className="text-xs text-purple-300 flex items-center justify-center gap-2">
+                        <CheckCircle size={14} className="text-purple-400" />
+                        <T k="hub_demo_data_notice" /> — Importez un PDF Gantt pour analyser avec l&apos;IA
+                    </p>
+                </div>
             )}
         </div>
     );
 }
+
