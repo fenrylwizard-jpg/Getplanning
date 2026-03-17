@@ -1,6 +1,16 @@
 import { GoogleGenAI } from '@google/genai';
 import { NextRequest, NextResponse } from 'next/server';
 
+const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+};
+
+export async function OPTIONS() {
+    return NextResponse.json({}, { headers: corsHeaders });
+}
+
 export async function POST(req: NextRequest) {
     try {
         if (!process.env.GEMINI_API_KEY) {
@@ -53,13 +63,13 @@ RÈGLES:
             return NextResponse.json({ error: 'Impossible de parser la réponse IA.' }, { status: 500 });
         }
 
-        return NextResponse.json(detail);
+        return NextResponse.json(detail, { headers: corsHeaders });
     } catch (error) {
         const errorMsg = error instanceof Error ? error.message : String(error);
         console.error('Gemini recipe-detail error:', errorMsg);
         return NextResponse.json(
             { error: `Erreur Gemini: ${errorMsg}` },
-            { status: 500 }
+            { status: 500, headers: corsHeaders }
         );
     }
 }

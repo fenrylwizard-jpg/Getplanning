@@ -97,11 +97,13 @@ export async function middleware(req: NextRequest) {
         return NextResponse.redirect(new URL('/login', req.url));
     }
 
-    if (pathname.startsWith('/pm') && role !== 'PM' && role !== 'ADMIN') {
+    // PM routes: allow PM, SM, and ADMIN (SM and ADMIN get read-only at component level)
+    if (pathname.startsWith('/pm') && role !== 'PM' && role !== 'SM' && role !== 'ADMIN') {
         return NextResponse.redirect(new URL('/login', req.url));
     }
 
-    if (pathname.startsWith('/sm') && role !== 'SM' && role !== 'ADMIN') {
+    // SM routes: allow SM, PM, and ADMIN (PM and ADMIN get read-only at component level)
+    if (pathname.startsWith('/sm') && role !== 'SM' && role !== 'PM' && role !== 'ADMIN') {
         return NextResponse.redirect(new URL('/login', req.url));
     }
 

@@ -79,7 +79,8 @@ export default function RecipeDetailModal({ recipe, onClose }: RecipeDetailModal
         setError('');
         setDetail(null);
 
-        fetch('/api/cooking/recipe-detail', {
+        const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://getplanning.org';
+        fetch(`${apiBase}/api/cooking/recipe-detail`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

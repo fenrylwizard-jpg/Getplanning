@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
     ShieldCheck, CheckCircle, XCircle, Clock, UserIcon, LogOut,
     TrendingUp, Euro, Activity, Folder, Target, RefreshCw, Globe, ListOrdered, Trash2, AlertTriangle
@@ -280,7 +281,7 @@ export default function AdminDashboard() {
                             <tbody>
                                 {stats.projects.map(p => (
                                     <tr key={p.id} className="border-b border-white/5 hover:bg-white/3 transition-colors">
-                                        <td className="py-3 pr-4 font-bold text-white">{p.name}</td>
+                                        <td className="py-3 pr-4 font-bold text-white"><Link href={`/pm/project/${p.id}`} className="hover:text-purple-400 transition-colors underline decoration-white/20 hover:decoration-purple-400">{p.name}</Link></td>
                                         <td className="py-3 pr-4 text-gray-400">{p.pm}</td>
                                         <td className="py-3 pr-4 text-gray-300">{p.budgetHours.toLocaleString()}h</td>
                                         <td className="py-3 pr-4 text-gray-300">{p.earnedHours.toLocaleString()}h</td>
@@ -377,8 +378,10 @@ export default function AdminDashboard() {
                                                 <AvatarDisplay characterId={user.characterId || 1} level={user.level || 1} size={64} showLevel={false} />
                                             </td>
                                             <td className="py-3 pr-4">
-                                                <div className="font-bold text-lg text-white mb-1 group-hover:text-purple-300 transition-colors drop-shadow-sm">{user.name || '—'}</div>
-                                                <div className="text-xs text-gray-500 font-mono bg-black/20 px-2 py-1 rounded inline-block">{user.email}</div>
+                                                <Link href={`/user/${user.id}`} className="block hover:opacity-80 transition-opacity">
+                                                    <div className="font-bold text-lg text-white mb-1 group-hover:text-purple-300 transition-colors drop-shadow-sm">{user.name || '—'}</div>
+                                                    <div className="text-xs text-gray-500 font-mono bg-black/20 px-2 py-1 rounded inline-block">{user.email}</div>
+                                                </Link>
                                             </td>
                                             <td className="py-3 pr-4">
                                                 <span className={`text-xs px-3 py-1 rounded-full font-bold shadow-sm ${user.role === 'PM' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'}`}>

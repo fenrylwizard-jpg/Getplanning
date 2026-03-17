@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { ArrowLeft, FolderKey, MapPin, Users } from "lucide-react";
+import { ArrowLeft, FolderKey, MapPin, Users, UploadCloud } from "lucide-react";
 import { Suspense } from "react";
 import T from "@/components/T";
 import ProjectHubTabs from "@/components/ProjectHubTabs";
@@ -22,6 +22,7 @@ export default async function ProjectHub({ params, searchParams }: { params: Pro
     const project = await prisma.project.findUnique({
         where: { id },
         include: {
+            projectManager: true,
             siteManager: true,
             tasks: true,
             weeklyPlans: {
@@ -59,16 +60,23 @@ export default async function ProjectHub({ params, searchParams }: { params: Pro
                                 {project.name}
                             </h1>
                             <div className="flex flex-wrap items-center gap-4 mt-3">
-                                <span className="flex items-center gap-2 text-sm text-gray-400">
-                                    <Users size={14} className="text-purple-400" />
-                                    <T k="site_manager" />: <span className="text-purple-300 font-bold">{project.siteManager?.name || <T k="unassigned" />}</span>
+                                <span className="flex items-center gap-2 text-sm px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20">
+                                    <Users size={14} className="text-amber-400" />
+                                    <span className="text-gray-400">PM:</span> <span className="text-amber-300 font-bold">{project.projectManager?.name || '—'}</span>
+                                </span>
+                                <span className="flex items-center gap-2 text-sm px-3 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20">
+                                    <Users size={14} className="text-cyan-400" />
+                                    <span className="text-gray-400">SM:</span> <span className="text-cyan-300 font-bold">{project.siteManager?.name || <T k="unassigned" />}</span>
                                 </span>
                                 <span className="flex items-center gap-2 text-sm text-gray-400">
-                                    <MapPin size={14} className="text-cyan-400" />
-                                    <T k="location" />: <span className="text-white font-medium">{project.location || 'N/A'}</span>
+                                    <MapPin size={14} className="text-gray-500" />
+                                    {project.location || 'N/A'}
                                 </span>
                             </div>
                         </div>
+                        <Link href={`/pm/project/${id}/reupload`} className="flex items-center gap-2 px-6 py-3 rounded-xl bg-blue-500/10 border border-blue-500/30 text-blue-400 font-bold text-sm hover:bg-blue-500/20 transition-all">
+                            <UploadCloud size={18} /> Mettre à jour
+                        </Link>
                     </div>
                 </div>
             </div>

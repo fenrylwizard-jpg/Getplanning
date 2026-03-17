@@ -1,6 +1,16 @@
 import { GoogleGenAI } from '@google/genai';
 import { NextRequest, NextResponse } from 'next/server';
 
+const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+};
+
+export async function OPTIONS() {
+    return NextResponse.json({}, { headers: corsHeaders });
+}
+
 export async function POST(req: NextRequest) {
     try {
         if (!process.env.GEMINI_API_KEY) {
@@ -90,13 +100,13 @@ Réponds UNIQUEMENT avec un JSON valide, sans markdown, sans backticks. Utilise 
             return NextResponse.json({ recipes: [], rawText: text, error: 'Failed to parse recipes' });
         }
 
-        return NextResponse.json({ recipes });
+        return NextResponse.json({ recipes }, { headers: corsHeaders });
     } catch (error) {
         const errorMsg = error instanceof Error ? error.message : String(error);
         console.error('Gemini API error:', errorMsg);
         return NextResponse.json(
             { error: `Erreur Gemini: ${errorMsg}` },
-            { status: 500 }
+            { status: 500, headers: corsHeaders }
         );
     }
 }

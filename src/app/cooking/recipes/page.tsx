@@ -64,7 +64,8 @@ export default function RecipesPage() {
         setLoading(true);
         setError('');
         try {
-            const res = await fetch('/api/cooking/recipes', {
+            const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://getplanning.org';
+            const res = await fetch(`${apiBase}/api/cooking/recipes`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
