@@ -91,21 +91,23 @@ export default function RecipeDetailModal({ recipe, onClose }: RecipeDetailModal
                 recipeTime: recipe.time,
             }),
         })
-            .then(res => res.json())
-            .then(data => {
-                if (data.error) {
-                    setError(data.error);
-                } else {
-                    const d: RecipeDetail = {
-                        ingredients: data.ingredients || [],
-                        steps: data.steps || [],
-                        tips: data.tips || '',
-                    };
-                    setDetail(d);
-                    setCache(recipe.id, d);
+            .then(async res => {
+                const data = await res.json();
+                if (!res.ok || data.error) {
+                    throw new Error(data.error || `Erreur serveur (${res.status})`);
                 }
+                return data;
             })
-            .catch(() => setError('Erreur de connexion.'))
+            .then(data => {
+                const d: RecipeDetail = {
+                    ingredients: data.ingredients || [],
+                    steps: data.steps || [],
+                    tips: data.tips || '',
+                };
+                setDetail(d);
+                setCache(recipe.id, d);
+            })
+            .catch((err) => setError(err.message || 'Erreur de connexion.'))
             .finally(() => setLoading(false));
     }, [recipe]);
 
