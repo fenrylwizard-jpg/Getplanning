@@ -6,11 +6,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 const CHARACTERS = [
-    { id: 1, name: "Maçon", role: "mason", color: "from-amber-500 to-orange-600", border: "border-amber-500", shadow: "shadow-amber-500/40" },
+    { id: 1, name: "PM", role: "pm", color: "from-amber-500 to-orange-600", border: "border-amber-500", shadow: "shadow-amber-500/40" },
     { id: 2, name: "Électricien", role: "electrician", color: "from-cyan-400 to-blue-600", border: "border-cyan-500", shadow: "shadow-cyan-500/40" },
-    { id: 3, name: "Menuisier", role: "carpenter", color: "from-emerald-400 to-green-600", border: "border-emerald-500", shadow: "shadow-emerald-500/40" },
+    { id: 3, name: "Chauffagiste", role: "heater", color: "from-red-400 to-orange-600", border: "border-red-500", shadow: "shadow-red-500/40" },
     { id: 4, name: "Plombier", role: "plumber", color: "from-indigo-400 to-violet-600", border: "border-violet-500", shadow: "shadow-violet-500/40" },
-    { id: 5, name: "Contremaître", role: "foreman", color: "from-rose-400 to-red-600", border: "border-rose-500", shadow: "shadow-rose-500/40" },
+    { id: 5, name: "Gainiste", role: "ductwork", color: "from-teal-400 to-cyan-600", border: "border-teal-500", shadow: "shadow-teal-500/40" },
 ];
 
 export default function RegisterPage() {

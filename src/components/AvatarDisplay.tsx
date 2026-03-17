@@ -4,7 +4,7 @@ import React from "react";
 import Image from "next/image";
 
 interface AvatarDisplayProps {
-    characterId: number; // 1: Mason, 2: Electrician, 3: Carpenter, 4: Plumber, 5: Foreman
+    characterId: number; // 1: PM, 2: Electrician, 3: Heater (Chauffagiste), 4: Plumber, 5: Ductwork (Gainiste)
     level: number;
     size?: number;
     className?: string;
@@ -12,11 +12,11 @@ interface AvatarDisplayProps {
 }
 
 const ROLE_MAP: Record<number, string> = {
-    1: "mason",
+    1: "pm",
     2: "electrician",
-    3: "carpenter",
+    3: "heater",
     4: "plumber",
-    5: "foreman"
+    5: "ductwork"
 };
 
 export default function AvatarDisplay({ characterId, level, size = 120, className = "", showLevel = true }: AvatarDisplayProps) {
@@ -28,7 +28,7 @@ export default function AvatarDisplay({ characterId, level, size = 120, classNam
     else if (level >= 20) tier = 2;
     else if (level >= 10) tier = 1;
 
-    const role = ROLE_MAP[characterId] || "mason";
+    const role = ROLE_MAP[characterId] || "pm";
     const imageUrl = `/characters/${role}_t${tier}.png`;
 
     return (
