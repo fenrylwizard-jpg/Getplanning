@@ -4,6 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { useCookingAuth, SymptomEntry } from '../CookingAuthContext';
 import Link from 'next/link';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { staticRecipes } from '../data/recipesData';
 
 const symptomOptions = [
     { name: 'Ballonnements', emoji: '🫧' },
@@ -37,6 +38,11 @@ export default function JournalPage() {
     const [newSymptoms, setNewSymptoms] = useState<{ name: string; severity: 1 | 2 | 3 | 4 | 5; emoji: string }[]>([]);
     const [newFeeling, setNewFeeling] = useState<1 | 2 | 3 | 4 | 5>(3);
     const [newNotes, setNewNotes] = useState('');
+
+    // Recipe picker state
+    const [showRecipePicker, setShowRecipePicker] = useState(false);
+    const [recipeSearch, setRecipeSearch] = useState('');
+    const [selectedPortion, setSelectedPortion] = useState(1);
 
     const log = user?.symptomLog || EMPTY_LOG;
 
@@ -93,6 +99,24 @@ export default function JournalPage() {
             };
         });
     }, [log, activeTab]);
+
+    // Recipe search results
+    const recipeResults = useMemo(() => {
+        if (!recipeSearch.trim()) return [];
+        const q = recipeSearch.toLowerCase();
+        return staticRecipes
+            .filter(r => r.name.toLowerCase().includes(q) || r.tags.some(t => t.toLowerCase().includes(q)))
+            .slice(0, 8);
+    }, [recipeSearch]);
+
+    const addRecipeAsFood = (recipe: typeof staticRecipes[0]) => {
+        const adjustedKcal = Math.round(recipe.kcal * selectedPortion);
+        const portionLabel = selectedPortion !== 1 ? ` (${selectedPortion}×)` : '';
+        setNewFoods([...newFoods, { name: `${recipe.name}${portionLabel}`, kcal: adjustedKcal }]);
+        setShowRecipePicker(false);
+        setRecipeSearch('');
+        setSelectedPortion(1);
+    };
 
     // Analytics
     const analytics = useMemo(() => {
@@ -441,7 +465,120 @@ export default function JournalPage() {
                             <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ck-text-muted)', marginBottom: '0.5rem' }}>
                                 Aliments & Calories
                             </label>
-                            
+
+                            {/* Recipe picker toggle */}
+                            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                                <button
+                                    className="ck-tag"
+                                    title="Ajouter depuis les recettes"
+                                    onClick={() => { setShowRecipePicker(!showRecipePicker); setRecipeSearch(''); }}
+                                    style={showRecipePicker
+                                        ? { background: 'linear-gradient(135deg, var(--ck-lavender), var(--ck-plum))', color: 'white', borderColor: 'transparent', fontSize: '0.85rem', padding: '0.4rem 0.85rem' }
+                                        : { background: 'rgba(255,255,255,0.5)', color: 'var(--ck-text-soft)', borderColor: 'rgba(0,0,0,0.06)', fontSize: '0.85rem', padding: '0.4rem 0.85rem' }
+                                    }
+                                >
+                                    📖 Ajouter une recette
+                                </button>
+                                <button
+                                    className="ck-tag"
+                                    title="Saisie manuelle"
+                                    onClick={() => setShowRecipePicker(false)}
+                                    style={!showRecipePicker
+                                        ? { background: 'var(--ck-orange)', color: 'white', borderColor: 'transparent', fontSize: '0.85rem', padding: '0.4rem 0.85rem' }
+                                        : { background: 'rgba(255,255,255,0.5)', color: 'var(--ck-text-soft)', borderColor: 'rgba(0,0,0,0.06)', fontSize: '0.85rem', padding: '0.4rem 0.85rem' }
+                                    }
+                                >
+                                    ✏️ Saisie manuelle
+                                </button>
+                            </div>
+
+                            {/* Recipe Picker */}
+                            {showRecipePicker && (
+                                <div style={{ marginBottom: '0.75rem' }}>
+                                    <input
+                                        className="ck-input"
+                                        placeholder="🔍 Chercher une recette (ex: poulet, salade, risotto…)"
+                                        value={recipeSearch}
+                                        onChange={e => setRecipeSearch(e.target.value)}
+                                        style={{ marginBottom: '0.5rem' }}
+                                        autoFocus
+                                    />
+
+                                    {/* Portion selector */}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                                        <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--ck-text-muted)', textTransform: 'uppercase', letterSpacing: '0.03em' }}>Portion:</span>
+                                        {[0.5, 1, 1.5, 2, 3].map(p => (
+                                            <button
+                                                key={p}
+                                                className="ck-tag"
+                                                title={`${p}× portion`}
+                                                onClick={() => setSelectedPortion(p)}
+                                                style={selectedPortion === p
+                                                    ? { background: 'var(--ck-orange)', color: 'white', borderColor: 'transparent', fontWeight: 800, minWidth: '42px' }
+                                                    : { background: 'rgba(255,255,255,0.5)', color: 'var(--ck-text-soft)', borderColor: 'rgba(0,0,0,0.06)', fontWeight: 600, minWidth: '42px' }
+                                                }
+                                            >
+                                                {p}×
+                                            </button>
+                                        ))}
+                                    </div>
+
+                                    {/* Recipe search results */}
+                                    {recipeResults.length > 0 && (
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', background: 'rgba(0,0,0,0.02)', padding: '0.5rem', borderRadius: '0.75rem', maxHeight: '280px', overflow: 'auto' }}>
+                                            {recipeResults.map(recipe => (
+                                                <button
+                                                    key={recipe.id}
+                                                    onClick={() => addRecipeAsFood(recipe)}
+                                                    style={{
+                                                        display: 'flex', alignItems: 'center', gap: '0.75rem',
+                                                        padding: '0.65rem 0.75rem', borderRadius: '0.75rem',
+                                                        border: '1px solid rgba(0,0,0,0.04)', background: 'white',
+                                                        cursor: 'pointer', transition: 'all 0.15s ease',
+                                                        textAlign: 'left', width: '100%',
+                                                    }}
+                                                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(245,138,61,0.05)'; e.currentTarget.style.borderColor = 'var(--ck-orange)'; }}
+                                                    onMouseLeave={e => { e.currentTarget.style.background = 'white'; e.currentTarget.style.borderColor = 'rgba(0,0,0,0.04)'; }}
+                                                >
+                                                    <span style={{ fontSize: '1.5rem', width: '36px', textAlign: 'center' }}>{recipe.emoji}</span>
+                                                    <div style={{ flex: 1 }}>
+                                                        <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{recipe.name}</div>
+                                                        <div style={{ fontSize: '0.75rem', color: 'var(--ck-text-muted)', display: 'flex', gap: '0.5rem' }}>
+                                                            <span>⏱ {recipe.time}</span>
+                                                            <span>{recipe.category}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                                                        <div style={{ fontWeight: 800, color: 'var(--ck-orange)', fontSize: '0.95rem' }}>
+                                                            {Math.round(recipe.kcal * selectedPortion)} kcal
+                                                        </div>
+                                                        {selectedPortion !== 1 && (
+                                                            <div style={{ fontSize: '0.7rem', color: 'var(--ck-text-muted)' }}>
+                                                                {recipe.kcal} × {selectedPortion}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {recipeSearch.trim() && recipeResults.length === 0 && (
+                                        <p style={{ fontSize: '0.85rem', color: 'var(--ck-text-muted)', textAlign: 'center', padding: '1rem 0' }}>
+                                            Aucune recette trouvée pour &quot;{recipeSearch}&quot;
+                                        </p>
+                                    )}
+
+                                    {!recipeSearch.trim() && (
+                                        <p style={{ fontSize: '0.85rem', color: 'var(--ck-text-muted)', textAlign: 'center', padding: '0.75rem 0' }}>
+                                            Tapez pour rechercher parmi les 1000 recettes
+                                        </p>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Manual food entry (always visible when not in recipe mode) */}
+                            {!showRecipePicker && (
                             <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
                                 <input
                                     className="ck-input"
@@ -468,6 +605,7 @@ export default function JournalPage() {
                                     +
                                 </button>
                             </div>
+                            )}
 
                             {/* List of added foods */}
                             {newFoods.length > 0 && (

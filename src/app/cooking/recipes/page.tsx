@@ -3,7 +3,8 @@
 import React, { useState } from 'react';
 import { useCookingAuth } from '../CookingAuthContext';
 import Link from 'next/link';
-import { staticRecipes, recipeCategories } from '../data/recipesData';
+import { staticRecipes, recipeCategories, StaticRecipe } from '../data/recipesData';
+import RecipeDetailModal from '../components/RecipeDetailModal';
 
 interface AIRecipe {
     name: string;
@@ -26,6 +27,7 @@ export default function RecipesPage() {
     const [error, setError] = useState('');
     const [expandedRecipe, setExpandedRecipe] = useState<number | null>(null);
     const [showAI, setShowAI] = useState(false);
+    const [selectedStaticRecipe, setSelectedStaticRecipe] = useState<StaticRecipe | null>(null);
 
     // Classic recipe filters
     const [searchQuery, setSearchQuery] = useState('');
@@ -174,7 +176,14 @@ export default function RecipesPage() {
 
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.25rem' }}>
                             {filteredRecipes.map((recipe, i) => (
-                                <div key={recipe.id} className="ck-recipe-card ck-fade-up" style={{ animationDelay: `${(i % 12) * 0.04}s` }}>
+                                <div
+                                    key={recipe.id}
+                                    className="ck-recipe-card ck-fade-up"
+                                    style={{ animationDelay: `${(i % 12) * 0.04}s`, cursor: 'pointer', transition: 'transform 0.2s ease, box-shadow 0.2s ease' }}
+                                    onClick={() => setSelectedStaticRecipe(recipe)}
+                                    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(0,0,0,0.1)'; }}
+                                    onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = ''; }}
+                                >
                                     <div className="ck-recipe-img" style={{
                                         background: `linear-gradient(135deg, ${['#FFE5E5', '#E8F5E9', '#EDE7F6', '#FFF3E0', '#FCE4EC', '#E1F5FE', '#FFF8E1', '#F3E5F5'][i % 8]}, ${['#FFDADA', '#D5ECD6', '#E0D4F5', '#FFE8CC', '#F9D0E0', '#D0ECFA', '#FFECB3', '#E1BEE7'][i % 8]})`,
                                     }}>
@@ -488,6 +497,12 @@ export default function RecipesPage() {
                     </div>
                 )}
             </div>
+
+            {/* Recipe Detail Modal */}
+            <RecipeDetailModal
+                recipe={selectedStaticRecipe}
+                onClose={() => setSelectedStaticRecipe(null)}
+            />
         </>
     );
 }
