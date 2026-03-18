@@ -85,55 +85,69 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
  */
 async function categorizeTasks(tasks: ExtractedTask[], trade: string, apiKey: string) {
     const ai = new GoogleGenAI({ apiKey });
+    const BATCH_SIZE = 80;
+    const TIMEOUT_MS = 180_000; // 3 minutes total
 
-    // Send a compact summary to Gemini — just the task list, not the whole PDF
-    const taskSummary = tasks.map((t, i) => 
-        `${i}|${t.wbs}|${t.name}|${t.duration}|${t.startDate}|${t.endDate}|${t.lot || ''}`
-    ).join('\n');
+    // Split tasks into batches
+    const batches: ExtractedTask[][] = [];
+    for (let i = 0; i < tasks.length; i += BATCH_SIZE) {
+        batches.push(tasks.slice(i, i + BATCH_SIZE));
+    }
+    console.log(`Splitting ${tasks.length} tasks into ${batches.length} batches of ~${BATCH_SIZE}`);
 
-    const prompt = `Tu es un expert en gestion de chantiers de construction.
-Voici une liste de tâches extraites d'un planning de chantier. Format: index|WBS|Tâche|Durée|Début|Fin|Lot
-
-${taskSummary}
-
-L'utilisateur est spécialiste en: ${trade.toUpperCase()}.
-
-Pour CHAQUE tâche (par index), retourne un objet JSON avec:
-- "i": l'index de la tâche
-- "category": la catégorie logique parmi: "Installation Chantier", "Gros Œuvre", "Stabilité", "Enveloppe", "Second Œuvre", "Techniques Spéciales", "HVAC", "Plomberie", "Électricité", "Ascenseurs", "Parachèvements", "Finitions", "Abords", "Réception", "Général", "Congés"
-- "isUserTrade": true si cette tâche concerne directement le métier "${trade}", false sinon
-
-Réponds UNIQUEMENT avec le tableau JSON. Pas de markdown, pas de backticks.`;
-
-    // Timeout wrapper: abort if Gemini doesn't respond in 30 seconds
-    const TIMEOUT_MS = 30_000;
-    const timeoutPromise = new Promise<never>((_, reject) => 
+    // Process all batches in parallel with a global timeout
+    const timeoutPromise = new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error(`Gemini API timeout after ${TIMEOUT_MS / 1000}s`)), TIMEOUT_MS)
     );
 
-    const response = await Promise.race([
-        ai.models.generateContent({
-            model: 'gemini-3.1-pro-preview',
-            contents: [{ text: prompt }],
-            config: { responseMimeType: "application/json" }
-        }),
-        timeoutPromise
-    ]);
+    const batchPromises = batches.map(async (batch, batchIdx) => {
+        const offset = batchIdx * BATCH_SIZE;
+        // Compact input: just index|name|lot
+        const lines = batch.map((t, i) =>
+            `${offset + i}|${t.name}|${t.lot || ''}`
+        ).join('\n');
 
-    let jsonString = response.text || "[]";
-    jsonString = jsonString.replace(/```json/g, "").replace(/```/g, "").trim();
-    
-    let categories: Array<{ i: number; category: string; isUserTrade: boolean }>;
+        const prompt = `Catégorise ces tâches de chantier. Métier utilisateur: ${trade.toUpperCase()}.
+
+${lines}
+
+Réponds en JSON: tableau de [index,catégorie,isUserTrade]. Catégories: "Installation Chantier","Gros Œuvre","Enveloppe","HVAC","Plomberie","Électricité","Parachèvements","Finitions","Abords","Réception","Général","Congés". isUserTrade=true si la tâche concerne le métier ${trade}. JSON uniquement.`;
+
+        try {
+            const response = await ai.models.generateContent({
+                model: 'gemini-3.1-flash-preview',
+                contents: [{ text: prompt }],
+                config: { responseMimeType: "application/json" }
+            });
+
+            let json = response.text || "[]";
+            json = json.replace(/```json/g, "").replace(/```/g, "").trim();
+            const parsed: Array<[number, string, boolean]> = JSON.parse(json);
+            console.log(`Batch ${batchIdx + 1}/${batches.length}: ${parsed.length} tasks categorized`);
+            return parsed;
+        } catch (batchErr) {
+            console.warn(`Batch ${batchIdx + 1} failed:`, batchErr instanceof Error ? batchErr.message : batchErr);
+            // Return empty so other batches can still succeed
+            return [] as Array<[number, string, boolean]>;
+        }
+    });
+
+    let allCategories: Array<[number, string, boolean]>;
     try {
-        categories = JSON.parse(jsonString);
-    } catch {
-        console.warn("AI returned invalid JSON, using fallback categorization");
+        const results = await Promise.race([
+            Promise.all(batchPromises),
+            timeoutPromise
+        ]);
+        allCategories = results.flat();
+        console.log(`AI categorization complete: ${allCategories.length}/${tasks.length} tasks categorized`);
+    } catch (timeoutErr) {
+        console.warn("Global timeout, using fallback:", timeoutErr instanceof Error ? timeoutErr.message : timeoutErr);
         return fallbackCategorize(tasks, trade);
     }
 
-    // Merge AI categories with extracted data
-    const categoryMap = new Map(categories.map(c => [c.i, c]));
-    
+    // Build lookup from AI results
+    const categoryMap = new Map(allCategories.map(([i, cat, isTrade]) => [i, { category: cat, isUserTrade: isTrade }]));
+
     return tasks.map((task, idx) => {
         const cat = categoryMap.get(idx);
         return {
