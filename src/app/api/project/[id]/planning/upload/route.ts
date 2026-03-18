@@ -105,11 +105,20 @@ Pour CHAQUE tâche (par index), retourne un objet JSON avec:
 
 Réponds UNIQUEMENT avec le tableau JSON. Pas de markdown, pas de backticks.`;
 
-    const response = await ai.models.generateContent({
-        model: 'gemini-2.0-flash',
-        contents: [{ text: prompt }],
-        config: { responseMimeType: "application/json" }
-    });
+    // Timeout wrapper: abort if Gemini doesn't respond in 30 seconds
+    const TIMEOUT_MS = 30_000;
+    const timeoutPromise = new Promise<never>((_, reject) => 
+        setTimeout(() => reject(new Error(`Gemini API timeout after ${TIMEOUT_MS / 1000}s`)), TIMEOUT_MS)
+    );
+
+    const response = await Promise.race([
+        ai.models.generateContent({
+            model: 'gemini-2.0-flash',
+            contents: [{ text: prompt }],
+            config: { responseMimeType: "application/json" }
+        }),
+        timeoutPromise
+    ]);
 
     let jsonString = response.text || "[]";
     jsonString = jsonString.replace(/```json/g, "").replace(/```/g, "").trim();

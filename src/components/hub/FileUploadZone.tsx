@@ -105,7 +105,11 @@ export default function FileUploadZone({
             } else {
                 setState("success");
                 setSuccessMessage(`${count} enregistrement${count > 1 ? 's' : ''} importé${count > 1 ? 's' : ''} avec succès`);
-                onUploadComplete?.(data);
+                try {
+                    onUploadComplete?.(data);
+                } catch (callbackErr) {
+                    console.error("Error in onUploadComplete callback:", callbackErr);
+                }
                 setTimeout(() => { setState("idle"); setProgress(0); setSuccessMessage(""); }, 5000);
             }
         } catch (err) {
