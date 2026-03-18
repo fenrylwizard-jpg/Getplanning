@@ -130,8 +130,8 @@ export default function OverviewTab({ project }: OverviewTabProps) {
                             </div>
                             <div className="card-action" style={{ color: "#22d3ee" }}>Accéder <span className="arrow">→</span></div>
                         </div>
-                        <div className="icon-glass icon-glass-lg" style={{ boxShadow: "0 0 40px rgba(6,182,212,0.1), 0 8px 32px rgba(0,0,0,0.4)" }}>
-                            <Image src="/hub-icons/production.png" alt="Production" width={200} height={200} style={{ objectFit: "contain", width: "100%", height: "100%" }} />
+                        <div className="icon-glass icon-glass-lg">
+                            <Image src="/hub-icons/production.png?v=2" alt="Production" width={200} height={200} style={{ objectFit: "contain", width: "100%", height: "100%" }} />
                         </div>
                     </div>
                 </div>
@@ -139,8 +139,8 @@ export default function OverviewTab({ project }: OverviewTabProps) {
                 {/* PLANNING — tall card */}
                 <div className="bento-card card-planning" onClick={() => navigateTo("planning")} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter") navigateTo("planning"); }}>
                     <div className="card-glow" style={{ background: "radial-gradient(ellipse at 50% 20%, rgba(139,92,246,0.15), transparent 70%)" }} />
-                    <div className="icon-glass icon-glass-center" style={{ boxShadow: "0 0 40px rgba(139,92,246,0.12), 0 8px 32px rgba(0,0,0,0.4)" }}>
-                        <Image src="/hub-icons/planning.png" alt="Planning" width={180} height={180} style={{ objectFit: "contain", width: "100%", height: "100%" }} />
+                    <div className="icon-glass icon-glass-center">
+                        <Image src="/hub-icons/planning.png?v=2" alt="Planning" width={180} height={180} style={{ objectFit: "contain", width: "100%", height: "100%" }} />
                     </div>
                     <h3 className="card-title" style={{ color: "#a78bfa", textAlign: "center" }}>Planning</h3>
                     <p className="card-sub" style={{ textAlign: "center" }}>Prochaines échéances</p>
@@ -163,8 +163,8 @@ export default function OverviewTab({ project }: OverviewTabProps) {
                 {/* FINANCES */}
                 <div className="bento-card card-finances" onClick={() => navigateTo("finances")} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter") navigateTo("finances"); }}>
                     <div className="card-glow" style={{ background: "radial-gradient(ellipse at 50% 30%, rgba(16,185,129,0.12), transparent 70%)" }} />
-                    <div className="icon-glass icon-glass-center" style={{ boxShadow: "0 0 40px rgba(16,185,129,0.1), 0 8px 32px rgba(0,0,0,0.4)" }}>
-                        <Image src="/hub-icons/finances.png" alt="Finances" width={160} height={160} style={{ objectFit: "contain", width: "100%", height: "100%" }} />
+                    <div className="icon-glass icon-glass-center">
+                        <Image src="/hub-icons/finances.png?v=2" alt="Finances" width={160} height={160} style={{ objectFit: "contain", width: "100%", height: "100%" }} />
                     </div>
                     <h3 className="card-title" style={{ color: "#34d399", textAlign: "center" }}>Finances</h3>
                     {fin ? (
@@ -185,8 +185,8 @@ export default function OverviewTab({ project }: OverviewTabProps) {
                 {/* ÉTUDES */}
                 <div className="bento-card card-etudes" onClick={() => navigateTo("technique")} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter") navigateTo("technique"); }}>
                     <div className="card-glow" style={{ background: "radial-gradient(ellipse at 50% 30%, rgba(236,72,153,0.12), transparent 70%)" }} />
-                    <div className="icon-glass icon-glass-center" style={{ boxShadow: "0 0 40px rgba(236,72,153,0.1), 0 8px 32px rgba(0,0,0,0.4)" }}>
-                        <Image src="/hub-icons/technical.png" alt="Études" width={160} height={160} style={{ objectFit: "contain", width: "100%", height: "100%" }} />
+                    <div className="icon-glass icon-glass-center">
+                        <Image src="/hub-icons/technical.png?v=2" alt="Études" width={160} height={160} style={{ objectFit: "contain", width: "100%", height: "100%" }} />
                     </div>
                     <h3 className="card-title" style={{ color: "#f472b6", textAlign: "center" }}>Études</h3>
                     {etu && etu.totalDocs > 0 ? (
@@ -204,8 +204,8 @@ export default function OverviewTab({ project }: OverviewTabProps) {
                 {/* ACHATS */}
                 <div className="bento-card card-achats" onClick={() => navigateTo("achats")} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter") navigateTo("achats"); }}>
                     <div className="card-glow" style={{ background: "radial-gradient(ellipse at 50% 30%, rgba(245,158,11,0.12), transparent 70%)" }} />
-                    <div className="icon-glass icon-glass-center" style={{ boxShadow: "0 0 40px rgba(245,158,11,0.1), 0 8px 32px rgba(0,0,0,0.4)" }}>
-                        <Image src="/hub-icons/purchases.png" alt="Achats" width={160} height={160} style={{ objectFit: "contain", width: "100%", height: "100%" }} />
+                    <div className="icon-glass icon-glass-center">
+                        <Image src="/hub-icons/purchases.png?v=2" alt="Achats" width={160} height={160} style={{ objectFit: "contain", width: "100%", height: "100%" }} />
                     </div>
                     <h3 className="card-title" style={{ color: "#fbbf24", textAlign: "center" }}>Achats</h3>
                     {ach && ach.totalBudget > 0 ? (
@@ -328,8 +328,8 @@ const BENTO_CSS = `
 
 /* ── Icon Glass Container ── */
 .icon-glass {
-    border-radius: 20px;
-    background: radial-gradient(ellipse at center, rgba(30,30,50,0.9), rgba(5,5,15,0.95));
+    border-radius: 18px;
+    background: #000000;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -344,10 +344,23 @@ const BENTO_CSS = `
     position: absolute;
     top: 0; left: 0; right: 0;
     height: 40%;
-    background: linear-gradient(180deg, rgba(255,255,255,0.06), transparent);
-    border-radius: 20px 20px 0 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.05), transparent);
+    border-radius: 18px 18px 0 0;
     pointer-events: none;
 }
+/* Colored glow per card */
+.card-production .icon-glass { box-shadow: 0 0 40px rgba(6,182,212,0.2), 0 8px 32px rgba(0,0,0,0.5); }
+.card-planning .icon-glass { box-shadow: 0 0 40px rgba(139,92,246,0.2), 0 8px 32px rgba(0,0,0,0.5); }
+.card-finances .icon-glass { box-shadow: 0 0 40px rgba(16,185,129,0.2), 0 8px 32px rgba(0,0,0,0.5); }
+.card-etudes .icon-glass { box-shadow: 0 0 40px rgba(236,72,153,0.2), 0 8px 32px rgba(0,0,0,0.5); }
+.card-achats .icon-glass { box-shadow: 0 0 40px rgba(245,158,11,0.2), 0 8px 32px rgba(0,0,0,0.5); }
+/* Hover intensify glow */
+.bento-card:hover .icon-glass { box-shadow: 0 0 60px rgba(255,255,255,0.08), 0 12px 40px rgba(0,0,0,0.6); }
+.card-production:hover .icon-glass { box-shadow: 0 0 60px rgba(6,182,212,0.35), 0 12px 40px rgba(0,0,0,0.6); }
+.card-planning:hover .icon-glass { box-shadow: 0 0 60px rgba(139,92,246,0.35), 0 12px 40px rgba(0,0,0,0.6); }
+.card-finances:hover .icon-glass { box-shadow: 0 0 60px rgba(16,185,129,0.35), 0 12px 40px rgba(0,0,0,0.6); }
+.card-etudes:hover .icon-glass { box-shadow: 0 0 60px rgba(236,72,153,0.35), 0 12px 40px rgba(0,0,0,0.6); }
+.card-achats:hover .icon-glass { box-shadow: 0 0 60px rgba(245,158,11,0.35), 0 12px 40px rgba(0,0,0,0.6); }
 .icon-glass-lg {
     width: 200px;
     height: 200px;
