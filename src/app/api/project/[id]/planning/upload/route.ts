@@ -113,7 +113,7 @@ Réponds UNIQUEMENT avec le tableau JSON. Pas de markdown, pas de backticks.`;
 
     const response = await Promise.race([
         ai.models.generateContent({
-            model: 'gemini-2.5-pro',
+            model: 'gemini-3.1-pro-preview',
             contents: [{ text: prompt }],
             config: { responseMimeType: "application/json" }
         }),
