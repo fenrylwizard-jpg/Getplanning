@@ -1,9 +1,0 @@
-{
-  "version": 1,
-  "functions": {
-    "/api/project/[id]/planning/upload": {
-      "maxDuration": 300
-    },
-    "/icon": {}
-  }
-}
