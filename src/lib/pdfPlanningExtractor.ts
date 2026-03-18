@@ -89,69 +89,69 @@ function detectColumns(pages: Array<{ content: Array<{ x: number; y: number; str
  */
 export async function extractPlanningFromPDF(buffer: Buffer): Promise<ExtractedTask[]> {
     const pdfExtract = new PDFExtract();
-    const data = await pdfExtract.extract(buffer as unknown as string, { 
-        // pdf.js-extract accepts Buffer through its internal handling
-    });
+    
+    // pdf.js-extract natively supports Buffer extraction
+    const data = await pdfExtract.extractBuffer(buffer, {});
 
     const columns = detectColumns(data.pages as unknown as Array<{ content: Array<{ x: number; y: number; str: string; width: number }> }>);
-    const allRows: Record<string, string>[] = [];
+        const allRows: Record<string, string>[] = [];
 
-    for (const page of data.pages) {
-        const items = page.content.filter((item: { str: string }) => item.str && item.str.trim());
-        
-        // Group by Y coordinate (tolerance 3px for same row)
-        const rowMap = new Map<number, Array<{ x: number; text: string }>>();
-        items.forEach((item: { x: number; y: number; str: string }) => {
-            const y = Math.round(item.y / 3) * 3;
-            if (!rowMap.has(y)) rowMap.set(y, []);
-            rowMap.get(y)!.push({ x: Math.round(item.x), text: item.str.trim() });
-        });
+        for (const page of data.pages) {
+            const items = page.content.filter((item: { str: string }) => item.str && item.str.trim());
+            
+            // Group by Y coordinate (tolerance 3px for same row)
+            const rowMap = new Map<number, Array<{ x: number; text: string }>>();
+            items.forEach((item: { x: number; y: number; str: string }) => {
+                const y = Math.round(item.y / 3) * 3;
+                if (!rowMap.has(y)) rowMap.set(y, []);
+                rowMap.get(y)!.push({ x: Math.round(item.x), text: item.str.trim() });
+            });
 
-        const sortedYs = Array.from(rowMap.keys()).sort((a, b) => a - b);
-        
-        for (const y of sortedYs) {
-            // Skip header area and footer
-            if (y < 78 || y > 815) continue;
+            const sortedYs = Array.from(rowMap.keys()).sort((a, b) => a - b);
             
-            const rowItems = rowMap.get(y)!.sort((a, b) => a.x - b.x);
-            
-            const row: Record<string, string> = {};
-            for (const item of rowItems) {
-                const col = getColumn(item.x, columns);
-                if (col) {
-                    row[col] = (row[col] ? row[col] + ' ' : '') + item.text;
+            for (const y of sortedYs) {
+                // Skip header area and footer
+                if (y < 78 || y > 815) continue;
+                
+                const rowItems = rowMap.get(y)!.sort((a, b) => a.x - b.x);
+                
+                const row: Record<string, string> = {};
+                for (const item of rowItems) {
+                    const col = getColumn(item.x, columns);
+                    if (col) {
+                        row[col] = (row[col] ? row[col] + ' ' : '') + item.text;
+                    }
+                }
+                
+                // Only keep rows that look like actual task data
+                if ((row.wbs || row.task) && (row.start || row.duration)) {
+                    allRows.push(row);
                 }
             }
-            
-            // Only keep rows that look like actual task data
-            if ((row.wbs || row.task) && (row.start || row.duration)) {
-                allRows.push(row);
+        }
+
+        // Merge multi-line task names
+        const merged: Record<string, string>[] = [];
+        for (const row of allRows) {
+            if (!row.wbs && !row.start && !row.end && !row.duration && row.task) {
+                if (merged.length > 0) {
+                    merged[merged.length - 1].task += ' ' + row.task;
+                }
+            } else {
+                merged.push({ ...row });
             }
         }
-    }
 
-    // Merge multi-line task names
-    const merged: Record<string, string>[] = [];
-    for (const row of allRows) {
-        if (!row.wbs && !row.start && !row.end && !row.duration && row.task) {
-            if (merged.length > 0) {
-                merged[merged.length - 1].task += ' ' + row.task;
-            }
-        } else {
-            merged.push({ ...row });
-        }
-    }
-
-    // Convert to structured output with parsed dates
-    return merged.map(row => ({
-        num: row.num,
-        wbs: row.wbs || '',
-        name: row.task || 'Sans nom',
-        zone: row.zone,
-        lot: row.lot,
-        duration: row.duration || '',
-        startDate: row.start ? parseFrenchDate(row.start) : '',
-        endDate: row.end ? parseFrenchDate(row.end) : '',
-        margin: row.margin,
-    }));
+        // Convert to structured output with parsed dates
+        return merged.map(row => ({
+            num: row.num,
+            wbs: row.wbs || '',
+            name: row.task || 'Sans nom',
+            zone: row.zone,
+            lot: row.lot,
+            duration: row.duration || '',
+            startDate: row.start ? parseFrenchDate(row.start) : '',
+            endDate: row.end ? parseFrenchDate(row.end) : '',
+            margin: row.margin,
+        }));
 }
