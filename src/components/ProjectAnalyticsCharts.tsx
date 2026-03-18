@@ -174,6 +174,61 @@ export default function ProjectAnalyticsCharts({ tasks, weeklyPlans }: { tasks: 
             .sort((a, b) => b.planned - a.planned);
     }, [weeklyPlans, tData]);
 
+    // 4. Prepare Burn Down Chart Data
+    const burnDownData = useMemo(() => {
+        let totalHrs = 0;
+        tasks.forEach(t => {
+            totalHrs += (t.quantity * t.minutesPerUnit) / 60;
+        });
+
+        const sortedPlans = [...weeklyPlans].sort((a, b) => {
+            if (a.year !== b.year) return a.year - b.year;
+            return a.weekNumber - b.weekNumber;
+        });
+
+        const numWeeks = sortedPlans.length > 0 ? sortedPlans.length : 1;
+        const idealDropPerWeek = totalHrs / numWeeks; 
+
+        const data = [];
+        data.push({
+            name: "Début",
+            "Idéal": Number(totalHrs.toFixed(1)),
+            "Reste Réel": Number(totalHrs.toFixed(1)),
+            "Reste Prévu": Number(totalHrs.toFixed(1))
+        });
+
+        let currentActual = totalHrs;
+        let currentPlanned = totalHrs;
+
+        sortedPlans.forEach((plan, i) => {
+            let plannedHrs = 0;
+            let executedHrs = 0;
+
+            plan.tasks.forEach((pt: any) => {
+                const minsPerUnit = pt.task?.minutesPerUnit || 0;
+                plannedHrs += (pt.plannedQuantity * minsPerUnit) / 60;
+                executedHrs += (pt.actualQuantity * minsPerUnit) / 60;
+            });
+
+            currentActual -= executedHrs;
+            currentPlanned -= plannedHrs;
+            
+            if (currentActual < 0) currentActual = 0;
+            if (currentPlanned < 0) currentPlanned = 0;
+
+            const ideal = totalHrs - (idealDropPerWeek * (i + 1));
+
+            data.push({
+                name: `S${plan.weekNumber}`,
+                "Idéal": Number(Math.max(0, ideal).toFixed(1)),
+                "Reste Réel": Number(currentActual.toFixed(1)),
+                "Reste Prévu": Number(currentPlanned.toFixed(1))
+            });
+        });
+
+        return data;
+    }, [tasks, weeklyPlans]);
+
     const getEfficiencyColor = (efficiency: number) => {
         if (efficiency < 70) return '#ef4444'; // Red
         if (efficiency < 90) return '#f59e0b'; // Amber
@@ -332,6 +387,27 @@ export default function ProjectAnalyticsCharts({ tasks, weeklyPlans }: { tasks: 
                                 ))}
                             </Bar>
                         </BarChart>
+                    </ResponsiveContainer>
+                </div>
+            </div>
+
+            {/* Burn Down Chart Row */}
+            <div className="col-span-2 glass-card neon-card-orange h-[400px] flex flex-col">
+                <h3 className="mb-4 flex items-center gap-2">Burn Down Chart <span className="text-xs text-gray-500 font-normal">(Heures restantes)</span></h3>
+                <div className="flex-1">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={burnDownData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                            <XAxis dataKey="name" stroke="var(--text-secondary)" tick={{fontSize: 12}} />
+                            <YAxis stroke="var(--text-secondary)" />
+                            <BarTooltip
+                                contentStyle={{ backgroundColor: 'var(--bg-tertiary)', border: 'none', borderRadius: 'var(--radius-md)' }}
+                                itemStyle={{ color: 'var(--text-primary)' }}
+                            />
+                            <Line type="monotone" dataKey="Idéal" stroke="#64748B" strokeWidth={2} strokeDasharray="5 5" dot={false} />
+                            <Line type="monotone" dataKey="Reste Prévu" stroke="#3B82F6" strokeWidth={2} />
+                            <Line type="monotone" dataKey="Reste Réel" stroke="#F59E0B" strokeWidth={3} activeDot={{ r: 6 }} />
+                        </LineChart>
                     </ResponsiveContainer>
                 </div>
             </div>

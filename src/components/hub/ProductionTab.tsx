@@ -3,6 +3,7 @@ import ProjectAnalyticsCharts from "@/components/ProjectAnalyticsCharts";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle2, ShieldAlert, Clock } from "lucide-react";
 import { HOURLY_RATE_EUR } from "@/lib/xp-engine";
+import WeeklyReportGenerator from "./WeeklyReportGenerator";
 
 interface ProductionTabProps {
     project: {
@@ -118,9 +119,12 @@ export default function ProductionTab({ project }: ProductionTabProps) {
 
             {/* Weekly Plans */}
             <div className="bg-[#080d1a]/80 border border-white/5 rounded-md p-6">
-                <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 mb-4">
-                    <T k="weekly_reports" /> ({project.weeklyPlans.length})
-                </h3>
+                <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 m-0">
+                        <T k="weekly_reports" /> ({project.weeklyPlans.length})
+                    </h3>
+                    {project.weeklyPlans.length > 0 && <WeeklyReportGenerator project={project} />}
+                </div>
 
                 {project.weeklyPlans.length === 0 ? (
                     <div className="text-center py-8 text-gray-500"><T k="no_weekly_reports" /></div>
