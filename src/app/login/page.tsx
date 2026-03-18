@@ -1,8 +1,12 @@
 "use client";
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Mail, KeyRound, BarChart3, Users, ClipboardCheck, Zap, Lock } from 'lucide-react';
+import { Mail, KeyRound, Activity, Users, ClipboardCheck, Zap, Lock, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import { Inter } from 'next/font/google';
+
+const inter = Inter({ subsets: ['latin'] });
 
 export default function LoginPage() {
     const router = useRouter();
@@ -10,6 +14,11 @@ export default function LoginPage() {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [errorMsg, setErrorMsg] = useState('');
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -26,7 +35,7 @@ export default function LoginPage() {
             const data = await res.json();
 
             if (!res.ok) {
-                setErrorMsg(data.error || 'Identifiants incorrects');
+                setErrorMsg(data.error || 'Identifiants incorrects. Veuillez réessayer.');
                 setLoading(false);
                 return;
             }
@@ -47,169 +56,194 @@ export default function LoginPage() {
         }
     };
 
+    if (!mounted) return null;
+
     return (
-        <div className="min-h-screen bg-[#050505] text-[#f8fafc] font-sans overflow-hidden relative selection:bg-[#2bbdee]/30">
-            {/* Embedded styles for specific effects from Stitch */}
+        <div className={`min-h-screen bg-[#030303] text-white overflow-hidden relative selection:bg-cyan-500/30 ${inter.className}`}>
+            
+            {/* ── STUNNING ANIMATIONS & STYLES ── */}
             <style dangerouslySetInnerHTML={{__html: `
-                .glow-cyan {
+                @keyframes float-1 {
+                    0%, 100% { transform: translate(0, 0) scale(1); }
+                    33% { transform: translate(30px, -50px) scale(1.1); }
+                    66% { transform: translate(-20px, 20px) scale(0.9); }
+                }
+                @keyframes float-2 {
+                    0%, 100% { transform: translate(0, 0) scale(1); }
+                    33% { transform: translate(-30px, 40px) scale(0.9); }
+                    66% { transform: translate(40px, -20px) scale(1.1); }
+                }
+                @keyframes grid-move {
+                    0% { transform: translateY(0); }
+                    100% { transform: translateY(50px); }
+                }
+                @keyframes fade-in-up {
+                    from { opacity: 0; transform: translateY(30px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                
+                .animate-glow-1 {
+                    animation: float-1 15s ease-in-out infinite;
+                    background: radial-gradient(circle, rgba(43, 189, 238, 0.25) 0%, rgba(43, 189, 238, 0) 60%);
+                }
+                .animate-glow-2 {
+                    animation: float-2 18s ease-in-out infinite;
+                    background: radial-gradient(circle, rgba(147, 51, 234, 0.2) 0%, rgba(147, 51, 234, 0) 60%);
+                }
+                
+                .perspective-grid {
                     position: absolute;
-                    width: 50vw;
-                    height: 50vw;
-                    max-width: 600px;
-                    max-height: 600px;
-                    background: radial-gradient(circle, rgba(43, 189, 238, 0.15) 0%, rgba(43, 189, 238, 0) 70%);
-                    filter: blur(60px);
+                    inset: 0;
+                    background-image: 
+                        linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+                    background-size: 50px 50px;
+                    transform: perspective(1000px) rotateX(60deg) scale(2);
+                    transform-origin: top;
+                    animation: grid-move 20s linear infinite;
+                    mask-image: linear-gradient(to bottom, transparent, black, transparent);
+                    -webkit-mask-image: linear-gradient(to bottom, transparent 10%, black 50%, transparent 90%);
                     z-index: 0;
                 }
-                .glow-purple {
-                    position: absolute;
-                    width: 60vw;
-                    height: 60vw;
-                    max-width: 700px;
-                    max-height: 700px;
-                    background: radial-gradient(circle, rgba(147, 51, 234, 0.1) 0%, rgba(147, 51, 234, 0) 70%);
-                    filter: blur(80px);
-                    z-index: 0;
+
+                .stagger-1 { animation: fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; animation-delay: 0.1s; }
+                .stagger-2 { animation: fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; animation-delay: 0.2s; }
+                .stagger-3 { animation: fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; animation-delay: 0.3s; }
+                .stagger-4 { animation: fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; animation-delay: 0.4s; }
+                .stagger-5 { animation: fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; animation-delay: 0.5s; }
+                .stagger-6 { animation: fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; animation-delay: 0.6s; }
+
+                .ultra-glass {
+                    background: rgba(15, 15, 20, 0.4);
+                    backdrop-filter: blur(40px);
+                    -webkit-backdrop-filter: blur(40px);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.1);
                 }
-                .glass-card {
-                    background: rgba(255, 255, 255, 0.03);
-                    backdrop-filter: blur(20px);
-                    -webkit-backdrop-filter: blur(20px);
-                    border: 1px solid rgba(255, 255, 255, 0.08);
-                    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-                }
-                .text-gradient {
-                    background: linear-gradient(135deg, #2bbdee 0%, #9333ea 100%);
+                
+                .text-gradient-cyan {
+                    background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
                     -webkit-background-clip: text;
                     -webkit-text-fill-color: transparent;
                 }
-                .btn-gradient {
-                    background: linear-gradient(135deg, #2bbdee 0%, #9333ea 100%);
-                    transition: all 0.3s ease;
+                
+                .text-gradient-purple {
+                    background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
                 }
-                .btn-gradient:hover:not(:disabled) {
-                    opacity: 0.9;
-                    transform: translateY(-2px);
-                    box-shadow: 0 10px 25px -5px rgba(43, 189, 238, 0.5);
+                
+                .btn-epic {
+                    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+                    background-size: 200% auto;
+                    transition: 0.5s;
                 }
-                .rounded-twelve {
-                    border-radius: 12px;
+                .btn-epic:hover:not(:disabled) {
+                    background-position: right center;
+                    box-shadow: 0 10px 30px -5px rgba(0, 242, 254, 0.5);
+                    transform: translateY(-2px) scale(1.02);
                 }
             `}} />
 
-            {/* Atmospheric Background Elements */}
-            <div className="glow-cyan -top-20 -left-20 pointer-events-none"></div>
-            <div className="glow-purple bottom-0 right-0 pointer-events-none"></div>
+            {/* Background Orbs & Grid */}
+            <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] animate-glow-1 rounded-full blur-[80px] opacity-70 pointer-events-none"></div>
+            <div className="absolute bottom-[-10%] right-[-10%] w-[60vw] h-[60vw] animate-glow-2 rounded-full blur-[100px] opacity-60 pointer-events-none"></div>
+            <div className="perspective-grid pointer-events-none"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-[#030303] via-transparent to-[#030303] pointer-events-none z-0"></div>
 
-            <main className="min-h-screen flex flex-col md:flex-row relative z-10">
-                {/* ── LEFT SIDE: PRESENTATION ── */}
-                <section className="flex-1 hidden md:flex flex-col justify-between p-12 lg:p-20 bg-[#0a0a0c]/40 relative border-r border-white/5">
+            <main className="relative z-10 min-h-screen flex flex-col xl:flex-row w-full max-w-[1800px] mx-auto p-4 sm:p-8 md:p-12 lg:p-16 gap-12 lg:gap-24 items-center justify-center">
+                
+                {/* ── LEFT SIDE: BRANDING INTRO ── */}
+                <section className="flex-1 w-full max-w-2xl xl:max-w-3xl flex flex-col justify-center stagger-1">
                     
-                    {/* Brand Logo */}
-                    <div>
-                        <h1 className="text-4xl lg:text-5xl font-extrabold tracking-tight">
-                            <span className="text-gradient drop-shadow-sm">Get</span>Planning
+                    {/* Logo Area */}
+                    <div className="mb-6 lg:mb-10 inline-flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#4facfe] to-[#00f2fe] flex items-center justify-center shadow-[0_0_20px_rgba(0,242,254,0.4)]">
+                            <Activity className="w-7 h-7 text-white" />
+                        </div>
+                        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white">
+                            Get<span className="text-gradient-cyan">Planning</span>
                         </h1>
                     </div>
 
-                    {/* Hero Content */}
-                    <div className="max-w-xl xl:max-w-2xl mt-8">
-                        <h2 className="text-4xl lg:text-5xl xl:text-6xl font-bold leading-[1.1] mb-8 text-white">
-                            Plateforme SaaS de gestion de projet de construction.
-                        </h2>
-                        <p className="text-xl xl:text-2xl text-slate-300 font-medium leading-relaxed mb-16">
-                            Planification, suivi terrain et analytics avancées pour les professionnels du bâtiment.
-                        </p>
+                    {/* Headline */}
+                    <h2 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold leading-[1.1] mb-8 text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-slate-400 stagger-2 drop-shadow-sm">
+                        L'art de bâtir,<br/> maîtrisé.
+                    </h2>
+                    
+                    <p className="text-lg sm:text-xl lg:text-2xl text-slate-300 font-medium leading-relaxed mb-12 stagger-3 max-w-xl">
+                        La plateforme SaaS absolue pour le management de projets de construction. Planification chirurgicale et tracking terrain en temps réel.
+                    </p>
 
-                        {/* Feature Rows */}
-                        <div className="space-y-8">
-                            <div className="flex items-center space-x-6 group">
-                                <div className="w-14 h-14 rounded-twelve bg-[#2bbdee]/10 flex items-center justify-center border border-[#2bbdee]/20 group-hover:scale-110 transition-transform duration-300 shadow-[0_0_15px_rgba(43,189,238,0.15)]">
-                                    <BarChart3 className="w-7 h-7 text-[#2bbdee]" />
+                    {/* Features List */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 stagger-4">
+                        {[
+                            { icon: Activity, title: "Analytics Avancées", color: "text-[#4facfe]", bg: "bg-[#4facfe]/10", border: "border-[#4facfe]/20" },
+                            { icon: Users, title: "Gestion d'Équipe", color: "text-[#a18cd1]", bg: "bg-[#a18cd1]/10", border: "border-[#a18cd1]/20" },
+                            { icon: ClipboardCheck, title: "Suivi Terrain", color: "text-[#4facfe]", bg: "bg-[#4facfe]/10", border: "border-[#4facfe]/20" },
+                            { icon: Zap, title: "Automatisation", color: "text-[#a18cd1]", bg: "bg-[#a18cd1]/10", border: "border-[#a18cd1]/20" },
+                        ].map((feat, idx) => (
+                            <div key={idx} className="flex items-center gap-4 group cursor-default">
+                                <div className={`w-14 h-14 rounded-2xl ${feat.bg} flex items-center justify-center border ${feat.border} group-hover:scale-110 transition-transform duration-500`}>
+                                    <feat.icon className={`w-6 h-6 ${feat.color}`} />
                                 </div>
-                                <span className="text-xl md:text-2xl font-semibold text-slate-100 group-hover:text-white transition-colors">Analytics Avancées</span>
+                                <span className="text-xl font-semibold text-slate-200 group-hover:text-white transition-colors">{feat.title}</span>
                             </div>
-                            
-                            <div className="flex items-center space-x-6 group">
-                                <div className="w-14 h-14 rounded-twelve bg-[#9333ea]/10 flex items-center justify-center border border-[#9333ea]/20 group-hover:scale-110 transition-transform duration-300 shadow-[0_0_15px_rgba(147,51,234,0.15)]">
-                                    <Users className="w-7 h-7 text-[#9333ea]" />
-                                </div>
-                                <span className="text-xl md:text-2xl font-semibold text-slate-100 group-hover:text-white transition-colors">Gestion des Équipes</span>
-                            </div>
-                            
-                            <div className="flex items-center space-x-6 group">
-                                <div className="w-14 h-14 rounded-twelve bg-[#2bbdee]/10 flex items-center justify-center border border-[#2bbdee]/20 group-hover:scale-110 transition-transform duration-300 shadow-[0_0_15px_rgba(43,189,238,0.15)]">
-                                    <ClipboardCheck className="w-7 h-7 text-[#2bbdee]" />
-                                </div>
-                                <span className="text-xl md:text-2xl font-semibold text-slate-100 group-hover:text-white transition-colors">Suivi Terrain</span>
-                            </div>
-                            
-                            <div className="flex items-center space-x-6 group">
-                                <div className="w-14 h-14 rounded-twelve bg-[#9333ea]/10 flex items-center justify-center border border-[#9333ea]/20 group-hover:scale-110 transition-transform duration-300 shadow-[0_0_15px_rgba(147,51,234,0.15)]">
-                                    <Zap className="w-7 h-7 text-[#9333ea]" />
-                                </div>
-                                <span className="text-xl md:text-2xl font-semibold text-slate-100 group-hover:text-white transition-colors">Automatisation</span>
-                            </div>
-                        </div>
+                        ))}
                     </div>
 
-                    {/* Footer Link */}
-                    <div className="mt-16">
-                        <a 
-                            className="text-xl font-bold text-[#2bbdee] hover:text-[#9333ea] transition-colors inline-flex items-center group" 
-                            href="https://presentation.getplanning.org" 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                        >
-                            Voir la présentation complète 
-                            <svg className="w-6 h-6 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                    {/* Presentation Link */}
+                    <div className="mt-16 stagger-5">
+                        <a href="#" className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all text-lg font-semibold text-white group backdrop-blur-md">
+                            Découvrir la plateforme
+                            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                         </a>
                     </div>
                 </section>
 
-                {/* ── RIGHT SIDE: LOGIN FORM ── */}
-                <section className="flex-1 flex flex-col items-center justify-center p-6 sm:p-12 lg:p-20">
-                    
-                    {/* Mobile Logo Fallback */}
-                    <div className="md:hidden mb-10 mt-6 text-center">
-                        <h1 className="text-4xl font-extrabold tracking-tight">
-                            <span className="text-gradient">Get</span>Planning
-                        </h1>
-                    </div>
 
-                    <div className="glass-card w-full max-w-[500px] rounded-twelve p-8 sm:p-12 relative overflow-visible shadow-2xl">
+                {/* ── RIGHT SIDE: GLASS LOGIN CARD ── */}
+                <section className="w-full max-w-md xl:max-w-lg shrink-0 stagger-6">
+                    <div className="ultra-glass rounded-[32px] p-8 sm:p-12 relative overflow-hidden group/card">
                         
-                        {/* Form Header */}
-                        <div className="text-center mb-12">
-                            <div className="mx-auto inline-flex items-center justify-center w-20 h-20 rounded-twelve bg-[#2bbdee]/10 border border-[#2bbdee]/30 mb-8 shadow-[0_0_30px_rgba(43,189,238,0.2)]">
-                                <Lock className="w-10 h-10 text-[#2bbdee]" />
+                        {/* Shimmer Border Light */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-1000 pointer-events-none"></div>
+
+                        {/* Top Icon Area */}
+                        <div className="text-center mb-10 relative z-10">
+                            <div className="mx-auto w-20 h-20 rounded-2xl bg-gradient-to-tr from-[#1e293b] to-[#334155] p-[2px] shadow-xl mb-6 shadow-[#00f2fe]/10">
+                                <div className="w-full h-full rounded-2xl bg-[#0f0f14] flex items-center justify-center flex-col relative overflow-hidden">
+                                     <Lock className="w-8 h-8 text-[#00f2fe] relative z-10" />
+                                     <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-[#00f2fe]/20 blur-xl"></div>
+                                </div>
                             </div>
-                            <h2 className="text-4xl font-extrabold text-white mb-3">Connexion</h2>
-                            <p className="text-lg text-slate-400">Heureux de vous revoir sur GetPlanning.</p>
+                            <h2 className="text-3xl sm:text-4xl font-black text-white mb-2">Connexion</h2>
+                            <p className="text-slate-400 font-medium">Accédez à votre espace de travail</p>
                         </div>
 
                         {errorMsg && (
-                            <div className="bg-red-500/10 text-red-400 p-4 rounded-xl mb-8 text-base text-center border border-red-500/30 flex items-center justify-center gap-3 shadow-[0_0_15px_rgba(239,68,68,0.2)]">
-                                <span className="shrink-0 w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                            <div className="mb-8 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-center font-medium flex items-center justify-center gap-3 backdrop-blur-sm animate-[fade-in-up_0.3s_ease]">
+                                <span className="flex h-3 w-3 relative">
+                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                  <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                                </span>
                                 {errorMsg}
                             </div>
                         )}
 
-                        {/* Login Form */}
-                        <form onSubmit={handleLogin} className="space-y-8">
-                            
-                            {/* Email Field */}
-                            <div className="group">
-                                <label className="block text-sm font-bold tracking-wide text-slate-300 mb-3 uppercase" htmlFor="email">Email</label>
+                        <form onSubmit={handleLogin} className="space-y-6 relative z-10">
+                            {/* Email */}
+                            <div className="space-y-2 group/input">
+                                <label className="text-sm font-bold tracking-wider text-slate-300 uppercase ml-1" htmlFor="email">Email professionnel</label>
                                 <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none transition-colors group-focus-within:text-[#2bbdee]">
-                                        <Mail className="h-6 w-6 text-slate-500 group-focus-within:text-[#2bbdee] transition-colors" />
+                                    <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-500 group-focus-within/input:text-[#00f2fe] transition-colors">
+                                        <Mail className="h-5 w-5" />
                                     </div>
                                     <input 
-                                        className="block w-full pl-14 pr-4 py-4 text-lg bg-[#1e293b]/50 border border-slate-700 rounded-twelve text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#2bbdee] focus:border-transparent transition-all shadow-inner" 
+                                        className="block w-full pl-14 pr-4 py-4 text-base bg-white/5 border border-white/10 rounded-2xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#00f2fe] focus:bg-white/10 transition-all" 
                                         id="email" 
                                         name="email" 
-                                        placeholder="votre@email.com" 
+                                        placeholder="vous@entreprise.com" 
                                         required 
                                         type="email"
                                         value={email}
@@ -218,17 +252,17 @@ export default function LoginPage() {
                                 </div>
                             </div>
 
-                            {/* Password Field */}
-                            <div className="group">
-                                <div className="flex items-center justify-between mb-3">
-                                    <label className="block text-sm font-bold tracking-wide text-slate-300 uppercase" htmlFor="password">Mot de passe</label>
+                            {/* Password */}
+                            <div className="space-y-2 group/input">
+                                <div className="flex items-center justify-between ml-1">
+                                    <label className="text-sm font-bold tracking-wider text-slate-300 uppercase" htmlFor="password">Mot de passe</label>
                                 </div>
                                 <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none transition-colors group-focus-within:text-[#2bbdee]">
-                                        <KeyRound className="h-6 w-6 text-slate-500 group-focus-within:text-[#2bbdee] transition-colors" />
+                                    <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-500 group-focus-within/input:text-[#00f2fe] transition-colors">
+                                        <KeyRound className="h-5 w-5" />
                                     </div>
                                     <input 
-                                        className="block w-full pl-14 pr-4 py-4 text-lg bg-[#1e293b]/50 border border-slate-700 rounded-twelve text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#2bbdee] focus:border-transparent transition-all shadow-inner" 
+                                        className="block w-full pl-14 pr-4 py-4 text-base bg-white/5 border border-white/10 rounded-2xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#00f2fe] focus:bg-white/10 transition-all" 
                                         id="password" 
                                         name="password" 
                                         placeholder="••••••••" 
@@ -240,34 +274,37 @@ export default function LoginPage() {
                                 </div>
                             </div>
 
-                            <div className="flex items-center justify-end pt-2">
-                                <Link className="text-sm font-medium text-[#2bbdee] hover:text-white transition-colors" href="/forgot-password">
+                            <div className="flex items-center justify-end pt-1">
+                                <Link href="/forgot-password" className="text-sm font-bold text-[#4facfe] hover:text-white transition-colors">
                                     Mot de passe oublié ?
                                 </Link>
                             </div>
 
-                            {/* Submit Button */}
                             <button 
-                                className="w-full btn-gradient py-5 px-6 rounded-twelve text-white font-extrabold tracking-wide text-xl shadow-[0_0_20px_rgba(147,51,234,0.4)] disabled:opacity-50 disabled:cursor-not-allowed uppercase" 
-                                type="submit"
+                                type="submit" 
                                 disabled={loading}
+                                className="w-full btn-epic py-4 px-6 rounded-2xl text-white font-black uppercase tracking-wider text-xl disabled:opacity-50 mt-4 flex justify-center items-center gap-2"
                             >
-                                {loading ? 'Connexion en cours...' : 'Se Connecter'}
+                                {loading ? (
+                                    <>Connexion...</>
+                                ) : (
+                                    <>Se Connecter <ArrowRight className="w-5 h-5 ml-1" /></>
+                                )}
                             </button>
                         </form>
 
-                        {/* Form Footer */}
-                        <div className="mt-12 text-center">
-                            <p className="text-slate-400 text-base">
-                                Nouveau ici ? 
-                                <Link className="text-[#2bbdee] font-bold hover:text-white transition-colors ml-2 inline-flex items-center group" href="/register">
-                                    Créer un compte 
-                                    <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                        <div className="mt-10 text-center relative z-10">
+                            <p className="text-slate-400 font-medium">
+                                Nouveau sur GetPlanning ? 
+                                <Link href="/register" className="ml-2 text-[#4facfe] font-bold hover:text-white transition-colors border-b border-transparent hover:border-[#4facfe] pb-1">
+                                    Créer un compte
                                 </Link>
                             </p>
                         </div>
+
                     </div>
                 </section>
+
             </main>
         </div>
     );

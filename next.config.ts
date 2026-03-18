@@ -12,7 +12,8 @@ const nextConfig: NextConfig = {
   turbopack: {},
   typescript: {
     ignoreBuildErrors: true,
-  }
+  },
+  serverExternalPackages: ['pdf.js-extract']
 };
 
 // @ts-expect-error: Dest is expected in withPWA
