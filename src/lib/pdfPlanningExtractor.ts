@@ -4,26 +4,7 @@
 
 import { PDFExtract } from 'pdf.js-extract';
 
-// Column boundaries for standard MS Project / Primavera Gantt PDF exports
-// These are calibrated for "LOUIS DE WAELE" style plannings but work adaptively
-const DEFAULT_COLUMNS = {
-    num:      { min: 14, max: 28 },   // N° (row number)
-    wbs:      { min: 28, max: 64 },   // WBS code
-    task:     { min: 64, max: 229 },  // Nom de la tâche
-    zone:     { min: 229, max: 259 }, // ZONE
-    lot:      { min: 259, max: 282 }, // LOT
-    duration: { min: 282, max: 308 }, // Durée
-    start:    { min: 308, max: 340 }, // Début
-    end:      { min: 340, max: 372 }, // Fin
-    margin:   { min: 405, max: 425 }, // Marge totale
-};
 
-function getColumn(x: number, columns: typeof DEFAULT_COLUMNS): string | null {
-    for (const [name, bounds] of Object.entries(columns)) {
-        if (x >= bounds.min && x < bounds.max) return name;
-    }
-    return null;
-}
 
 function parseFrenchDate(dateStr: string): string {
     // Handles "14/05/24", "6/07/24", "20/10/25", etc.
@@ -47,58 +28,7 @@ export interface ExtractedTask {
     margin?: string;
 }
 
-/**
- * Auto-detect column boundaries by analyzing the header row of the first page.
- * Falls back to DEFAULT_COLUMNS if headers aren't found.
- */
-function detectColumns(pages: Array<{ content: Array<{ x: number; y: number; str: string; width: number }> }>): typeof DEFAULT_COLUMNS {
-    const columns = { ...DEFAULT_COLUMNS };
-    
-    if (!pages.length) return columns;
-    
-    const page = pages[0];
-    
-    // Dynamically find the Y coordinate of the header row
-    let headerY = -1;
-    for (const item of page.content) {
-        if (item.y > 400) continue; // Only look in the top half
-        const text = (item.str || '').trim().toLowerCase();
-        if (text === 'wbs' || text === 'tâche' || text === 'task' || text === 'nom' || text.includes('déb') || text.includes('libell') || text.includes('désign') || text.includes('descrip') || text.includes('activ')) {
-            headerY = item.y;
-            break;
-        }
-    }
 
-    const headerItems = page.content.filter((item: { y: number; str: string }) => {
-        if (!item.str || !item.str.trim()) return false;
-        // If we found a dynamic header, match within a tolerance. Otherwise use the old fallback range.
-        if (headerY !== -1) {
-            return Math.abs(item.y - headerY) <= 8;
-        }
-        return item.y >= 40 && item.y <= 120;
-    });
-    
-    for (const item of headerItems) {
-        const text = item.str.trim().toLowerCase();
-        const x = Math.round(item.x);
-        
-        if (text === 'n°') columns.num = { min: x - 2, max: x + 15 };
-        else if (text === 'wbs') columns.wbs = { min: x - 2, max: x + 35 };
-        else if (text.includes('nom') || text.includes('tâche') || text.includes('task')) {
-            columns.task = { min: x - 2, max: columns.zone.min };
-        }
-        else if (text === 'zone') columns.zone = { min: x - 2, max: x + 26 };
-        else if (text === 'lot') columns.lot = { min: x - 2, max: x + 20 };
-        else if (text.includes('dur')) columns.duration = { min: x - 2, max: x + 25 };
-        else if (text.includes('déb') || text.includes('debut') || text.includes('start')) {
-            columns.start = { min: x - 2, max: x + 30 };
-        }
-        else if (text === 'fin' || text === 'end') columns.end = { min: x - 2, max: x + 28 };
-        else if (text.includes('marge') || text.includes('float')) columns.margin = { min: x - 2, max: x + 20 };
-    }
-    
-    return columns;
-}
 
 /**
  * Extract structured task data from a planning PDF buffer.
@@ -110,7 +40,7 @@ export async function extractPlanningFromPDF(buffer: Buffer): Promise<ExtractedT
     // pdf.js-extract natively supports Buffer extraction
     const data = await pdfExtract.extractBuffer(buffer, {});
 
-    const columns = detectColumns(data.pages as unknown as Array<{ content: Array<{ x: number; y: number; str: string; width: number }> }>);
+
         const allRows: Record<string, string>[] = [];
 
         for (const page of data.pages) {
@@ -134,22 +64,63 @@ export async function extractPlanningFromPDF(buffer: Buffer): Promise<ExtractedT
             const sortedYs = Array.from(rowMap.keys()).sort((a, b) => a - b);
             
             for (const y of sortedYs) {
-                // Skip extreme page borders (headers/footers) instead of hardcoded 78 to 815
+                // Skip extreme page borders (headers/footers)
                 if (y < 30 || y > 830) continue;
                 
                 const rowItems = rowMap.get(y)!.sort((a, b) => a.x - b.x);
+                if (rowItems.length === 0) continue;
+
+                // Heuristic parsing instead of strict X mapping
+                // Because task names can be heavily indented (overlapping with duration/date headers)
                 
-                const row: Record<string, string> = {};
-                for (const item of rowItems) {
-                    const col = getColumn(item.x, columns);
-                    if (col) {
-                        row[col] = (row[col] ? row[col] + ' ' : '') + item.text;
+                const num = '';
+                let wbs = '';
+                let taskName = '';
+                let duration = '';
+                let start = '';
+                let end = '';
+                
+                // 1. Identify Dates (dd/mm/yy or dd/mm/yyyy)
+                const dateRegex = /\b\d{1,2}\/\d{1,2}\/\d{2,4}\b/;
+                const dateMatches = rowItems.filter(item => dateRegex.test(item.text));
+                
+                if (dateMatches.length >= 1) {
+                    start = dateMatches[0].text.match(dateRegex)![0];
+                    // Remove start date from pool
+                    dateMatches[0].text = dateMatches[0].text.replace(start, '').trim();
+                }
+                if (dateMatches.length >= 2) {
+                    end = dateMatches[1].text.match(dateRegex)![0];
+                    dateMatches[1].text = dateMatches[1].text.replace(end, '').trim();
+                }
+
+                // 2. Identify Duration (e.g. "501 jrs", "14 jrs?", "0 jr")
+                const durRegex = /(?:~?\d+[.,]?\d*\s*jrs?[?]?)|(?:\d+\s*[a-zA-Z]+)/i;
+                const durItem = rowItems.find(item => durRegex.test(item.text));
+                if (durItem) {
+                    const match = durItem.text.match(durRegex);
+                    if (match) {
+                        duration = match[0];
+                        durItem.text = durItem.text.replace(duration, '').trim();
                     }
                 }
+
+                // 3. WBS & Task Name
+                // Everything else from left to right forms the num/WBS and task name
+                // Usually the first short numeric string is N° or WBS
+                const remainingTexts = rowItems.map(i => i.text).filter(t => t.length > 0);
                 
-                // Only keep rows that look like actual task data
-                if ((row.wbs || row.task) && (row.start || row.duration)) {
-                    allRows.push(row);
+                if (remainingTexts.length > 0) {
+                    // Check if first item looks like a WBS (e.g., "1.1.5.9" or "3")
+                    if (/^[\d.]+$/.test(remainingTexts[0])) {
+                        wbs = remainingTexts.shift()!;
+                    }
+                    // The rest is the task name
+                    taskName = remainingTexts.join(' ').trim();
+                }
+
+                if ((wbs || taskName) && (start || duration)) {
+                    allRows.push({ num, wbs, task: taskName, duration, start, end });
                 }
             }
         }
@@ -168,15 +139,15 @@ export async function extractPlanningFromPDF(buffer: Buffer): Promise<ExtractedT
 
         // Convert to structured output with parsed dates
         return merged.map(row => ({
-            num: row.num,
+            num: row.num || '',
             wbs: row.wbs || '',
             name: row.task || 'Sans nom',
-            zone: row.zone,
-            lot: row.lot,
+            zone: row.zone || '',
+            lot: row.lot || '',
             duration: row.duration || '',
             startDate: row.start ? parseFrenchDate(row.start) : '',
             endDate: row.end ? parseFrenchDate(row.end) : '',
-            margin: row.margin,
+            margin: row.margin || '',
         }));
 }
 
