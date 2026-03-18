@@ -122,17 +122,19 @@ Réponds en JSON: tableau de [index,catégorie,isUserTrade]. Catégories: "Insta
 
             let json = response.text || "[]";
             json = json.replace(/```json/g, "").replace(/```/g, "").trim();
-            const parsed: Array<[number, string, boolean]> = JSON.parse(json);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const parsed: any[] = JSON.parse(json);
             console.log(`Batch ${batchIdx + 1}/${batches.length}: ${parsed.length} tasks categorized`);
             return parsed;
         } catch (batchErr) {
             console.warn(`Batch ${batchIdx + 1} failed:`, batchErr instanceof Error ? batchErr.message : batchErr);
             // Return empty so other batches can still succeed
-            return [] as Array<[number, string, boolean]>;
+            return [] as any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
         }
     });
 
-    let allCategories: Array<[number, string, boolean]>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let allCategories: any[];
     try {
         const results = await Promise.race([
             Promise.all(batchPromises),
@@ -145,8 +147,19 @@ Réponds en JSON: tableau de [index,catégorie,isUserTrade]. Catégories: "Insta
         return fallbackCategorize(tasks, trade);
     }
 
-    // Build lookup from AI results
-    const categoryMap = new Map(allCategories.map(([i, cat, isTrade]) => [i, { category: cat, isUserTrade: isTrade }]));
+    // Build lookup from AI results — handle both tuple [i,cat,bool] and object {i,category,isUserTrade} formats
+    const categoryMap = new Map<number, { category: string; isUserTrade: boolean }>();
+    for (const item of allCategories) {
+        if (Array.isArray(item)) {
+            categoryMap.set(item[0], { category: item[1], isUserTrade: !!item[2] });
+        } else if (item && typeof item === 'object') {
+            const obj = item as unknown as Record<string, unknown>;
+            const idx = (obj.i ?? obj.index ?? obj.idx) as number;
+            const cat = (obj.category ?? obj.cat ?? 'Général') as string;
+            const trade = !!(obj.isUserTrade ?? obj.isTrade ?? false);
+            if (typeof idx === 'number') categoryMap.set(idx, { category: cat, isUserTrade: trade });
+        }
+    }
 
     return tasks.map((task, idx) => {
         const cat = categoryMap.get(idx);
