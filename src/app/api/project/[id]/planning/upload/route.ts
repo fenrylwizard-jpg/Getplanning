@@ -115,7 +115,7 @@ Réponds en JSON: tableau de [index,catégorie,isUserTrade]. Catégories: "Insta
 
         try {
             const response = await ai.models.generateContent({
-                model: 'gemini-3.1-flash-preview',
+                model: 'gemini-2.5-flash',
                 contents: [{ text: prompt }],
                 config: { responseMimeType: "application/json" }
             });
