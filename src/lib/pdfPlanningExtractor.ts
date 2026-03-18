@@ -64,7 +64,7 @@ function detectColumns(pages: Array<{ content: Array<{ x: number; y: number; str
         if (item.y > 400) continue; // Only look in the top half
         const text = (item.str || '').trim().toLowerCase();
         if (text === 'wbs' || text === 'tâche' || text === 'task' || text === 'nom' || text.includes('déb') || text.includes('libell') || text.includes('désign') || text.includes('descrip') || text.includes('activ')) {
-            headerY = Math.round(item.y / 3) * 3;
+            headerY = item.y;
             break;
         }
     }
@@ -73,10 +73,9 @@ function detectColumns(pages: Array<{ content: Array<{ x: number; y: number; str
         if (!item.str || !item.str.trim()) return false;
         // If we found a dynamic header, match within a tolerance. Otherwise use the old fallback range.
         if (headerY !== -1) {
-            const y = Math.round(item.y / 3) * 3;
-            return Math.abs(y - headerY) <= 6;
+            return Math.abs(item.y - headerY) <= 8;
         }
-        return item.y >= 40 && item.y <= 100;
+        return item.y >= 40 && item.y <= 120;
     });
     
     for (const item of headerItems) {
@@ -117,12 +116,19 @@ export async function extractPlanningFromPDF(buffer: Buffer): Promise<ExtractedT
         for (const page of data.pages) {
             const items = page.content.filter((item: { str: string }) => item.str && item.str.trim());
             
-            // Group by Y coordinate (tolerance 3px for same row)
+            // Sort items by original Y coordinate to cluster effectively
+            items.sort((a: { y: number }, b: { y: number }) => a.y - b.y);
+            
+            // Cluster items dynamically: Group if within 6px of the current row baseline
             const rowMap = new Map<number, Array<{ x: number; text: string }>>();
+            let currentBaseline = -1;
+            
             items.forEach((item: { x: number; y: number; str: string }) => {
-                const y = Math.round(item.y / 3) * 3;
-                if (!rowMap.has(y)) rowMap.set(y, []);
-                rowMap.get(y)!.push({ x: Math.round(item.x), text: item.str.trim() });
+                if (currentBaseline === -1 || Math.abs(item.y - currentBaseline) > 6) {
+                    currentBaseline = item.y;
+                    rowMap.set(currentBaseline, []);
+                }
+                rowMap.get(currentBaseline)!.push({ x: Math.round(item.x), text: item.str.trim() });
             });
 
             const sortedYs = Array.from(rowMap.keys()).sort((a, b) => a - b);

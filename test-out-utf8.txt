@@ -1,0 +1,33 @@
+DETECTED COLUMNS: {
+  num: { min: 13, max: 30 },
+  wbs: { min: 27, max: 64 },
+  task: { min: 63, max: 229 },
+  zone: { min: 233, max: 261 },
+  lot: { min: 263, max: 285 },
+  duration: { min: 283, max: 310 },
+  start: { min: 308, max: 340 },
+  end: { min: 341, max: 371 },
+  margin: { min: 372, max: 394 }
+}
+ROWMAP KEYS: [ 54, 60, 81 ]
+ROW Y=54 PARSED: {
+  num: 'N° WBS',
+  task: 'Nom de la tâche',
+  zone: 'ZONE',
+  lot: 'LOT',
+  duration: 'Durée',
+  start: 'Début',
+  end: 'Fin'
+}
+-> KEPT!
+ROW Y=60 PARSED: { margin: 'Marge' }
+-> DISCARDED.
+ROW Y=81 PARSED: {
+  num: 'LDW2 - 100% JO 1',
+  task: 'ECOLE ALEXANDRE HERLIN',
+  duration: '501 jrs?',
+  start: '14/05/24',
+  end: '29/06/26'
+}
+-> KEPT!
+ALLROWS 2 MERGED 2
