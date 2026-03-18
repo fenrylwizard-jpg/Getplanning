@@ -57,9 +57,27 @@ function detectColumns(pages: Array<{ content: Array<{ x: number; y: number; str
     if (!pages.length) return columns;
     
     const page = pages[0];
-    const headerItems = page.content.filter(
-        (item: { y: number; str: string }) => item.y >= 50 && item.y <= 65 && item.str && item.str.trim()
-    );
+    
+    // Dynamically find the Y coordinate of the header row
+    let headerY = -1;
+    for (const item of page.content) {
+        if (item.y > 400) continue; // Only look in the top half
+        const text = (item.str || '').trim().toLowerCase();
+        if (text === 'wbs' || text === 'tâche' || text === 'task' || text === 'nom' || text.includes('déb')) {
+            headerY = Math.round(item.y / 3) * 3;
+            break;
+        }
+    }
+
+    const headerItems = page.content.filter((item: { y: number; str: string }) => {
+        if (!item.str || !item.str.trim()) return false;
+        // If we found a dynamic header, match within a tolerance. Otherwise use the old fallback range.
+        if (headerY !== -1) {
+            const y = Math.round(item.y / 3) * 3;
+            return Math.abs(y - headerY) <= 6;
+        }
+        return item.y >= 40 && item.y <= 100;
+    });
     
     for (const item of headerItems) {
         const text = item.str.trim().toLowerCase();
@@ -110,8 +128,8 @@ export async function extractPlanningFromPDF(buffer: Buffer): Promise<ExtractedT
             const sortedYs = Array.from(rowMap.keys()).sort((a, b) => a - b);
             
             for (const y of sortedYs) {
-                // Skip header area and footer
-                if (y < 78 || y > 815) continue;
+                // Skip extreme page borders (headers/footers) instead of hardcoded 78 to 815
+                if (y < 30 || y > 830) continue;
                 
                 const rowItems = rowMap.get(y)!.sort((a, b) => a.x - b.x);
                 
