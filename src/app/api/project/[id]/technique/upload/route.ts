@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { parseEtudes } from "@/lib/parsers/parse-etudes";
 import { parseDossierTechnique, DossierDocumentData } from "@/lib/parsers/parse-dossier-technique";
+import { logActivity } from "@/lib/logger";
+import { verifyToken } from "@/lib/auth";
+import { cookies } from "next/headers";
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
     const { id: projectId } = await params;
@@ -9,6 +12,14 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         const formData = await req.formData();
         const file = formData.get("file") as File;
         if (!file) return NextResponse.json({ error: "File is required" }, { status: 400 });
+
+        const cookieStore = await cookies();
+        const token = cookieStore.get('auth-token');
+        let userId = "UNKNOWN";
+        if (token) {
+            const decoded = await verifyToken(token.value);
+            if (decoded && decoded.id) userId = decoded.id as string;
+        }
 
         const buffer = Buffer.from(await file.arrayBuffer());
         
@@ -54,6 +65,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         }
 
         const totalCount = tasks.length + documents.length;
+
+        if (userId !== "UNKNOWN") {
+            await logActivity(userId, 'UPLOAD_DOSSIER', `Upload du dossier technique (Fichier: ${file.name}, ${documents.length} documents, ${tasks.length} tâches)`);
+        }
 
         return NextResponse.json({
             success: true,

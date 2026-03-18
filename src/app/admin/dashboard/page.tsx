@@ -11,6 +11,16 @@ import AvatarDisplay from '@/components/AvatarDisplay';
 import T from '@/components/T';
 import { useTranslation } from '@/lib/LanguageContext';
 import AdminWeeklyGraph from '@/components/AdminWeeklyGraph';
+import { formatDistanceToNow } from 'date-fns';
+import { fr } from 'date-fns/locale';
+
+interface ActivityLog {
+    id: string;
+    action: string;
+    details: string | null;
+    createdAt: string;
+    user: { name: string; role: string; };
+}
 
 interface AdminStats {
     totalProjects: number;
@@ -41,8 +51,9 @@ interface AdminStats {
 export default function AdminDashboard() {
     const router = useRouter();
     const { t } = useTranslation();
-    const [users, setUsers] = useState<{ id: string, name: string, email: string, role: string, status: string, level?: number, characterId?: number }[]>([]);
+    const [users, setUsers] = useState<{ id: string, name: string, email: string, role: string, status: string, level?: number, characterId?: number, lastActiveAt?: string }[]>([]);
     const [stats, setStats] = useState<AdminStats | null>(null);
+    const [logs, setLogs] = useState<ActivityLog[]>([]);
     const [loading, setLoading] = useState(true);
     const [cronRunning, setCronRunning] = useState(false);
     const [cronResult, setCronResult] = useState<string | null>(null);
@@ -51,9 +62,10 @@ export default function AdminDashboard() {
 
     const fetchData = useCallback(async () => {
         try {
-            const [usersRes, statsRes] = await Promise.all([
+            const [usersRes, statsRes, logsRes] = await Promise.all([
                 fetch('/api/admin/users'),
                 fetch('/api/admin/stats'),
+                fetch('/api/admin/activity')
             ]);
             if (usersRes.status === 401 || usersRes.status === 403) {
                 router.push('/login');
@@ -65,6 +77,10 @@ export default function AdminDashboard() {
             }
             if (statsRes.ok) {
                 setStats(await statsRes.json());
+            }
+            if (logsRes.ok) {
+                const logsData = await logsRes.json();
+                setLogs(logsData.logs || []);
             }
         } catch (err) {
             console.error(err);
@@ -379,7 +395,15 @@ export default function AdminDashboard() {
                                             </td>
                                             <td className="py-3 pr-4">
                                                 <Link href={`/user/${user.id}`} className="block hover:opacity-80 transition-opacity">
-                                                    <div className="font-bold text-lg text-white mb-1 group-hover:text-purple-300 transition-colors drop-shadow-sm">{user.name || '—'}</div>
+                                                    <div className="font-bold text-lg text-white mb-1 group-hover:text-purple-300 transition-colors drop-shadow-sm flex items-center gap-2">
+                                                        {user.name || '—'}
+                                                        {user.lastActiveAt && (new Date().getTime() - new Date(user.lastActiveAt).getTime()) < 5 * 60 * 1000 && (
+                                                            <span className="flex h-2.5 w-2.5 relative" title="En ligne">
+                                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                                                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                     <div className="text-xs text-gray-500 font-mono bg-black/20 px-2 py-1 rounded inline-block">{user.email}</div>
                                                 </Link>
                                             </td>
@@ -418,6 +442,42 @@ export default function AdminDashboard() {
                             </table>
                         </div>
                     )}
+                </div>
+
+                {/* Activity Logs */}
+                <div className="bg-[#080d1a] border border-white/5 rounded-md p-6">
+                    <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 mb-4 flex items-center gap-2">
+                        <Activity size={16} className="text-blue-400" /> Journal d&apos;Activité
+                    </h3>
+                    <div className="flex flex-col gap-3 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
+                        {logs.length === 0 ? (
+                            <div className="p-4 text-center text-gray-500">Aucune activité récente.</div>
+                        ) : (
+                            logs.map(log => (
+                                <div key={log.id} className="flex gap-4 p-3 rounded-md bg-white/5 border border-white/5 hover:bg-white/10 transition-colors items-start">
+                                    <div className="w-8 h-8 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                                        <Activity size={14} className="text-blue-400" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex justify-between items-start mb-1 gap-2">
+                                            <div className="font-bold text-sm text-white truncate">
+                                                {log.user.name} <span className="text-xs font-normal text-gray-400 ml-1">({log.user.role})</span>
+                                            </div>
+                                            <div className="text-xs text-gray-500 shrink-0 capitalize">
+                                                {formatDistanceToNow(new Date(log.createdAt), { addSuffix: true, locale: fr })}
+                                            </div>
+                                        </div>
+                                        <div className="text-xs font-mono text-blue-300/80 mb-1">{log.action}</div>
+                                        {log.details && (
+                                            <div className="text-xs text-gray-400 break-words leading-relaxed">
+                                                {log.details.length > 150 ? log.details.substring(0, 150) + '...' : log.details}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
                 </div>
         </div>
 

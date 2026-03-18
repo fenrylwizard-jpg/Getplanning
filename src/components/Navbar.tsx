@@ -7,7 +7,7 @@ import AvatarDisplay from "./AvatarDisplay";
 import { useTheme } from "@/lib/ThemeContext";
 import { Sun, Moon, Settings } from "lucide-react";
 import SettingsModal from "./SettingsModal";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface NavbarProps {
     userName?: string;
@@ -22,6 +22,18 @@ export default function Navbar({ userName, userRole, characterId, level, company
     const router = useRouter();
     const { theme, toggleTheme } = useTheme();
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+    useEffect(() => {
+        // Send heartbeat every 1.5 minutes if logged in
+        if (userName) {
+            const sendHeartbeat = () => {
+                fetch("/api/auth/heartbeat", { method: "POST" }).catch(() => {});
+            };
+            sendHeartbeat();
+            const interval = setInterval(sendHeartbeat, 90000);
+            return () => clearInterval(interval);
+        }
+    }, [userName]);
 
     const handleLogout = async () => {
         try {
