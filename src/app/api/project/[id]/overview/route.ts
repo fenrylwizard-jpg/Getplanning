@@ -112,6 +112,16 @@ export async function GET(
             totalReturn += p.returnAmount || 0;
         }
 
+        // Compute margin % — fallback to result/revenue if marginPercent is null
+        let computedMargin: number | null = null;
+        if (latestFinance) {
+            if (latestFinance.marginPercent != null) {
+                computedMargin = latestFinance.marginPercent;
+            } else if (latestFinance.result != null && latestFinance.totalRevenue && latestFinance.totalRevenue > 0) {
+                computedMargin = Math.round((latestFinance.result / latestFinance.totalRevenue) * 100 * 10) / 10;
+            }
+        }
+
         return NextResponse.json({
             kpis: {
                 avancementGlobal,
@@ -125,7 +135,7 @@ export async function GET(
             finances: latestFinance
                 ? {
                     result: latestFinance.result,
-                    marginPercent: latestFinance.marginPercent,
+                    marginPercent: computedMargin,
                     totalRevenue: latestFinance.totalRevenue,
                     totalCost: latestFinance.totalCost,
                 }
