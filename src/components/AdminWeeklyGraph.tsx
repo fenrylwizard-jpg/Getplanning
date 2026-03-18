@@ -157,7 +157,7 @@ export default function AdminWeeklyGraph() {
                             contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', borderRadius: '12px' }}
                             itemStyle={{ color: '#e2e8f0', fontSize: '13px' }}
                             labelStyle={{ color: '#94a3b8', marginBottom: '8px', fontSize: '12px' }}
-                            formatter={(value: string | number | undefined) => {
+                            formatter={(value: any, name: any) => {
                                 if (typeof value === 'number') {
                                     return [`${value.toFixed(1)}h`, undefined];
                                 }

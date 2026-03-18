@@ -1,9 +1,13 @@
+"use client";
+
 import T from "@/components/T";
 import { Calendar, FileText, TrendingUp, Activity, ClipboardList } from "lucide-react";
 import { HOURLY_RATE_EUR } from "@/lib/xp-engine";
+import { useRouter } from "next/navigation";
 
 interface OverviewTabProps {
     project: {
+        id: string;
         name: string;
         location: string | null;
         siteManager: { name: string } | null;
@@ -21,6 +25,7 @@ interface OverviewTabProps {
 }
 
 export default function OverviewTab({ project }: OverviewTabProps) {
+    const router = useRouter();
     const budgetHours = project.tasks.reduce((s, t) => s + (t.quantity * t.minutesPerUnit) / 60, 0);
     const earnedHours = project.tasks.reduce((s, t) => s + (t.completedQuantity * t.minutesPerUnit) / 60, 0);
     const progressPct = budgetHours > 0 ? Math.min(100, Math.round((earnedHours / budgetHours) * 100)) : 0;
@@ -85,7 +90,7 @@ export default function OverviewTab({ project }: OverviewTabProps) {
                 {/* LEFT COLUMN: Production & Finances */}
                 <div className="flex flex-col gap-6 relative z-10">
                     {/* Production Card */}
-                    <div className="group relative bg-[#0a1020]/90 backdrop-blur-xl border border-white/10 rounded-md p-8 shadow-xl hover:border-cyan-500/50 transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_10px_40px_-10px_rgba(6,182,212,0.3)] opacity-0 animate-[fade-in-up_0.8s_ease-out_0.2s_forwards]">
+                    <button onClick={() => router.push(`/pm/project/${project.id}?tab=production`, { scroll: false })} className="text-left w-full group relative bg-[#0a1020]/90 backdrop-blur-xl border border-white/10 rounded-md p-8 shadow-xl hover:border-cyan-500/50 transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_10px_40px_-10px_rgba(6,182,212,0.3)] opacity-0 animate-[fade-in-up_0.8s_ease-out_0.2s_forwards]">
                         <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-md" />
                         <div className="relative z-10">
                             <div className="flex items-center gap-3 mb-4">
@@ -108,10 +113,10 @@ export default function OverviewTab({ project }: OverviewTabProps) {
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </button>
 
                     {/* Finances Card */}
-                    <div className="group relative bg-[#0a1020]/90 backdrop-blur-xl border border-white/10 rounded-md p-8 shadow-xl hover:border-emerald-500/50 transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_10px_40px_-10px_rgba(16,185,129,0.3)] opacity-0 animate-[fade-in-up_0.8s_ease-out_0.4s_forwards]">
+                    <button onClick={() => router.push(`/pm/project/${project.id}?tab=finances`, { scroll: false })} className="text-left w-full group relative bg-[#0a1020]/90 backdrop-blur-xl border border-white/10 rounded-md p-8 shadow-xl hover:border-emerald-500/50 transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_10px_40px_-10px_rgba(16,185,129,0.3)] opacity-0 animate-[fade-in-up_0.8s_ease-out_0.4s_forwards]">
                         <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-md" />
                         <div className="relative z-10 flex flex-col justify-between h-full">
                             <div className="flex items-center gap-3 mb-4">
@@ -128,7 +133,7 @@ export default function OverviewTab({ project }: OverviewTabProps) {
                                 </span>
                             </div>
                         </div>
-                    </div>
+                    </button>
                 </div>
 
                 {/* CENTER COLUMN: The Hovering Nexus Button / Image */}
@@ -160,7 +165,7 @@ export default function OverviewTab({ project }: OverviewTabProps) {
                 {/* RIGHT COLUMN: Planning, Technique, Achats */}
                 <div className="flex flex-col gap-6 relative z-10">
                     {/* Planning Card */}
-                    <div className="group relative bg-[#0a1020]/90 backdrop-blur-xl border border-white/10 rounded-md p-8 shadow-xl hover:border-violet-500/50 transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_10px_40px_-10px_rgba(139,92,246,0.3)] opacity-0 animate-[fade-in-up_0.8s_ease-out_0.3s_forwards]">
+                    <button onClick={() => router.push(`/pm/project/${project.id}?tab=planning`, { scroll: false })} className="text-left w-full group relative bg-[#0a1020]/90 backdrop-blur-xl border border-white/10 rounded-md p-8 shadow-xl hover:border-violet-500/50 transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_10px_40px_-10px_rgba(139,92,246,0.3)] opacity-0 animate-[fade-in-up_0.8s_ease-out_0.3s_forwards]">
                         <div className="absolute inset-0 bg-gradient-to-l from-violet-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-md" />
                         <div className="relative z-10 flex flex-col justify-between h-full">
                             <div className="flex items-center gap-3 mb-4">
@@ -180,10 +185,10 @@ export default function OverviewTab({ project }: OverviewTabProps) {
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </button>
 
                     {/* Dossier Technique Card */}
-                    <div className="group relative bg-[#0a1020]/90 backdrop-blur-xl border border-white/10 rounded-md p-8 shadow-xl hover:border-rose-500/50 transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_10px_40px_-10px_rgba(244,63,94,0.3)] opacity-0 animate-[fade-in-up_0.8s_ease-out_0.5s_forwards]">
+                    <button onClick={() => router.push(`/pm/project/${project.id}?tab=technique`, { scroll: false })} className="text-left w-full group relative bg-[#0a1020]/90 backdrop-blur-xl border border-white/10 rounded-md p-8 shadow-xl hover:border-rose-500/50 transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_10px_40px_-10px_rgba(244,63,94,0.3)] opacity-0 animate-[fade-in-up_0.8s_ease-out_0.5s_forwards]">
                         <div className="absolute inset-0 bg-gradient-to-l from-rose-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-md" />
                         <div className="relative z-10 flex flex-col justify-between h-full">
                             <div className="flex items-center gap-3 mb-4">
@@ -199,10 +204,10 @@ export default function OverviewTab({ project }: OverviewTabProps) {
                                 </span>
                             </div>
                         </div>
-                    </div>
+                    </button>
 
                     {/* Achats Card */}
-                    <div className="group relative bg-[#0a1020]/90 backdrop-blur-xl border border-white/10 rounded-md p-8 shadow-xl hover:border-amber-500/50 transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_10px_40px_-10px_rgba(245,158,11,0.3)] opacity-0 animate-[fade-in-up_0.8s_ease-out_0.7s_forwards]">
+                    <button onClick={() => router.push(`/pm/project/${project.id}?tab=achats`, { scroll: false })} className="text-left w-full group relative bg-[#0a1020]/90 backdrop-blur-xl border border-white/10 rounded-md p-8 shadow-xl hover:border-amber-500/50 transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_10px_40px_-10px_rgba(245,158,11,0.3)] opacity-0 animate-[fade-in-up_0.8s_ease-out_0.7s_forwards]">
                         <div className="absolute inset-0 bg-gradient-to-l from-amber-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-md" />
                         <div className="relative z-10 flex flex-col justify-between h-full">
                             <div className="flex items-center gap-3 mb-2">
@@ -215,7 +220,7 @@ export default function OverviewTab({ project }: OverviewTabProps) {
                                 Accéder au module <span className="group-hover:translate-x-1 transition-transform">→</span>
                             </div>
                         </div>
-                    </div>
+                    </button>
                 </div>
 
             </div>

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { parseEtudes } from "@/lib/parsers/parse-etudes";
-import { parseDossierTechnique } from "@/lib/parsers/parse-dossier-technique";
+import { parseDossierTechnique, DossierDocumentData } from "@/lib/parsers/parse-dossier-technique";
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
     const { id: projectId } = await params;
@@ -16,8 +16,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         const tasks = parseEtudes(buffer);
         const { documents, summaries } = parseDossierTechnique(buffer);
 
-        // Delete old etude tasks for this project and insert new ones
+        // Delete old etude tasks and documents for this project
         await prisma.etudeTask.deleteMany({ where: { projectId } });
+        await prisma.etudeDocument.deleteMany({ where: { projectId } });
 
         // Create upload record
         const upload = await prisma.monthlyUpload.create({
@@ -34,6 +35,20 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
                     projectId,
                     uploadId: upload.id,
                     ...t,
+                })),
+            });
+        }
+
+        if (documents.length > 0) {
+            await prisma.etudeDocument.createMany({
+                data: documents.map((d: DossierDocumentData) => ({
+                    projectId,
+                    uploadId: upload.id,
+                    category: d.category,
+                    reference: d.documentId || 'Inconnu',
+                    title: d.description || 'Sans titre',
+                    revision: null,
+                    status: d.clientStatus || d.arStatus || d.beStatus || 'PENDING',
                 })),
             });
         }

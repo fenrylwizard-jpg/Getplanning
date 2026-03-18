@@ -321,7 +321,7 @@ export default function ProjectAnalyticsCharts({ tasks, weeklyPlans }: { tasks: 
                                 contentStyle={{ backgroundColor: 'var(--bg-tertiary)', border: 'none', borderRadius: 'var(--radius-md)' }}
                                 itemStyle={{ color: 'var(--text-primary)' }}
                                 cursor={{ fill: 'rgba(255,255,255,0.05)' }}
-                                formatter={(value: any, name: string | undefined) => {
+                                formatter={(value: any, name: any) => {
                                     if (name === 'efficiency') return [`${value}%`, t("efficiency")];
                                     return [value, name || ""];
                                 }}

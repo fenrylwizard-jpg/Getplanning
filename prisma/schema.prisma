@@ -63,6 +63,7 @@ model Project {
   purchaseCategories PurchaseCategory[]
   financeSnapshots   FinanceSnapshot[]
   etudeTasks         EtudeTask[]
+  etudeDocuments     EtudeDocument[]
   
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
@@ -97,7 +98,8 @@ model MonthlyUpload {
 
   purchaseCategories PurchaseCategory[]
   financeSnapshots   FinanceSnapshot[]
-  etudeTasks     EtudeTask[]
+  etudeTasks         EtudeTask[]
+  etudeDocuments     EtudeDocument[]
 }
 
 // ── Hub Module: Purchases / Achats (from Synthèse sheet) ──
@@ -195,6 +197,25 @@ model EtudeTask {
   status          String?  // Statut
   progress        Float?   // % réalisé
 
+  createdAt       DateTime @default(now())
+
+  @@index([projectId])
+  @@index([uploadId])
+}
+
+model EtudeDocument {
+  id              String   @id @default(cuid())
+  projectId       String
+  project         Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  uploadId        String?
+  upload          MonthlyUpload? @relation(fields: [uploadId], references: [id], onDelete: Cascade)
+
+  category        String   // 'materiel', 'plans', 'calculs'
+  reference       String
+  title           String
+  revision        String?
+  status          String?  // 'APP', 'BPE', 'ATT', etc
+  
   createdAt       DateTime @default(now())
 
   @@index([projectId])

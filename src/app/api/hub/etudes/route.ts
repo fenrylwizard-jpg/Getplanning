@@ -12,7 +12,40 @@ export async function GET(req: NextRequest) {
     orderBy: { createdAt: 'asc' },
   });
   
-  // Compute summary stats geared towards a Gantt context
+  const documents = await prisma.etudeDocument.findMany({
+    where: { projectId },
+    orderBy: { createdAt: 'asc' },
+  });
+  
+  // Re-compute the summaries array exactly like parseDossierTechnique does
+  const categoriesMap = new Map<string, { total: number; transmitted: number; statuses: Record<string, number> }>();
+  
+  // Initialize standard categories so they always appear even if empty
+  categoriesMap.set("materiel", { total: 0, transmitted: 0, statuses: {} });
+  categoriesMap.set("plans", { total: 0, transmitted: 0, statuses: {} });
+  categoriesMap.set("calculs", { total: 0, transmitted: 0, statuses: {} });
+
+  for (const doc of documents) {
+      const cat = doc.category || 'materiel';
+      if (!categoriesMap.has(cat)) {
+          categoriesMap.set(cat, { total: 0, transmitted: 0, statuses: {} });
+      }
+      const data = categoriesMap.get(cat)!;
+      data.total++;
+
+      const st = doc.status || 'PENDING';
+      if (st !== 'PENDING') data.transmitted++;
+      
+      data.statuses[st] = (data.statuses[st] || 0) + 1;
+  }
+
+  const summaries = [
+      { category: "materiel", label: "Fiches Techniques Matériaux", ...categoriesMap.get("materiel")! },
+      { category: "plans", label: "Plans d'Exécution", ...categoriesMap.get("plans")! },
+      { category: "calculs", label: "Notes de Calculs", ...categoriesMap.get("calculs")! },
+  ];
+  
+  // Compute summary stats geared towards a Gantt context (keep original logic)
   const summary = {
     total: tasks.length,
     averageProgress: 0,
@@ -24,23 +57,19 @@ export async function GET(req: NextRequest) {
   let progressCount = 0;
 
   for (const t of tasks) {
-    // By status
     const status = t.status || 'Non défini';
     summary.byStatus[status] = (summary.byStatus[status] || 0) + 1;
 
-    // Progress
     if (t.progress !== null && t.progress !== undefined) {
       totalProgress += t.progress;
       progressCount++;
     }
 
-    // By assignee
     const assignee = t.assignedTo || 'Non assigné';
     if (!summary.byAssignee[assignee]) {
       summary.byAssignee[assignee] = { total: 0, avgProgress: 0 };
     }
     summary.byAssignee[assignee].total++;
-    // We will do a rough sum here and average it after the loop for simplicity
     if (t.progress !== null && t.progress !== undefined) {
       summary.byAssignee[assignee].avgProgress += t.progress;
     }
@@ -53,5 +82,5 @@ export async function GET(req: NextRequest) {
     data.avgProgress = data.total > 0 ? data.avgProgress / data.total : 0;
   }
   
-  return NextResponse.json({ tasks, summary });
+  return NextResponse.json({ tasks, summaries, summary });
 }

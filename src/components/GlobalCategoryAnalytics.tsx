@@ -134,7 +134,7 @@ export default function GlobalCategoryAnalytics({ projects }: { projects: Extend
                             }}
                             itemStyle={{ color: '#fff', fontWeight: 600 }}
                             labelStyle={{ display: 'none' }}
-                            formatter={(value: any, name: string | undefined) => {
+                            formatter={(value: any, name: any) => {
                                 const translatedName = tData ? tData(name || '') : t(name || '');
                                 return [`${parseFloat(value).toFixed(1)} h`, translatedName];
                             }}

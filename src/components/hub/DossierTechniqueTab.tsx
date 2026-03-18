@@ -16,17 +16,7 @@ interface DossierSummary {
     statuses: Record<string, number>;
 }
 
-interface EtudeTask {
-    id: string;
-    wbs: string | null;
-    activity: string;
-    assignedTo: string | null;
-    startDate: string | null;
-    endDate: string | null;
-    duration: number | null;
-    status: string | null;
-    progress: number | null;
-}
+// Removed EtudeTask
 
 /** Status code legend from the Excel file */
 const STATUS_LEGEND: Record<string, { label: string; color: string; bgColor: string; borderColor: string; Icon: typeof CheckCircle2 }> = {
@@ -204,44 +194,21 @@ function GlobalSummary({ summaries }: { summaries: DossierSummary[] }) {
     );
 }
 
-const getStatusColor = (status: string | null) => {
-    if (!status) return { bg: 'bg-gray-500/15', text: 'text-gray-400', border: 'border-gray-500/30' };
-    const s = status.toLowerCase();
-    if (s.includes('termin')) return { bg: 'bg-emerald-500/15', text: 'text-emerald-400', border: 'border-emerald-500/30' };
-    if (s.includes('cours') || s.includes('progress')) return { bg: 'bg-blue-500/15', text: 'text-blue-400', border: 'border-blue-500/30' };
-    if (s.includes('tard') || s.includes('retard')) return { bg: 'bg-red-500/15', text: 'text-red-400', border: 'border-red-500/30' };
-    if (s.includes('attent') || s.includes('venir') || s.includes('planifi')) return { bg: 'bg-amber-500/15', text: 'text-amber-400', border: 'border-amber-500/30' };
-    return { bg: 'bg-purple-500/15', text: 'text-purple-400', border: 'border-purple-500/30' };
-};
+// Removed getStatusColor
 
 export default function DossierTechniqueTab({ project }: DossierTechniqueTabProps) {
-    const [tasks, setTasks] = useState<EtudeTask[]>([]);
-    const STORAGE_KEY = `dossier-summaries-${project?.id}`;
-    const [dossierSummaries, setDossierSummaries] = useState<DossierSummary[]>(() => {
-        if (typeof window === 'undefined' || !project?.id) return [];
-        try {
-            const cached = localStorage.getItem(`dossier-summaries-${project.id}`);
-            return cached ? JSON.parse(cached) : [];
-        } catch { return []; }
-    });
+    const [dossierSummaries, setDossierSummaries] = useState<DossierSummary[]>([]);
     const [loading, setLoading] = useState(false);
-    const [activeTab, setActiveTab] = useState<'dossier' | 'gantt'>('dossier');
 
-    const fetchData = (uploadResponseSummaries?: DossierSummary[]) => {
+    const fetchData = () => {
         if (!project?.id) return;
         setLoading(true);
-        
-        // If we got summaries from the upload response, use those immediately
-        if (uploadResponseSummaries && uploadResponseSummaries.length > 0) {
-            setDossierSummaries(uploadResponseSummaries);
-            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(uploadResponseSummaries)); } catch {}
-        }
 
-        // Fetch gantt tasks from DB
+        // Fetch documents summaries from DB
         fetch(`/api/hub/etudes?projectId=${project.id}`)
             .then(r => r.json())
             .then(d => {
-                setTasks(d.tasks || []);
+                setDossierSummaries(d.summaries || []);
                 setLoading(false);
             })
             .catch(() => setLoading(false));
@@ -250,7 +217,7 @@ export default function DossierTechniqueTab({ project }: DossierTechniqueTabProp
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => { fetchData(); }, [project?.id]);
 
-    const hasData = tasks.length > 0 || dossierSummaries.length > 0;
+    const hasData = dossierSummaries.length > 0;
 
     return (
         <div className="flex flex-col gap-8">
@@ -263,9 +230,8 @@ export default function DossierTechniqueTab({ project }: DossierTechniqueTabProp
                 subtitle="Glissez un fichier Excel contenant le suivi des études techniques (Gantt + Dossier Technique)"
                 accentColor="cyan"
                 icon={<ClipboardCheck size={36} className="text-cyan-400" />}
-                onUploadComplete={(data) => {
-                    const resp = data as { details?: { summaries?: DossierSummary[] } };
-                    fetchData(resp?.details?.summaries);
+                onUploadComplete={() => {
+                    fetchData();
                 }}
             />
 
@@ -280,7 +246,7 @@ export default function DossierTechniqueTab({ project }: DossierTechniqueTabProp
                 <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-md p-4 flex items-center justify-center gap-2">
                     <CheckCircle2 size={16} className="text-emerald-400" />
                     <p className="text-xs text-emerald-300 font-semibold">
-                        Données importées actives — {dossierSummaries.reduce((s, d) => s + d.total, 0)} documents + {tasks.length} tâches Gantt
+                        Données importées actives — {dossierSummaries.reduce((s, d) => s + d.total, 0)} documents techniques suivis
                     </p>
                 </div>
             )}
@@ -291,19 +257,7 @@ export default function DossierTechniqueTab({ project }: DossierTechniqueTabProp
                 </div>
             ) : hasData ? (
                 <>
-                    {/* Sub-tabs: Dossier | Gantt */}
-                    <div className="flex gap-2 bg-[#080d1a]/80 border border-white/5 rounded-md p-1">
-                        <button onClick={() => setActiveTab('dossier')}
-                            className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${activeTab === 'dossier' ? 'bg-white/10 text-white' : 'text-gray-400 hover:text-white'}`}>
-                            📋 Dossier Technique ({dossierSummaries.reduce((s, d) => s + d.total, 0)})
-                        </button>
-                        <button onClick={() => setActiveTab('gantt')}
-                            className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${activeTab === 'gantt' ? 'bg-white/10 text-white' : 'text-gray-400 hover:text-white'}`}>
-                            📊 Planning Gantt ({tasks.length})
-                        </button>
-                    </div>
-
-                    {activeTab === 'dossier' && dossierSummaries.length > 0 && (
+                    {dossierSummaries.length > 0 && (
                         <>
                             {/* Global summary */}
                             <GlobalSummary summaries={dossierSummaries} />
@@ -325,56 +279,6 @@ export default function DossierTechniqueTab({ project }: DossierTechniqueTabProp
                                             <strong>{code}</strong> = {cfg.label}
                                         </span>
                                     ))}
-                                </div>
-                            </div>
-                        </>
-                    )}
-
-                    {activeTab === 'gantt' && tasks.length > 0 && (
-                        <>
-                            {/* Tasks Table */}
-                            <div className="bg-[#080d1a]/80 border border-white/5 rounded-md overflow-hidden">
-                                <div className="overflow-x-auto">
-                                    <table className="w-full text-sm">
-                                        <thead>
-                                            <tr className="border-b border-white/5">
-                                                <th className="text-left text-gray-400 font-medium px-4 py-3 text-xs uppercase w-16">#</th>
-                                                <th className="text-left text-gray-400 font-medium px-4 py-3 text-xs uppercase">Activité</th>
-                                                <th className="text-left text-gray-400 font-medium px-4 py-3 text-xs uppercase">Assigné à</th>
-                                                <th className="text-left text-gray-400 font-medium px-4 py-3 text-xs uppercase">Dates</th>
-                                                <th className="text-left text-gray-400 font-medium px-4 py-3 text-xs uppercase">Durée</th>
-                                                <th className="text-left text-gray-400 font-medium px-4 py-3 text-xs uppercase w-32">Statut</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {tasks.map(t => {
-                                                const config = getStatusColor(t.status);
-                                                return (
-                                                    <tr key={t.id} className="border-b border-white/[0.03] hover:bg-white/[0.02] transition-colors">
-                                                        <td className="px-4 py-3 text-gray-500 font-mono text-xs">{t.wbs || '—'}</td>
-                                                        <td className="px-4 py-3 text-white text-sm max-w-[300px]">
-                                                            <div className="font-medium truncate" title={t.activity}>{t.activity}</div>
-                                                        </td>
-                                                        <td className="px-4 py-3">
-                                                            <span className="text-gray-400 text-xs px-2 py-1 bg-white/5 rounded-md">{t.assignedTo || 'Non assigné'}</span>
-                                                        </td>
-                                                        <td className="px-4 py-3 text-gray-400 text-xs">
-                                                            {t.startDate ? new Date(t.startDate).toLocaleDateString('fr-FR') : '—'}
-                                                            <span className="mx-1 text-gray-600">→</span>
-                                                            {t.endDate ? new Date(t.endDate).toLocaleDateString('fr-FR') : '—'}
-                                                        </td>
-                                                        <td className="px-4 py-3 text-gray-400 text-xs">{t.duration != null ? `${t.duration} j` : '—'}</td>
-                                                        <td className="px-4 py-3">
-                                                            <span className={`px-2 py-0.5 rounded-sm text-xs font-medium border ${config.bg} ${config.text} ${config.border}`}>{t.status || '—'}</span>
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })}
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <div className="px-4 py-2 border-t border-white/5 text-gray-500 text-xs">
-                                    {tasks.length} tâche(s) affichée(s)
                                 </div>
                             </div>
                         </>
