@@ -71,7 +71,7 @@ export default function AdminWeeklyGraph() {
 
     if (loading) {
         return (
-            <div className="glass-panel rounded-2xl p-6 min-h-[400px] flex items-center justify-center">
+            <div className="glass-panel rounded-md p-6 min-h-[400px] flex items-center justify-center">
                 <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
             </div>
         );
@@ -79,7 +79,7 @@ export default function AdminWeeklyGraph() {
 
     if (data.length === 0) {
         return (
-            <div className="glass-panel rounded-2xl p-6 min-h-[400px] flex flex-col items-center justify-center text-slate-400">
+            <div className="glass-panel rounded-md p-6 min-h-[400px] flex flex-col items-center justify-center text-slate-400">
                 <span className="material-symbols-outlined text-4xl mb-2 opacity-50">analytics</span>
                 <p>Aucune donnée historique trouvée pour le graphique.</p>
             </div>
@@ -87,7 +87,7 @@ export default function AdminWeeklyGraph() {
     }
 
     return (
-        <div className="glass-panel rounded-2xl p-6 w-full mt-6 bg-[#060b18]/50 border border-white/5">
+        <div className="glass-panel rounded-md p-6 w-full mt-6 bg-[#060b18]/50 border border-white/5">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
                 <div>
                     <h2 className="text-xl font-bold text-white mb-1">
@@ -116,7 +116,7 @@ export default function AdminWeeklyGraph() {
                         <button
                             key={proj}
                             onClick={() => toggleProject(proj)}
-                            className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-semibold transition-all ${activeClasses}`}
+                            className={`flex items-center gap-2 px-3 py-1.5 rounded-sm border text-xs font-semibold transition-all ${activeClasses}`}
                         >
                             <span className={`w-2 h-2 rounded-full ${activeDotClass}`} />
                             {proj}

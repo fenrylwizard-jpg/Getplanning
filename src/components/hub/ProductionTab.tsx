@@ -64,7 +64,7 @@ export default function ProductionTab({ project }: ProductionTabProps) {
     return (
         <div className="flex flex-col gap-8">
             {/* Global Progress */}
-            <div className="bg-[#080d1a]/80 border border-white/5 rounded-2xl p-6">
+            <div className="bg-[#080d1a]/80 border border-white/5 rounded-md p-6">
                 <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 mb-4">
                     <T k="global_budget_progress" />
                 </h3>
@@ -84,7 +84,7 @@ export default function ProductionTab({ project }: ProductionTabProps) {
                 </div>
 
                 <style>{`.production-progress-bar{width:${completionPercentage}%}`}</style>
-                <div className="w-full h-6 bg-white/5 rounded-xl overflow-hidden relative mb-6">
+                <div className="w-full h-6 bg-white/5 rounded-md overflow-hidden relative mb-6">
                     <div className="absolute h-full transition-all duration-1000 ease-out bg-gradient-to-r from-blue-500 to-purple-500 production-progress-bar" />
                     <div className="absolute w-full h-full flex items-center justify-center text-[0.8rem] font-bold text-white drop-shadow-md">
                         {completionPercentage.toFixed(1)}% <T k="completed" />
@@ -94,17 +94,17 @@ export default function ProductionTab({ project }: ProductionTabProps) {
                 {/* Budget Cards */}
                 {totalLaborMinsTotal > 0 && (
                     <div className="grid grid-cols-3 gap-4">
-                        <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 text-center">
+                        <div className="bg-blue-500/10 border border-blue-500/20 rounded-md p-4 text-center">
                             <div className="text-[10px] uppercase tracking-widest text-blue-400 font-black mb-1">Budget MO</div>
                             <div className="text-xl font-black text-white">{budgetEur.toLocaleString()} €</div>
                             <div className="text-xs text-gray-500">{(totalLaborMinsTotal/60).toFixed(0)}h × {HOURLY_RATE_EUR}€</div>
                         </div>
-                        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 text-center">
+                        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-md p-4 text-center">
                             <div className="text-[10px] uppercase tracking-widest text-emerald-400 font-black mb-1"><T k="achieved_value" /></div>
                             <div className="text-xl font-black text-emerald-400">{spentEur.toLocaleString()} €</div>
                             <div className="text-xs text-gray-500">{(totalLaborMinsAchieved/60).toFixed(0)}h réalisées</div>
                         </div>
-                        <div className={`${remaining >= 0 ? 'bg-amber-500/10 border-amber-500/20' : 'bg-red-500/10 border-red-500/20'} border rounded-xl p-4 text-center`}>
+                        <div className={`${remaining >= 0 ? 'bg-amber-500/10 border-amber-500/20' : 'bg-red-500/10 border-red-500/20'} border rounded-md p-4 text-center`}>
                             <div className={`text-[10px] uppercase tracking-widest font-black mb-1 ${remaining >= 0 ? 'text-amber-400' : 'text-red-400'}`}><T k="remaining" /></div>
                             <div className={`text-xl font-black ${remaining >= 0 ? 'text-amber-400' : 'text-red-400'}`}>{remaining.toLocaleString()} €</div>
                             <div className="text-xs text-gray-500">Taux: {HOURLY_RATE_EUR} €/h</div>
@@ -117,7 +117,7 @@ export default function ProductionTab({ project }: ProductionTabProps) {
             <ProjectAnalyticsCharts tasks={project.tasks} weeklyPlans={project.weeklyPlans} />
 
             {/* Weekly Plans */}
-            <div className="bg-[#080d1a]/80 border border-white/5 rounded-2xl p-6">
+            <div className="bg-[#080d1a]/80 border border-white/5 rounded-md p-6">
                 <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 mb-4">
                     <T k="weekly_reports" /> ({project.weeklyPlans.length})
                 </h3>
@@ -177,7 +177,7 @@ interface PlanCardProps {
 
 function PlanCard({ plan, projectId }: PlanCardProps) {
     return (
-        <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:border-white/10 transition-all group">
+        <div className="flex items-center justify-between p-4 rounded-md bg-white/5 border border-white/5 hover:border-white/10 transition-all group">
             <div>
                 <div className="flex items-center gap-2">
                     <span className="font-bold text-white"><T k="week" /> {plan.weekNumber}, {plan.year}</span>
@@ -188,9 +188,9 @@ function PlanCard({ plan, projectId }: PlanCardProps) {
             </div>
             <div className="flex items-center gap-3">
                 <div>
-                    {!plan.isSubmitted && <span className="text-xs px-2 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 font-bold"><T k="in_progress" /></span>}
-                    {plan.isSubmitted && plan.targetReached && <span className="text-xs px-2 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold flex items-center gap-1"><CheckCircle2 size={12} /> <T k="target_hit" /></span>}
-                    {plan.isSubmitted && !plan.targetReached && <span className="text-xs px-2 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 font-bold flex items-center gap-1"><ShieldAlert size={12} /> <T k="target_missed" /></span>}
+                    {!plan.isSubmitted && <span className="text-xs px-2 py-1 rounded-sm bg-amber-500/10 border border-amber-500/20 text-amber-400 font-bold"><T k="in_progress" /></span>}
+                    {plan.isSubmitted && plan.targetReached && <span className="text-xs px-2 py-1 rounded-sm bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold flex items-center gap-1"><CheckCircle2 size={12} /> <T k="target_hit" /></span>}
+                    {plan.isSubmitted && !plan.targetReached && <span className="text-xs px-2 py-1 rounded-sm bg-red-500/10 border border-red-500/20 text-red-400 font-bold flex items-center gap-1"><ShieldAlert size={12} /> <T k="target_missed" /></span>}
                 </div>
                 <Link href={`/pm/project/${projectId}/plan/${plan.id}`} className="text-[10px] font-black uppercase tracking-widest text-cyan-400 hover:text-cyan-300 transition-colors flex items-center gap-1">
                     <T k="plan_details" /> <ArrowLeft size={10} className="rotate-180" />

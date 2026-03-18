@@ -361,7 +361,7 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
             <h2 className="text-2xl font-bold text-white mb-2"><T k="no_active_plan" /></h2>
             <p className="text-gray-400 mb-8 max-w-sm"><T k="no_active_plan_desc" /></p>
             <button 
-                className="px-8 py-4 rounded-full bg-cyan-600/20 text-cyan-400 font-bold border border-cyan-500/50 hover:bg-cyan-500 hover:text-[#050810] transition-colors" 
+                className="px-8 py-4 rounded-sm bg-cyan-600/20 text-cyan-400 font-bold border border-cyan-500/50 hover:bg-cyan-500 hover:text-[#050810] transition-colors" 
                 onClick={() => router.push(`/sm/project/${id}/plan`)}
                 title={t("plan_next_week_title")}
             >
@@ -402,18 +402,18 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                                 <T k="daily_report_title" />
                             </h2>
                             <div className="flex items-center gap-3 mt-2">
-                                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20">
+                                <div className="flex items-center gap-1.5 px-3 py-1 rounded-sm bg-cyan-500/10 border border-cyan-500/20">
                                     <Calendar size={14} className="text-cyan-400" />
                                     <span className="text-sm font-bold text-cyan-400">{weekLabel}</span>
                                 </div>
-                                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20">
+                                <div className="flex items-center gap-1.5 px-3 py-1 rounded-sm bg-purple-500/10 border border-purple-500/20">
                                     <Clock size={14} className="text-purple-400" />
                                     <span className="text-sm font-bold text-purple-400">{activePlan.targetHoursCapacity.toFixed(0)}h <T k="weekly_planned" /></span>
                                 </div>
                             </div>
                         </div>
                         {isOffline && (
-                            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-500/10 border border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]">
+                            <div className="flex items-center gap-2 px-3 py-1.5 rounded-sm bg-red-500/10 border border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]">
                                 <WifiOff size={16} className="text-red-400" />
                                 <span className="text-xs font-bold text-red-400 tracking-wider"><T k="offline_badge" /></span>
                             </div>
@@ -438,7 +438,7 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                                     onClick={() => !isDisabled && setSelectedDate(startOfDay(day.date))}
                                     disabled={isDisabled}
                                     className={`
-                                        relative flex flex-col items-center py-3 px-1 sm:px-3 rounded-2xl border transition-all duration-200
+                                        relative flex flex-col items-center py-3 px-1 sm:px-3 rounded-md border transition-all duration-200
                                         ${isSelected
                                             ? 'bg-orange-500/20 border-orange-500/50 text-orange-400 shadow-[0_0_20px_rgba(249,115,22,0.2)] scale-105'
                                             : day.isToday
@@ -457,17 +457,17 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                                     
                                     {/* Status badges */}
                                     {day.hasReport && (
-                                        <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg">
+                                        <div className="absolute -top-1 -right-1 w-5 h-5 rounded-sm bg-emerald-500 flex items-center justify-center shadow-lg">
                                             <CheckCircle2 size={12} className="text-white" />
                                         </div>
                                     )}
                                     {day.isPast && !day.hasReport && (
-                                        <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center shadow-lg animate-pulse">
+                                        <div className="absolute -top-1 -right-1 w-5 h-5 rounded-sm bg-amber-500 flex items-center justify-center shadow-lg animate-pulse">
                                             <AlertTriangle size={10} className="text-white" />
                                         </div>
                                     )}
                                     {day.isToday && !day.hasReport && (
-                                        <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 px-1.5 py-0.5 rounded-full bg-cyan-500 text-[8px] font-black text-white uppercase tracking-wider shadow-lg">
+                                        <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 px-1.5 py-0.5 rounded-sm bg-cyan-500 text-[8px] font-black text-white uppercase tracking-wider shadow-lg">
                                             {t("today") || "Today"}
                                         </div>
                                     )}
@@ -484,7 +484,7 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                                     {format(selectedDate, 'EEEE d MMMM yyyy', { locale })}
                                 </span>
                                 {isBackfill && (
-                                    <span className="px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/30 text-amber-400 text-[10px] font-black uppercase">
+                                    <span className="px-2 py-0.5 rounded-sm bg-amber-500/20 border border-amber-500/30 text-amber-400 text-[10px] font-black uppercase">
                                         <T k="late_report" />
                                     </span>
                                 )}
@@ -503,7 +503,7 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                         <p className="text-gray-400 text-sm mb-4"><T k="late_report_reason_desc" /></p>
                         <select 
                             aria-label="Late report reason"
-                            className="w-full bg-[#050810]/80 border border-amber-500/40 text-white rounded-2xl py-4 px-4 outline-none focus:ring-1 focus:ring-amber-500 appearance-none font-bold mb-3"
+                            className="w-full bg-[#050810]/80 border border-amber-500/40 text-white rounded-md py-4 px-4 outline-none focus:ring-1 focus:ring-amber-500 appearance-none font-bold mb-3"
                             value={lateReason}
                             onChange={(e) => setLateReason(e.target.value)}
                         >
@@ -515,7 +515,7 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                         </select>
                         {lateReason === 'OTHER' && (
                             <textarea
-                                className="w-full bg-[#050810]/60 border border-amber-500/20 text-white rounded-2xl py-3 px-4 outline-none focus:border-amber-500 resize-none placeholder:text-gray-600"
+                                className="w-full bg-[#050810]/60 border border-amber-500/20 text-white rounded-md py-3 px-4 outline-none focus:border-amber-500 resize-none placeholder:text-gray-600"
                                 rows={2}
                                 placeholder={t("describe_reason") || "Describe the reason..."}
                                 value={lateDescription}
@@ -539,7 +539,7 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                             <input
                                 id="workersCount"
                                 type="number"
-                                className="w-full bg-[#050810]/50 border border-white/10 text-white text-2xl font-black rounded-2xl py-4 px-4 outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 transition-all text-center"
+                                className="w-full bg-[#050810]/50 border border-white/10 text-white text-2xl font-black rounded-md py-4 px-4 outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 transition-all text-center"
                                 placeholder="0"
                                 min="0"
                                 value={workersCount}
@@ -585,7 +585,7 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                             <div className="flex flex-col flex-1 pr-4">
                                 <label htmlFor={`actual_${pt.id}`} className="font-bold text-white/90 text-lg mb-1 leading-tight flex items-center flex-wrap gap-2">
                                     {pt.task.description}
-                                    {pt.isAdHoc && <span className="text-xs bg-orange-500/20 border border-orange-500/30 text-orange-400 px-2 py-0.5 rounded-full uppercase tracking-wider font-bold"><T k="non_planifie_badge" /></span>}
+                                    {pt.isAdHoc && <span className="text-xs bg-orange-500/20 border border-orange-500/30 text-orange-400 px-2 py-0.5 rounded-sm uppercase tracking-wider font-bold"><T k="non_planifie_badge" /></span>}
                                 </label>
                                 {!pt.isAdHoc && <div className="text-cyan-400/80 text-xs font-bold tracking-wider uppercase"><T k="planned_qty_var" />{pt.plannedQuantity} <T k={pt.task.unit} /></div>}
                             </div>
@@ -595,7 +595,7 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                                     <input
                                         id={`actual_${pt.id}`}
                                         type="number"
-                                        className="w-full bg-[#050810]/50 border border-white/10 text-white text-xl font-bold rounded-2xl py-4 px-4 outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 transition-all text-center"
+                                        className="w-full bg-[#050810]/50 border border-white/10 text-white text-xl font-bold rounded-md py-4 px-4 outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 transition-all text-center"
                                         placeholder="0"
                                         min="0"
                                         value={actuals[pt.id] || ''}
@@ -606,7 +606,7 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                                     </div>
                                 </div>
                                 
-                                <label htmlFor={`photo_${pt.id}`} className={`shrink-0 flex items-center justify-center w-14 h-14 rounded-2xl cursor-pointer transition-all ${taskPhotos[pt.id] ? 'bg-green-500/20 border-green-500/50 text-green-400 shadow-[0_0_15px_rgba(34,197,94,0.3)]' : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10 hover:text-white'} border`}>
+                                <label htmlFor={`photo_${pt.id}`} className={`shrink-0 flex items-center justify-center w-14 h-14 rounded-md cursor-pointer transition-all ${taskPhotos[pt.id] ? 'bg-green-500/20 border-green-500/50 text-green-400 shadow-[0_0_15px_rgba(34,197,94,0.3)]' : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10 hover:text-white'} border`}>
                                     <Camera size={24} />
                                     <CameraInput 
                                         id={`photo_${pt.id}`}
@@ -624,7 +624,7 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                                         <select 
                                             key={locIndex}
                                             aria-label={`Localisation ${locIndex + 1}`}
-                                            className="bg-[#050810]/50 border border-white/10 text-gray-300 text-xs py-2 px-2 rounded-xl outline-none focus:border-cyan-400 font-medium transition-colors"
+                                            className="bg-[#050810]/50 border border-white/10 text-gray-300 text-xs py-2 px-2 rounded-md outline-none focus:border-cyan-400 font-medium transition-colors"
                                             value={(taskLocations[pt.id] || [])[locIndex] || ''}
                                             onChange={(e) => {
                                                 const newLocs = [...(taskLocations[pt.id] || [])];
@@ -650,7 +650,7 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                                     </div>
                                     <select
                                         aria-label="Raison du dépassement"
-                                        className="w-full bg-amber-950/30 border border-amber-500/30 text-amber-200 text-sm py-2.5 px-4 rounded-xl outline-none focus:border-amber-400 font-medium mb-2"
+                                        className="w-full bg-amber-950/30 border border-amber-500/30 text-amber-200 text-sm py-2.5 px-4 rounded-md outline-none focus:border-amber-400 font-medium mb-2"
                                         value={blockageLogs[pt.id]?.reason || ''}
                                         onChange={(e) => setBlockageLogs(prev => ({ ...prev, [pt.id]: { ...prev[pt.id], reason: e.target.value, description: prev[pt.id]?.description || '' } }))}
                                     >
@@ -661,7 +661,7 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                                         <option value="OTHER"><T k="other_reason" /></option>
                                     </select>
                                     <textarea
-                                        className="w-full bg-amber-950/20 border border-amber-500/20 text-white text-sm py-2.5 px-4 rounded-xl outline-none focus:border-amber-400 placeholder:text-amber-800 resize-none"
+                                        className="w-full bg-amber-950/20 border border-amber-500/20 text-white text-sm py-2.5 px-4 rounded-md outline-none focus:border-amber-400 placeholder:text-amber-800 resize-none"
                                         rows={2}
                                         placeholder={t("describe_overrun") || "Describe the reason for exceeding planned quantity..."}
                                         value={blockageLogs[pt.id]?.description || ''}
@@ -679,7 +679,7 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                     <h3 className="text-xl font-bold flex items-center gap-2 mb-4 text-orange-400"><T k="add_unplanned_task" /></h3>
                     <div className="flex flex-col sm:flex-row gap-4">
                         <select 
-                            className="flex-1 bg-[#050810]/50 border border-white/10 text-white py-3 px-4 rounded-xl outline-none focus:border-orange-400"
+                            className="flex-1 bg-[#050810]/50 border border-white/10 text-white py-3 px-4 rounded-md outline-none focus:border-orange-400"
                             value={selectedCategory}
                             title={t('select_category')}
                             onChange={(e) => {
@@ -692,7 +692,7 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                         </select>
                         
                         <select
-                            className="flex-[2] bg-[#050810]/50 border border-white/10 text-white py-3 px-4 rounded-xl outline-none focus:border-orange-400 disabled:opacity-50"
+                            className="flex-[2] bg-[#050810]/50 border border-white/10 text-white py-3 px-4 rounded-md outline-none focus:border-orange-400 disabled:opacity-50"
                             value={selectedAdHocTaskId}
                             title={t('select_task')}
                             onChange={(e) => setSelectedAdHocTaskId(e.target.value)}
@@ -705,7 +705,7 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                         </select>
 
                         <button 
-                            className="bg-orange-500/20 border border-orange-500/50 hover:bg-orange-500 text-white font-bold py-3 px-6 rounded-xl transition-colors disabled:opacity-50"
+                            className="bg-orange-500/20 border border-orange-500/50 hover:bg-orange-500 text-white font-bold py-3 px-6 rounded-md transition-colors disabled:opacity-50"
                             onClick={addAdHocTask}
                             title={t('add_btn')}
                             disabled={!selectedAdHocTaskId}
@@ -724,13 +724,13 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                         <h3 className="text-2xl font-black text-white mb-6 drop-shadow-md"><T k="issues_observations" /></h3>
                     
                     {!hitTarget && (
-                        <div className="mb-6 p-4 rounded-2xl bg-orange-500/10 border border-orange-500/30 animate-pulse">
+                        <div className="mb-6 p-4 rounded-md bg-orange-500/10 border border-orange-500/30 animate-pulse">
                             <p className="text-orange-400 text-sm font-bold flex items-center gap-2 mb-3">
                                 <AlertCircle size={16} /> <T k="target_missed_categorize" />
                             </p>
                             <select 
                                 aria-label="Raison de l'objectif manqué"
-                                className="w-full bg-[#050810]/80 border border-orange-500/50 text-white rounded-2xl py-4 px-4 outline-none focus:ring-1 focus:ring-orange-500 appearance-none font-bold" 
+                                className="w-full bg-[#050810]/80 border border-orange-500/50 text-white rounded-md py-4 px-4 outline-none focus:ring-1 focus:ring-orange-500 appearance-none font-bold" 
                                 value={issueCategory}
                                 onChange={(e) => setIssueCategory(e.target.value)}
                             >
@@ -749,7 +749,7 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
 
                     <textarea
                         aria-label="Description du problème"
-                        className="w-full bg-[#050810]/80 border border-white/10 text-white rounded-2xl py-4 px-4 min-h-[120px] outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/50 resize-y placeholder-gray-600"
+                        className="w-full bg-[#050810]/80 border border-white/10 text-white rounded-md py-4 px-4 min-h-[120px] outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/50 resize-y placeholder-gray-600"
                         placeholder={t("problem_details_placeholder")}
                         value={issueDescription}
                         onChange={(e) => setIssueDescription(e.target.value)}
@@ -758,12 +758,12 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                     <div className="mt-8 pt-8 border-t border-white/10">
                         <h3 className="font-bold text-white mb-1"><T k="empty_drums_title" /></h3>
                         <p className="text-gray-400 text-sm mb-4"><T k="empty_drums_desc" /></p>
-                        <div className="flex items-center justify-between bg-[#050810]/50 p-4 rounded-2xl border border-white/5">
+                        <div className="flex items-center justify-between bg-[#050810]/50 p-4 rounded-md border border-white/5">
                             <label htmlFor="emptyDrums" className="font-medium text-gray-300 cursor-pointer"><T k="empty_drums_label" /></label>
                             <input 
                                 id="emptyDrums"
                                 type="number" 
-                                className="w-[100px] bg-[#050810] border border-white/20 text-white text-xl font-bold rounded-xl py-2 px-3 outline-none text-center focus:border-cyan-400" 
+                                className="w-[100px] bg-[#050810] border border-white/20 text-white text-xl font-bold rounded-md py-2 px-3 outline-none text-center focus:border-cyan-400" 
                                 min="0"
                                 value={emptyDrumsCount}
                                 onChange={(e) => setEmptyDrumsCount(parseInt(e.target.value) || 0)}

@@ -80,7 +80,7 @@ export default function WeekComparison({ projectId }: WeekComparisonProps) {
     if (weeks.length < 2) return null;
 
     return (
-        <div className="glass-card bg-[#0a1020]/80 border border-white/5 rounded-[24px] p-6">
+        <div className="glass-card bg-[#0a1020]/80 border border-white/5 rounded-md p-6">
             <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-bold flex items-center gap-2">
                     <ArrowLeftRight size={18} className="text-purple-400" />
@@ -97,7 +97,7 @@ export default function WeekComparison({ projectId }: WeekComparisonProps) {
                         value={selectedA} 
                         onChange={e => setSelectedA(e.target.value)}
                         title="Sélectionner la semaine A"
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm"
+                        className="w-full bg-white/5 border border-white/10 rounded-md px-3 py-2 text-sm"
                     >
                         {weeks.map(w => <option key={w} value={w}>{w}</option>)}
                     </select>
@@ -113,7 +113,7 @@ export default function WeekComparison({ projectId }: WeekComparisonProps) {
                         value={selectedB} 
                         onChange={e => setSelectedB(e.target.value)}
                         title="Sélectionner la semaine B"
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm"
+                        className="w-full bg-white/5 border border-white/10 rounded-md px-3 py-2 text-sm"
                     >
                         {weeks.map(w => <option key={w} value={w}>{w}</option>)}
                     </select>
@@ -157,7 +157,7 @@ function ComparisonCard({ label, valueA, valueB, unit, DeltaIndicator }: {
     DeltaIndicator: React.ComponentType<{ a: number; b: number; unit?: string }>;
 }) {
     return (
-        <div className="bg-white/[0.03] border border-white/5 rounded-xl p-4 text-center">
+        <div className="bg-white/[0.03] border border-white/5 rounded-md p-4 text-center">
             <div className="text-[10px] uppercase tracking-widest text-gray-500 mb-3">{label}</div>
             <div className="flex justify-between text-sm mb-2">
                 <span className="text-gray-400">{valueA.toFixed(1)}{unit}</span>

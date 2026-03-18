@@ -112,7 +112,7 @@ function CategoryCard({ summary }: { summary: DossierSummary }) {
     const order = ['APP', 'BPE', 'ASB', 'APR', 'ATT', 'PENDING', 'REF'];
     
     return (
-        <div className={`bg-gradient-to-br ${colors.gradient} backdrop-blur-sm border border-white/10 rounded-2xl p-6`}>
+        <div className={`bg-gradient-to-br ${colors.gradient} backdrop-blur-sm border border-white/10 rounded-md p-6`}>
             <div className="flex items-start gap-5">
                 <DonutChart statuses={summary.statuses} total={summary.total} />
                 <div className="flex-1 min-w-0">
@@ -141,7 +141,7 @@ function CategoryCard({ summary }: { summary: DossierSummary }) {
                             if (!cfg) return null;
                             const count = summary.statuses[status] || 0;
                             return (
-                                <span key={status} className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium border ${cfg.bgColor} ${cfg.color} ${cfg.borderColor}`}>
+                                <span key={status} className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-sm text-[10px] font-medium border ${cfg.bgColor} ${cfg.color} ${cfg.borderColor}`}>
                                     <cfg.Icon size={10} />
                                     {cfg.label}: {count}
                                 </span>
@@ -172,7 +172,7 @@ function GlobalSummary({ summaries }: { summaries: DossierSummary[] }) {
     const pending = (allStatuses['PENDING'] || 0) + (allStatuses['ATT'] || 0);
     
     return (
-        <div className="bg-gradient-to-r from-blue-900/40 to-emerald-900/40 backdrop-blur-sm rounded-2xl border border-white/10 p-6">
+        <div className="bg-gradient-to-r from-blue-900/40 to-emerald-900/40 backdrop-blur-sm rounded-md border border-white/10 p-6">
             <div className="flex flex-col md:flex-row items-center justify-between gap-6">
                 <div>
                     <h3 className="text-2xl font-semibold text-white mb-1">Dossier Technique</h3>
@@ -271,13 +271,13 @@ export default function DossierTechniqueTab({ project }: DossierTechniqueTabProp
 
             {/* Data source indicator */}
             {!hasData ? (
-                <div className="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-4 text-center">
+                <div className="bg-amber-500/5 border border-amber-500/20 rounded-md p-4 text-center">
                     <p className="text-xs text-amber-300">
                         Aucune donnée importée — importez un fichier Suivi des Études pour voir le dossier technique
                     </p>
                 </div>
             ) : (
-                <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-4 flex items-center justify-center gap-2">
+                <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-md p-4 flex items-center justify-center gap-2">
                     <CheckCircle2 size={16} className="text-emerald-400" />
                     <p className="text-xs text-emerald-300 font-semibold">
                         Données importées actives — {dossierSummaries.reduce((s, d) => s + d.total, 0)} documents + {tasks.length} tâches Gantt
@@ -292,7 +292,7 @@ export default function DossierTechniqueTab({ project }: DossierTechniqueTabProp
             ) : hasData ? (
                 <>
                     {/* Sub-tabs: Dossier | Gantt */}
-                    <div className="flex gap-2 bg-[#080d1a]/80 border border-white/5 rounded-xl p-1">
+                    <div className="flex gap-2 bg-[#080d1a]/80 border border-white/5 rounded-md p-1">
                         <button onClick={() => setActiveTab('dossier')}
                             className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${activeTab === 'dossier' ? 'bg-white/10 text-white' : 'text-gray-400 hover:text-white'}`}>
                             📋 Dossier Technique ({dossierSummaries.reduce((s, d) => s + d.total, 0)})
@@ -316,11 +316,11 @@ export default function DossierTechniqueTab({ project }: DossierTechniqueTabProp
                             </div>
 
                             {/* Status Legend */}
-                            <div className="bg-[#080d1a]/60 border border-white/5 rounded-xl p-4">
+                            <div className="bg-[#080d1a]/60 border border-white/5 rounded-md p-4">
                                 <h4 className="text-gray-400 text-xs uppercase tracking-wider mb-3">Légende des statuts</h4>
                                 <div className="flex flex-wrap gap-3">
                                     {Object.entries(STATUS_LEGEND).map(([code, cfg]) => (
-                                        <span key={code} className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${cfg.bgColor} ${cfg.color} ${cfg.borderColor}`}>
+                                        <span key={code} className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm text-xs font-medium border ${cfg.bgColor} ${cfg.color} ${cfg.borderColor}`}>
                                             <cfg.Icon size={12} />
                                             <strong>{code}</strong> = {cfg.label}
                                         </span>
@@ -333,7 +333,7 @@ export default function DossierTechniqueTab({ project }: DossierTechniqueTabProp
                     {activeTab === 'gantt' && tasks.length > 0 && (
                         <>
                             {/* Tasks Table */}
-                            <div className="bg-[#080d1a]/80 border border-white/5 rounded-2xl overflow-hidden">
+                            <div className="bg-[#080d1a]/80 border border-white/5 rounded-md overflow-hidden">
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-sm">
                                         <thead>
@@ -365,7 +365,7 @@ export default function DossierTechniqueTab({ project }: DossierTechniqueTabProp
                                                         </td>
                                                         <td className="px-4 py-3 text-gray-400 text-xs">{t.duration != null ? `${t.duration} j` : '—'}</td>
                                                         <td className="px-4 py-3">
-                                                            <span className={`px-2 py-0.5 rounded-full text-xs font-medium border ${config.bg} ${config.text} ${config.border}`}>{t.status || '—'}</span>
+                                                            <span className={`px-2 py-0.5 rounded-sm text-xs font-medium border ${config.bg} ${config.text} ${config.border}`}>{t.status || '—'}</span>
                                                         </td>
                                                     </tr>
                                                 );

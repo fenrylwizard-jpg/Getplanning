@@ -125,13 +125,13 @@ export default function FinancesTab({ project }: FinancesTabProps) {
 
             {/* Data source indicator */}
             {isDemo ? (
-                <div className="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-4 text-center">
+                <div className="bg-amber-500/5 border border-amber-500/20 rounded-md p-4 text-center">
                     <p className="text-xs text-amber-300">
                         <T k="hub_demo_data_notice" /> — <T k="hub_upload_to_replace" />
                     </p>
                 </div>
             ) : (
-                <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-4 flex items-center justify-center gap-2">
+                <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-md p-4 flex items-center justify-center gap-2">
                     <CheckCircle2 size={16} className="text-emerald-400" />
                     <p className="text-xs text-emerald-300 font-semibold">
                         Données importées actives — {snapshots.length} snapshot{snapshots.length > 1 ? 's' : ''} financier{snapshots.length > 1 ? 's' : ''}
@@ -153,9 +153,9 @@ export default function FinancesTab({ project }: FinancesTabProps) {
                             { label: "Engagé", value: `${(DEMO_FINANCE.totalCommitted / 1e6).toFixed(2)}M €`, icon: Receipt, color: "blue" },
                             { label: "Marge", value: `${(DEMO_FINANCE.margin / 1000).toFixed(0)}k €`, icon: TrendingUp, color: "emerald" },
                         ].map(card => (
-                            <div key={card.label} className="bg-[#080d1a]/80 border border-white/5 rounded-2xl p-5 opacity-60">
+                            <div key={card.label} className="bg-[#080d1a]/80 border border-white/5 rounded-md p-5 opacity-60">
                                 <div className="flex items-center gap-3 mb-3">
-                                    <div className={`w-10 h-10 rounded-xl bg-${card.color}-500/20 border border-${card.color}-500/30 flex items-center justify-center`}>
+                                    <div className={`w-10 h-10 rounded-md bg-${card.color}-500/20 border border-${card.color}-500/30 flex items-center justify-center`}>
                                         <card.icon size={18} className={`text-${card.color}-400`} />
                                     </div>
                                     <span className="text-[10px] uppercase tracking-widest text-gray-400 font-black">{card.label}</span>
@@ -166,7 +166,7 @@ export default function FinancesTab({ project }: FinancesTabProps) {
                     </div>
 
                     {/* Demo monthly chart */}
-                    <div className="bg-[#080d1a]/80 border border-white/5 rounded-2xl p-6 opacity-60">
+                    <div className="bg-[#080d1a]/80 border border-white/5 rounded-md p-6 opacity-60">
                         <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 mb-4 flex items-center gap-2">
                             <TrendingUp size={16} className="text-emerald-400" />
                             <T k="hub_monthly_costs" />
@@ -198,7 +198,7 @@ export default function FinancesTab({ project }: FinancesTabProps) {
                             { label: 'Résultat', value: fmt(latest.result), icon: (latest.result || 0) >= 0 ? '📈' : '📉', color: (latest.result || 0) >= 0 ? 'from-emerald-500/20 to-emerald-600/10' : 'from-red-500/20 to-red-600/10' },
                             { label: 'Marge', value: pct(latest.marginPercent), icon: '🎯', color: (latest.marginPercent || 0) >= 0.05 ? 'from-cyan-500/20 to-cyan-600/10' : 'from-amber-500/20 to-amber-600/10' },
                         ].map(card => (
-                            <div key={card.label} className={`bg-gradient-to-br ${card.color} backdrop-blur-sm rounded-xl border border-white/5 p-5`}>
+                            <div key={card.label} className={`bg-gradient-to-br ${card.color} backdrop-blur-sm rounded-md border border-white/5 p-5`}>
                                 <div className="flex items-center gap-3 mb-2">
                                     <span className="text-2xl">{card.icon}</span>
                                     <p className="text-gray-400 text-xs font-medium uppercase tracking-wider">{card.label}</p>
@@ -210,7 +210,7 @@ export default function FinancesTab({ project }: FinancesTabProps) {
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Result Evolution Chart */}
-                        <div className="bg-[#080d1a]/80 border border-white/5 rounded-2xl p-6">
+                        <div className="bg-[#080d1a]/80 border border-white/5 rounded-md p-6">
                             <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 mb-4">📊 Évolution du Résultat</h3>
                             <div className="space-y-3">
                                 {snapshots.map((snap, idx) => {
@@ -233,7 +233,7 @@ export default function FinancesTab({ project }: FinancesTabProps) {
                         </div>
 
                         {/* Cost Breakdown */}
-                        <div className="bg-[#080d1a]/80 border border-white/5 rounded-2xl p-6">
+                        <div className="bg-[#080d1a]/80 border border-white/5 rounded-md p-6">
                             <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 mb-4">🍩 Répartition des Coûts</h3>
                             {costBreakdown.length > 0 ? (
                                 <div className="space-y-3">
@@ -266,7 +266,7 @@ export default function FinancesTab({ project }: FinancesTabProps) {
                     </div>
 
                     {/* Monthly Comparison Table */}
-                    <div className="bg-[#080d1a]/80 border border-white/5 rounded-2xl overflow-hidden">
+                    <div className="bg-[#080d1a]/80 border border-white/5 rounded-md overflow-hidden">
                         <div className="px-6 py-4 border-b border-white/5">
                             <h3 className="text-white font-semibold flex items-center gap-2">
                                 <span>📅</span> Évolution Mensuelle

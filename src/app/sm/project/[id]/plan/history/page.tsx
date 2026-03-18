@@ -34,7 +34,7 @@ export default async function SMHistoryPage({ params }: { params: Promise<{ id: 
                         <ArrowLeft size={20} /> <span className="text-xs font-black uppercase tracking-widest"><T k="back_to_dashboard" /></span>
                     </Link>
                     <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-400"><History size={18} /></div>
+                        <div className="p-2 rounded-md bg-cyan-500/10 text-cyan-400"><History size={18} /></div>
                         <h1 className="text-xl font-black tracking-tighter"><T k="project_history" /></h1>
                     </div>
                 </div>
@@ -106,11 +106,11 @@ function PlanHistoryCard({ plan, projectId }: { plan: PlanWithTasks, projectId: 
 
     return (
         <Link href={`/sm/project/${projectId}/plan/${plan.id}`} className="block group">
-            <div className="glass-panel p-6 border border-white/5 hover:border-cyan-500/30 bg-[#0a1020]/60 backdrop-blur-xl transition-all rounded-3xl flex flex-col md:flex-row md:items-center justify-between gap-6 overflow-hidden relative">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="glass-panel p-6 border border-white/5 hover:border-cyan-500/30 bg-[#0a1020]/60 backdrop-blur-xl transition-all rounded-md flex flex-col md:flex-row md:items-center justify-between gap-6 overflow-hidden relative">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 blur-3xl rounded-sm opacity-0 group-hover:opacity-100 transition-opacity" />
                 
                 <div className="flex items-center gap-6 relative z-10">
-                    <div className="bg-white/5 p-4 rounded-2xl flex flex-col items-center justify-center min-w-[70px] border border-white/5 group-hover:bg-cyan-500/10 group-hover:border-cyan-500/20 transition-all">
+                    <div className="bg-white/5 p-4 rounded-md flex flex-col items-center justify-center min-w-[70px] border border-white/5 group-hover:bg-cyan-500/10 group-hover:border-cyan-500/20 transition-all">
                         <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">WK</span>
                         <span className="text-2xl font-black text-white">{plan.weekNumber}</span>
                         <span className="text-[10px] font-bold text-cyan-400 group-hover:text-cyan-300 transition-colors uppercase">{plan.year}</span>

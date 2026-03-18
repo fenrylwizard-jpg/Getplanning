@@ -150,7 +150,7 @@ export default function GlobalCategoryAnalytics({ projects }: { projects: Extend
                     return (
                         <div 
                             key={item.name} 
-                            className={`flex items-center justify-between p-4 rounded-2xl border transition-all cursor-default ${
+                            className={`flex items-center justify-between p-4 rounded-md border transition-all cursor-default ${
                                 isActive 
                                     ? `bg-white/10 border-white/30 scale-[1.02] shadow-lg shadow-white/5` 
                                     : `bg-white/[0.03] border-white/5 hover:bg-white/[0.05] opacity-${activeIndex === -1 ? '100' : '50'}`

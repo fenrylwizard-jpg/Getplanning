@@ -56,7 +56,7 @@ export default function FinancesPage() {
 
   if (!projectId) {
     return (
-      <div className="bg-[#0a1a35]/60 backdrop-blur-sm rounded-2xl border border-white/5 p-12 text-center">
+      <div className="bg-[#0a1a35]/60 backdrop-blur-sm rounded-md border border-white/5 p-12 text-center">
         <p className="text-gray-400 text-lg">Sélectionnez un projet pour voir les finances</p>
       </div>
     );
@@ -95,7 +95,7 @@ export default function FinancesPage() {
           { label: 'Résultat', value: fmt(latest.result), icon: (latest.result || 0) >= 0 ? '📈' : '📉', color: (latest.result || 0) >= 0 ? 'from-emerald-500/20 to-emerald-600/10' : 'from-red-500/20 to-red-600/10' },
           { label: 'Marge', value: pct(latest.marginPercent), icon: '🎯', color: (latest.marginPercent || 0) >= 0.05 ? 'from-cyan-500/20 to-cyan-600/10' : 'from-amber-500/20 to-amber-600/10' },
         ].map(card => (
-          <div key={card.label} className={`bg-gradient-to-br ${card.color} backdrop-blur-sm rounded-xl border border-white/5 p-5`}>
+          <div key={card.label} className={`bg-gradient-to-br ${card.color} backdrop-blur-sm rounded-md border border-white/5 p-5`}>
             <div className="flex items-center gap-3 mb-2">
               <span className="text-2xl">{card.icon}</span>
               <p className="text-gray-400 text-xs font-medium uppercase tracking-wider">{card.label}</p>
@@ -103,7 +103,7 @@ export default function FinancesPage() {
             <p className="text-white text-xl font-bold">{card.value}</p>
           </div>
         )) : (
-          <div className="col-span-4 bg-[#0a1a35]/60 backdrop-blur-sm rounded-xl border border-white/5 p-8 text-center text-gray-500">
+          <div className="col-span-4 bg-[#0a1a35]/60 backdrop-blur-sm rounded-md border border-white/5 p-8 text-center text-gray-500">
             Aucune donnée financière disponible
           </div>
         )}
@@ -111,7 +111,7 @@ export default function FinancesPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Result Evolution Chart */}
-        <div className="bg-[#0a1a35]/60 backdrop-blur-sm rounded-2xl border border-white/5 p-6">
+        <div className="bg-[#0a1a35]/60 backdrop-blur-sm rounded-md border border-white/5 p-6">
           <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
             <span>📊</span> Évolution du Résultat
           </h3>
@@ -154,7 +154,7 @@ export default function FinancesPage() {
         </div>
 
         {/* Cost Breakdown */}
-        <div className="bg-[#0a1a35]/60 backdrop-blur-sm rounded-2xl border border-white/5 p-6">
+        <div className="bg-[#0a1a35]/60 backdrop-blur-sm rounded-md border border-white/5 p-6">
           <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
             <span>🍩</span> Répartition des Coûts
             {latest && <span className="text-gray-400 text-xs ml-auto">{latest.sheetName || monthName(latest.month)}</span>}
@@ -192,7 +192,7 @@ export default function FinancesPage() {
       </div>
 
       {/* Monthly Comparison Table */}
-      <div className="bg-[#0a1a35]/60 backdrop-blur-sm rounded-2xl border border-white/5 overflow-hidden">
+      <div className="bg-[#0a1a35]/60 backdrop-blur-sm rounded-md border border-white/5 overflow-hidden">
         <div className="px-6 py-4 border-b border-white/5">
           <h3 className="text-white font-semibold flex items-center gap-2">
             <span>📅</span> Évolution Mensuelle

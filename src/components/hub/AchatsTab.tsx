@@ -104,13 +104,13 @@ export default function AchatsTab({ project }: AchatsTabProps) {
 
             {/* Data source indicator */}
             {isDemo ? (
-                <div className="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-4 text-center">
+                <div className="bg-amber-500/5 border border-amber-500/20 rounded-md p-4 text-center">
                     <p className="text-xs text-amber-300">
                         <T k="hub_demo_data_notice" /> — <T k="hub_upload_to_replace" />
                     </p>
                 </div>
             ) : (
-                <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-4 flex items-center justify-center gap-2">
+                <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-md p-4 flex items-center justify-center gap-2">
                     <CheckCircle2 size={16} className="text-emerald-400" />
                     <p className="text-xs text-emerald-300 font-semibold">
                         Données importées actives — {displayData.length} catégorie{displayData.length > 1 ? 's' : ''} d&apos;achat chargée{displayData.length > 1 ? 's' : ''}
@@ -126,36 +126,36 @@ export default function AchatsTab({ project }: AchatsTabProps) {
                 <>
                     {/* KPI Summary */}
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div className="bg-[#080d1a]/80 border border-white/5 rounded-2xl p-5">
+                        <div className="bg-[#080d1a]/80 border border-white/5 rounded-md p-5">
                             <div className="flex items-center gap-3 mb-3">
-                                <div className="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center">
+                                <div className="w-10 h-10 rounded-md bg-purple-500/20 border border-purple-500/30 flex items-center justify-center">
                                     <DollarSign size={18} className="text-purple-400" />
                                 </div>
                                 <span className="text-[10px] uppercase tracking-widest text-gray-400 font-black"><T k="hub_total_budget" /></span>
                             </div>
                             <div className="text-2xl font-black text-white">{fmt(totalBudget)}</div>
                         </div>
-                        <div className="bg-[#080d1a]/80 border border-white/5 rounded-2xl p-5">
+                        <div className="bg-[#080d1a]/80 border border-white/5 rounded-md p-5">
                             <div className="flex items-center gap-3 mb-3">
-                                <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center">
+                                <div className="w-10 h-10 rounded-md bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center">
                                     <Package size={18} className="text-emerald-400" />
                                 </div>
                                 <span className="text-[10px] uppercase tracking-widest text-gray-400 font-black">Coût Revient</span>
                             </div>
                             <div className="text-2xl font-black text-emerald-400">{fmt(totalCost)}</div>
                         </div>
-                        <div className="bg-[#080d1a]/80 border border-white/5 rounded-2xl p-5">
+                        <div className="bg-[#080d1a]/80 border border-white/5 rounded-md p-5">
                             <div className="flex items-center gap-3 mb-3">
-                                <div className="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center">
+                                <div className="w-10 h-10 rounded-md bg-blue-500/20 border border-blue-500/30 flex items-center justify-center">
                                     <Truck size={18} className="text-blue-400" />
                                 </div>
                                 <span className="text-[10px] uppercase tracking-widest text-gray-400 font-black">Prix Négocié</span>
                             </div>
                             <div className="text-2xl font-black text-blue-400">{fmt(totalNegotiated)}</div>
                         </div>
-                        <div className="bg-[#080d1a]/80 border border-white/5 rounded-2xl p-5">
+                        <div className="bg-[#080d1a]/80 border border-white/5 rounded-md p-5">
                             <div className="flex items-center gap-3 mb-3">
-                                <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center">
+                                <div className="w-10 h-10 rounded-md bg-amber-500/20 border border-amber-500/30 flex items-center justify-center">
                                     <TrendingUp size={18} className="text-amber-400" />
                                 </div>
                                 <span className="text-[10px] uppercase tracking-widest text-gray-400 font-black">RETURN</span>
@@ -165,7 +165,7 @@ export default function AchatsTab({ project }: AchatsTabProps) {
                     </div>
 
                     {/* Purchase Table */}
-                    <div className="bg-[#080d1a]/80 border border-white/5 rounded-2xl overflow-hidden">
+                    <div className="bg-[#080d1a]/80 border border-white/5 rounded-md overflow-hidden">
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm">
                                 <thead>
@@ -193,7 +193,7 @@ export default function AchatsTab({ project }: AchatsTabProps) {
                                             <td className="px-4 py-3 text-gray-300 text-xs">{c.supplierSoum || '—'}</td>
                                             <td className="px-4 py-3 text-xs">
                                                 {c.supplierExe ? (
-                                                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                                                    <span className={`px-2 py-0.5 rounded-sm text-xs font-medium ${
                                                         c.supplierExe !== c.supplierSoum ? 'bg-amber-500/15 text-amber-300' : 'bg-white/5 text-gray-300'
                                                     }`}>{c.supplierExe}</span>
                                                 ) : '—'}

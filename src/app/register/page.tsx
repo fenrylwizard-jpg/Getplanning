@@ -103,7 +103,7 @@ export default function RegisterPage() {
                 </div>
 
                 {errorMsg && (
-                    <div className="bg-red-500/10 text-red-400 p-4 rounded-xl mb-6 text-sm text-center border border-red-500/30 flex items-center gap-2 shadow-[0_0_15px_rgba(239,68,68,0.2)]">
+                    <div className="bg-red-500/10 text-red-400 p-4 rounded-md mb-6 text-sm text-center border border-red-500/30 flex items-center gap-2 shadow-[0_0_15px_rgba(239,68,68,0.2)]">
                         <span className="shrink-0 w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
                         {errorMsg}
                     </div>
@@ -118,7 +118,7 @@ export default function RegisterPage() {
                         <input
                             id="registerName"
                             type="text"
-                            className="w-full bg-[#050810]/50 border border-white/10 text-white rounded-2xl py-3 pl-4 pr-4 outline-none transition-all duration-300 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50 shadow-inner"
+                            className="w-full bg-[#050810]/50 border border-white/10 text-white rounded-md py-3 pl-4 pr-4 outline-none transition-all duration-300 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50 shadow-inner"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             required
@@ -134,7 +134,7 @@ export default function RegisterPage() {
                         <input
                             id="registerCompany"
                             type="text"
-                            className="w-full bg-[#050810]/50 border border-white/10 text-white rounded-2xl py-3 pl-4 pr-4 outline-none transition-all duration-300 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50 shadow-inner"
+                            className="w-full bg-[#050810]/50 border border-white/10 text-white rounded-md py-3 pl-4 pr-4 outline-none transition-all duration-300 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50 shadow-inner"
                             value={company}
                             onChange={(e) => setCompany(e.target.value)}
                             placeholder="ex: Mon Entreprise SA"
@@ -149,7 +149,7 @@ export default function RegisterPage() {
                         <input
                             id="registerEmail"
                             type="email"
-                            className="w-full bg-[#050810]/50 border border-white/10 text-white rounded-2xl py-3 pl-4 pr-4 outline-none transition-all duration-300 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50 shadow-inner"
+                            className="w-full bg-[#050810]/50 border border-white/10 text-white rounded-md py-3 pl-4 pr-4 outline-none transition-all duration-300 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50 shadow-inner"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
@@ -166,7 +166,7 @@ export default function RegisterPage() {
                             <input
                                 id="registerPassword"
                                 type="password"
-                                className="w-full bg-[#050810]/50 border border-white/10 text-white rounded-2xl py-3 pl-4 pr-4 outline-none transition-all duration-300 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50 shadow-inner"
+                                className="w-full bg-[#050810]/50 border border-white/10 text-white rounded-md py-3 pl-4 pr-4 outline-none transition-all duration-300 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50 shadow-inner"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
@@ -181,7 +181,7 @@ export default function RegisterPage() {
                             </label>
                             <select 
                                 id="registerRole"
-                                className="w-full bg-[#050810]/50 border border-white/10 text-white rounded-2xl py-3 pl-4 pr-4 outline-none transition-all duration-300 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50 shadow-inner appearance-none"
+                                className="w-full bg-[#050810]/50 border border-white/10 text-white rounded-md py-3 pl-4 pr-4 outline-none transition-all duration-300 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50 shadow-inner appearance-none"
                                 value={role}
                                 onChange={(e) => setRole(e.target.value)}
                                 aria-label="Rôle Souhaité"
@@ -205,7 +205,7 @@ export default function RegisterPage() {
                                         key={char.id}
                                         type="button"
                                         onClick={() => setCharacterId(char.id)}
-                                        className={`relative rounded-2xl p-1 transition-all duration-300 border-2 aspect-square flex flex-col items-center justify-center gap-1 group ${
+                                        className={`relative rounded-md p-1 transition-all duration-300 border-2 aspect-square flex flex-col items-center justify-center gap-1 group ${
                                             isSelected
                                                 ? `${char.border} bg-transparent scale-110 ${char.shadow}`
                                                 : 'border-transparent bg-transparent hover:border-white/20 hover:scale-105'
@@ -227,7 +227,7 @@ export default function RegisterPage() {
                                             {char.name}
                                         </span>
                                         {isSelected && (
-                                            <div className={`absolute -top-1 -right-1 w-4 h-4 rounded-full bg-gradient-to-br ${char.color} flex items-center justify-center shadow-lg`}>
+                                            <div className={`absolute -top-1 -right-1 w-4 h-4 rounded-sm bg-gradient-to-br ${char.color} flex items-center justify-center shadow-lg`}>
                                                 <span className="text-white text-[8px] font-black">✓</span>
                                             </div>
                                         )}

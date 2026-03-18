@@ -37,13 +37,13 @@ export default function Navbar({ userName, userRole, characterId, level, company
             <div className="flex items-center gap-4">
                 <button 
                     onClick={() => router.back()}
-                    className="flex items-center justify-center w-10 h-10 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors group"
+                    className="flex items-center justify-center w-10 h-10 rounded-md bg-white/5 border border-white/10 hover:bg-white/10 transition-colors group"
                     title="Go Back"
                 >
                     <span className="material-symbols-outlined text-white/70 group-hover:text-white transition-colors">arrow_back</span>
                 </button>
                 <div className="flex items-center gap-3 group">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center text-white font-black text-lg group-hover:scale-110 transition-transform">
+                    <div className="w-10 h-10 rounded-md bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center text-white font-black text-lg group-hover:scale-110 transition-transform">
                         {brandName.charAt(0)}
                     </div>
                     <span className="hidden sm:inline-block text-2xl font-black tracking-tighter text-white drop-shadow-md">
@@ -58,7 +58,7 @@ export default function Navbar({ userName, userRole, characterId, level, company
                 {/* Theme Toggle */}
                 <button
                     onClick={toggleTheme}
-                    className="flex items-center justify-center w-10 h-10 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all group"
+                    className="flex items-center justify-center w-10 h-10 rounded-md bg-white/5 border border-white/10 hover:bg-white/10 transition-all group"
                     title={theme === 'dark' ? 'Mode clair' : 'Mode sombre'}
                 >
                     {theme === 'dark' ? (
@@ -86,7 +86,7 @@ export default function Navbar({ userName, userRole, characterId, level, company
                         </div>
                         <button 
                             onClick={handleLogout}
-                            className="flex items-center justify-center w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 hover:border-red-500/40 transition-all group ml-2"
+                            className="flex items-center justify-center w-10 h-10 rounded-md bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 hover:border-red-500/40 transition-all group ml-2"
                             title="Logout"
                         >
                             <span className="material-symbols-outlined text-red-400 group-hover:text-red-300 transition-colors text-[20px]">logout</span>

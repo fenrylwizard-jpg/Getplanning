@@ -142,7 +142,7 @@ export default function FileUploadZone({
             onDrop={handleDrop}
             onClick={() => state === "idle" && fileInputRef.current?.click()}
             className={`
-                relative overflow-hidden rounded-2xl border-2 border-dashed p-8 sm:p-12
+                relative overflow-hidden rounded-md border-2 border-dashed p-8 sm:p-12
                 transition-all duration-500 cursor-pointer group
                 ${state === "dragging"
                     ? `${colors.border} ${colors.bg} ${colors.glow} scale-[1.02]`
@@ -171,7 +171,7 @@ export default function FileUploadZone({
             <div className="relative z-10 flex flex-col items-center text-center gap-4">
                 {state === "idle" || state === "dragging" ? (
                     <>
-                        <div className={`w-20 h-20 rounded-2xl ${colors.bg} border ${colors.border} flex items-center justify-center transition-transform duration-500 group-hover:scale-110`}>
+                        <div className={`w-20 h-20 rounded-md ${colors.bg} border ${colors.border} flex items-center justify-center transition-transform duration-500 group-hover:scale-110`}>
                             {icon || <Upload size={36} className={colors.text} />}
                         </div>
                         <div>

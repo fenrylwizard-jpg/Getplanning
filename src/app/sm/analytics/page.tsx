@@ -76,7 +76,7 @@ export default async function SMAnalytics() {
                     </div>
                     <div className="relative z-10">
                         <h3 className="mb-8 text-3xl font-black text-white flex items-center gap-3 drop-shadow-md tracking-tight"><TrendingUp size={28} className="text-pink-400" /> <T k="projects_progress_hours" /></h3>
-                        <div className="bg-black/20 backdrop-blur-md rounded-2xl p-4 border border-white/5">
+                        <div className="bg-black/20 backdrop-blur-md rounded-md p-4 border border-white/5">
                             <ProjectProgressChart data={progressData} />
                         </div>
                     </div>
@@ -90,7 +90,7 @@ export default async function SMAnalytics() {
                     <div className="relative z-10">
                         <h3 className="mb-4 text-3xl font-black text-white flex items-center gap-3 drop-shadow-md tracking-tight"><BarChart3 size={28} className="text-cyan-400" /> <T k="benchmarking_title" /></h3>
                         <p className="text-lg text-gray-300 mb-8 font-medium drop-shadow-sm"><T k="benchmarking_desc" /></p>
-                        <div className="bg-black/20 backdrop-blur-md rounded-2xl p-4 border border-white/5">
+                        <div className="bg-black/20 backdrop-blur-md rounded-md p-4 border border-white/5">
                             <BenchmarkingChart data={benchmarkData} />
                         </div>
                     </div>

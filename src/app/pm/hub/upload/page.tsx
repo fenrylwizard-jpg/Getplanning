@@ -81,7 +81,7 @@ export default function HubUploadPage() {
 
   if (!projectId) {
     return (
-      <div className="bg-[#0a1a35]/60 backdrop-blur-sm rounded-2xl border border-white/5 p-12 text-center">
+      <div className="bg-[#0a1a35]/60 backdrop-blur-sm rounded-md border border-white/5 p-12 text-center">
         <div className="text-4xl mb-4">📤</div>
         <p className="text-gray-400 text-lg">Sélectionnez un projet dans le menu ci-dessus pour importer des fichiers</p>
       </div>
@@ -91,7 +91,7 @@ export default function HubUploadPage() {
   return (
     <div className="space-y-6">
       {/* Month selector */}
-      <div className="bg-[#0a1a35]/60 backdrop-blur-sm rounded-2xl border border-white/5 p-6">
+      <div className="bg-[#0a1a35]/60 backdrop-blur-sm rounded-md border border-white/5 p-6">
         <div className="max-w-xs">
           <label className="block text-gray-400 text-xs font-medium uppercase tracking-wider mb-2">Mois</label>
           <input
@@ -114,7 +114,7 @@ export default function HubUploadPage() {
             onDragOver={e => { e.preventDefault(); setDragOver(zone.key); }}
             onDragLeave={() => setDragOver(null)}
             onDrop={handleDrop(zone.key)}
-            className={`relative bg-[#0a1a35]/60 backdrop-blur-sm rounded-2xl border-2 border-dashed p-8 transition-all duration-200 text-center ${
+            className={`relative bg-[#0a1a35]/60 backdrop-blur-sm rounded-md border-2 border-dashed p-8 transition-all duration-200 text-center ${
               dragOver === zone.key
                 ? 'border-blue-400 bg-blue-500/5 scale-[1.02]'
                 : files[zone.key]
@@ -159,7 +159,7 @@ export default function HubUploadPage() {
         <button
           onClick={handleUpload}
           disabled={!projectId || !hasAnyFile || uploading}
-          className={`px-8 py-3 rounded-xl font-semibold text-sm transition-all duration-200 flex items-center gap-2 ${
+          className={`px-8 py-3 rounded-md font-semibold text-sm transition-all duration-200 flex items-center gap-2 ${
             !projectId || !hasAnyFile || uploading
               ? 'bg-gray-700/50 text-gray-500 cursor-not-allowed'
               : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:scale-105 active:scale-100'
@@ -178,7 +178,7 @@ export default function HubUploadPage() {
 
       {/* Result */}
       {result && (
-        <div className={`rounded-2xl border p-6 ${
+        <div className={`rounded-md border p-6 ${
           result.success
             ? 'bg-emerald-500/5 border-emerald-500/20'
             : 'bg-red-500/5 border-red-500/20'

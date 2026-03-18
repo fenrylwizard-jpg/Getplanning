@@ -122,12 +122,12 @@ export default function ProjectHubTabs({ projectId, activeTab }: ProjectHubTabsP
                                     transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]
                                     cursor-pointer border backdrop-blur-sm
                                     ${isExpanded
-                                        ? `flex-col gap-0 rounded-2xl sm:rounded-3xl
+                                        ? `flex-col gap-0 rounded-md sm:rounded-md
                                            ${isActive
                                                 ? `bg-gradient-to-br ${tab.gradient} ${tab.border} scale-[1.02]`
                                                 : `bg-[#0a1020]/80 border-white/[0.06] ${tab.bgHover} hover:scale-[1.02]`
                                            }`
-                                        : `flex-row gap-2 rounded-xl px-3 py-2 justify-center
+                                        : `flex-row gap-2 rounded-md px-3 py-2 justify-center
                                            ${isActive
                                                 ? `bg-white/10 ${tab.border}`
                                                 : `bg-transparent border-transparent ${tab.bgHover} hover:bg-white/5`
@@ -143,7 +143,7 @@ export default function ProjectHubTabs({ projectId, activeTab }: ProjectHubTabsP
                                     className={`
                                         relative overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]
                                         ${isExpanded
-                                            ? "w-full aspect-[4/3] rounded-t-2xl sm:rounded-t-3xl"
+                                            ? "w-full aspect-[4/3] rounded-t-md sm:rounded-t-md"
                                             : "w-7 h-7 rounded-lg flex-shrink-0"
                                         }
                                     `}

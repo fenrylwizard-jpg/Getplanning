@@ -54,17 +54,17 @@ export default async function ProjectHub({ params, searchParams }: { params: Pro
                     <div className="flex items-start justify-between gap-6">
                         <div>
                             <h1 className="flex items-center gap-3 text-2xl sm:text-3xl font-black text-white">
-                                <div className="p-2 rounded-xl bg-purple-500/10 border border-purple-500/20">
+                                <div className="p-2 rounded-md bg-purple-500/10 border border-purple-500/20">
                                     <FolderKey size={24} className="text-purple-400" />
                                 </div>
                                 {project.name}
                             </h1>
                             <div className="flex flex-wrap items-center gap-4 mt-3">
-                                <span className="flex items-center gap-2 text-sm px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20">
+                                <span className="flex items-center gap-2 text-sm px-3 py-1.5 rounded-sm bg-amber-500/10 border border-amber-500/20">
                                     <Users size={14} className="text-amber-400" />
                                     <span className="text-gray-400">PM:</span> <span className="text-amber-300 font-bold">{project.projectManager?.name || '—'}</span>
                                 </span>
-                                <span className="flex items-center gap-2 text-sm px-3 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20">
+                                <span className="flex items-center gap-2 text-sm px-3 py-1.5 rounded-sm bg-cyan-500/10 border border-cyan-500/20">
                                     <Users size={14} className="text-cyan-400" />
                                     <span className="text-gray-400">SM:</span> <span className="text-cyan-300 font-bold">{project.siteManager?.name || <T k="unassigned" />}</span>
                                 </span>
@@ -74,7 +74,7 @@ export default async function ProjectHub({ params, searchParams }: { params: Pro
                                 </span>
                             </div>
                         </div>
-                        <Link href={`/pm/project/${id}/reupload`} className="flex items-center gap-2 px-6 py-3 rounded-xl bg-blue-500/10 border border-blue-500/30 text-blue-400 font-bold text-sm hover:bg-blue-500/20 transition-all">
+                        <Link href={`/pm/project/${id}/reupload`} className="flex items-center gap-2 px-6 py-3 rounded-md bg-blue-500/10 border border-blue-500/30 text-blue-400 font-bold text-sm hover:bg-blue-500/20 transition-all">
                             <UploadCloud size={18} /> Mettre à jour
                         </Link>
                     </div>

@@ -36,7 +36,7 @@ const StatusBadge = ({ status }: { status: string | null }) => {
   if (!status) return <span className="text-gray-600 text-xs">—</span>;
   const config = getStatusColor(status);
   return (
-    <span className={`px-2 py-0.5 rounded-full text-xs font-medium border ${config.bg} ${config.text} ${config.border}`}>
+    <span className={`px-2 py-0.5 rounded-sm text-xs font-medium border ${config.bg} ${config.text} ${config.border}`}>
       {status}
     </span>
   );
@@ -75,7 +75,7 @@ export default function EtudesPage() {
 
   if (!projectId) {
     return (
-      <div className="bg-[#0a1a35]/60 backdrop-blur-sm rounded-2xl border border-white/5 p-12 text-center">
+      <div className="bg-[#0a1a35]/60 backdrop-blur-sm rounded-md border border-white/5 p-12 text-center">
         <p className="text-gray-400 text-lg">Sélectionnez un projet pour voir le planning des études</p>
       </div>
     );
@@ -93,7 +93,7 @@ export default function EtudesPage() {
     <div className="space-y-6">
       {/* Global Progress Header */}
       {summary && (
-        <div className="bg-gradient-to-r from-blue-900/40 to-emerald-900/40 backdrop-blur-sm rounded-2xl border border-white/10 p-6 flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="bg-gradient-to-r from-blue-900/40 to-emerald-900/40 backdrop-blur-sm rounded-md border border-white/10 p-6 flex flex-col md:flex-row items-center justify-between gap-6">
           <div>
             <h3 className="text-2xl font-semibold text-white mb-1">Avancement Global</h3>
             <p className="text-blue-200/60 text-sm">Progression moyenne de toutes les tâches d&apos;ingénierie</p>
@@ -121,7 +121,7 @@ export default function EtudesPage() {
             <button
               key={assignee}
               onClick={() => setFilterAssignee(filterAssignee === assignee ? 'all' : assignee)}
-              className={`bg-[#0a1a35]/60 backdrop-blur-sm rounded-xl border p-5 text-left transition-all hover:border-white/15 ${
+              className={`bg-[#0a1a35]/60 backdrop-blur-sm rounded-md border p-5 text-left transition-all hover:border-white/15 ${
                 filterAssignee === assignee ? 'border-emerald-500/40 ring-1 ring-emerald-500/20' : 'border-white/5'
               }`}
             >
@@ -146,7 +146,7 @@ export default function EtudesPage() {
 
       {/* Status Filter Overview */}
       {summary && (
-        <div className="bg-[#0a1a35]/60 backdrop-blur-sm rounded-xl border border-white/5 p-4">
+        <div className="bg-[#0a1a35]/60 backdrop-blur-sm rounded-md border border-white/5 p-4">
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setFilterStatus('all')}
@@ -179,7 +179,7 @@ export default function EtudesPage() {
       )}
 
       {/* Tasks Table */}
-      <div className="bg-[#0a1a35]/60 backdrop-blur-sm rounded-2xl border border-white/5 overflow-hidden">
+      <div className="bg-[#0a1a35]/60 backdrop-blur-sm rounded-md border border-white/5 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>

@@ -129,16 +129,16 @@ export default function ReuploadPage() {
                 </Link>
 
                 {errorMsg && (
-                    <div className="mb-8 p-6 bg-red-500/10 border border-red-500/30 rounded-2xl text-red-400 flex items-center gap-4">
+                    <div className="mb-8 p-6 bg-red-500/10 border border-red-500/30 rounded-md text-red-400 flex items-center gap-4">
                         <X size={24} /> {errorMsg}
                     </div>
                 )}
 
                 {!diff ? (
                     /* Step 1: Export & Upload */
-                    <div className="glass-card p-10 bg-[#0a1020]/80 backdrop-blur-xl border border-white/5 rounded-[32px] shadow-2xl">
+                    <div className="glass-card p-10 bg-[#0a1020]/80 backdrop-blur-xl border border-white/5 rounded-md shadow-2xl">
                         <div className="flex items-center gap-4 mb-8">
-                            <div className="w-12 h-12 rounded-2xl bg-blue-500/20 flex items-center justify-center text-blue-400">
+                            <div className="w-12 h-12 rounded-md bg-blue-500/20 flex items-center justify-center text-blue-400">
                                 <FileSpreadsheet size={24} />
                             </div>
                             <div>
@@ -149,7 +149,7 @@ export default function ReuploadPage() {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             {/* Step 1: Export */}
-                            <div className="bg-[#060b18]/50 border border-white/5 rounded-2xl p-8">
+                            <div className="bg-[#060b18]/50 border border-white/5 rounded-md p-8">
                                 <div className="flex items-center gap-3 mb-4">
                                     <span className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-sm font-black">1</span>
                                     <h3 className="text-lg font-bold text-white">Exporter l&apos;état actuel</h3>
@@ -159,14 +159,14 @@ export default function ReuploadPage() {
                                 </p>
                                 <a
                                     href={`/api/project/${projectId}/export`}
-                                    className="flex items-center justify-center gap-3 px-6 py-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-sm hover:bg-emerald-500/20 transition-all w-full"
+                                    className="flex items-center justify-center gap-3 px-6 py-4 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-sm hover:bg-emerald-500/20 transition-all w-full"
                                 >
                                     <Download size={20} /> Télécharger le fichier Excel
                                 </a>
                             </div>
 
                             {/* Step 2: Upload modified file */}
-                            <div className="bg-[#060b18]/50 border border-white/5 rounded-2xl p-8">
+                            <div className="bg-[#060b18]/50 border border-white/5 rounded-md p-8">
                                 <div className="flex items-center gap-3 mb-4">
                                     <span className="w-8 h-8 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-sm font-black">2</span>
                                     <h3 className="text-lg font-bold text-white">Ré-uploader le fichier modifié</h3>
@@ -175,7 +175,7 @@ export default function ReuploadPage() {
                                     Modifiez les quantités, ajoutez ou retirez des postes, puis uploadez ici.
                                 </p>
                                 <div
-                                    className="border-2 border-dashed border-white/10 rounded-2xl p-6 text-center bg-white/5 hover:bg-white/10 cursor-pointer transition-all flex flex-col items-center gap-3 mb-4"
+                                    className="border-2 border-dashed border-white/10 rounded-md p-6 text-center bg-white/5 hover:bg-white/10 cursor-pointer transition-all flex flex-col items-center gap-3 mb-4"
                                     onClick={() => document.getElementById('reupload-input')?.click()}
                                 >
                                     <Upload size={32} className={file ? "text-blue-400" : "text-white/20"} />
@@ -185,7 +185,7 @@ export default function ReuploadPage() {
                                 <button
                                     onClick={handleUploadPreview}
                                     disabled={!file || loading}
-                                    className="w-full px-6 py-4 rounded-2xl bg-gradient-to-r from-purple-600 to-blue-500 font-black text-white flex items-center justify-center gap-3 hover:scale-[1.01] transition-all disabled:opacity-50"
+                                    className="w-full px-6 py-4 rounded-md bg-gradient-to-r from-purple-600 to-blue-500 font-black text-white flex items-center justify-center gap-3 hover:scale-[1.01] transition-all disabled:opacity-50"
                                 >
                                     {loading ? 'Analyse en cours...' : <><FileSpreadsheet size={20} /> Analyser les changements</>}
                                 </button>
@@ -196,7 +196,7 @@ export default function ReuploadPage() {
                     /* Step 2: Diff Preview */
                     <div className="flex flex-col gap-8">
                         {/* Summary Header */}
-                        <div className="glass-card p-8 bg-[#0a1020]/80 border border-white/10 rounded-[32px] flex flex-col md:flex-row justify-between items-center gap-6">
+                        <div className="glass-card p-8 bg-[#0a1020]/80 border border-white/10 rounded-md flex flex-col md:flex-row justify-between items-center gap-6">
                             <div>
                                 <h1 className="text-3xl font-black text-white flex items-center gap-3">
                                     <Edit3 size={24} className="text-blue-400" />
@@ -205,34 +205,34 @@ export default function ReuploadPage() {
                                 {summary && (
                                     <div className="flex flex-wrap gap-4 mt-3">
                                         {summary.modified > 0 && (
-                                            <span className="px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs font-bold flex items-center gap-1">
+                                            <span className="px-3 py-1 rounded-sm bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs font-bold flex items-center gap-1">
                                                 <Edit3 size={12} /> {summary.modified} modifié(s)
                                             </span>
                                         )}
                                         {summary.added > 0 && (
-                                            <span className="px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-bold flex items-center gap-1">
+                                            <span className="px-3 py-1 rounded-sm bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-bold flex items-center gap-1">
                                                 <Plus size={12} /> {summary.added} ajouté(s)
                                             </span>
                                         )}
                                         {summary.removed > 0 && (
-                                            <span className="px-3 py-1 rounded-full bg-red-500/15 border border-red-500/30 text-red-400 text-xs font-bold flex items-center gap-1">
+                                            <span className="px-3 py-1 rounded-sm bg-red-500/15 border border-red-500/30 text-red-400 text-xs font-bold flex items-center gap-1">
                                                 <Minus size={12} /> {summary.removed} supprimé(s)
                                             </span>
                                         )}
-                                        <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-gray-400 text-xs font-bold">
+                                        <span className="px-3 py-1 rounded-sm bg-white/5 border border-white/10 text-gray-400 text-xs font-bold">
                                             {summary.unchanged} inchangé(s)
                                         </span>
                                     </div>
                                 )}
                             </div>
                             <div className="flex gap-4">
-                                <button onClick={() => { setDiff(null); setFile(null); }} className="px-6 py-3 rounded-xl bg-white/5 border border-white/10 font-bold text-gray-400 hover:text-white transition-all">
+                                <button onClick={() => { setDiff(null); setFile(null); }} className="px-6 py-3 rounded-md bg-white/5 border border-white/10 font-bold text-gray-400 hover:text-white transition-all">
                                     Annuler
                                 </button>
                                 <button
                                     onClick={handleConfirm}
                                     disabled={confirming}
-                                    className="px-8 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-black flex items-center gap-2 transition-all shadow-lg disabled:opacity-50"
+                                    className="px-8 py-3 rounded-md bg-emerald-500 hover:bg-emerald-600 text-white font-black flex items-center gap-2 transition-all shadow-lg disabled:opacity-50"
                                 >
                                     {confirming ? 'Application en cours...' : <><Save size={20} /> Confirmer & Appliquer</>}
                                 </button>
@@ -241,7 +241,7 @@ export default function ReuploadPage() {
 
                         {/* Warning about completed quantities */}
                         {summary && summary.removed > 0 && (
-                            <div className="flex items-start gap-4 p-5 bg-red-500/10 border border-red-500/30 rounded-2xl">
+                            <div className="flex items-start gap-4 p-5 bg-red-500/10 border border-red-500/30 rounded-md">
                                 <AlertTriangle size={20} className="text-red-400 mt-0.5 shrink-0" />
                                 <div className="text-sm text-red-300">
                                     <strong>Attention:</strong> {summary.removed} tâche(s) seront supprimées avec leur historique de progression.
@@ -250,7 +250,7 @@ export default function ReuploadPage() {
                         )}
 
                         {/* Diff Table */}
-                        <div className="glass-card bg-[#0a1020]/90 border border-white/10 rounded-[32px] overflow-hidden">
+                        <div className="glass-card bg-[#0a1020]/90 border border-white/10 rounded-md overflow-hidden">
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left border-collapse">
                                     <thead>

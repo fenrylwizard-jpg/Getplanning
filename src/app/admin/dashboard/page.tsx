@@ -165,7 +165,7 @@ export default function AdminDashboard() {
             {/* Header */}
             <div className="flex justify-between items-center mb-10">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-2xl bg-purple-600 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-md bg-purple-600 flex items-center justify-center">
                         <ShieldCheck size={22} color="#fff" />
                     </div>
                     <div>
@@ -177,14 +177,14 @@ export default function AdminDashboard() {
                     <button
                         onClick={handleCron}
                         disabled={cronRunning}
-                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 hover:bg-amber-500/20 transition-all text-sm font-bold disabled:opacity-50"
+                        className="flex items-center gap-2 px-4 py-2 rounded-md bg-amber-500/10 border border-amber-500/30 text-amber-400 hover:bg-amber-500/20 transition-all text-sm font-bold disabled:opacity-50"
                         title={t('close_week')}
                     >
                         <RefreshCw size={16} className={cronRunning ? 'animate-spin' : ''} />
                         <T k="close_week" />
                     </button>
                     <button
-                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10 transition-all text-sm font-bold"
+                        className="flex items-center gap-2 px-4 py-2 rounded-md bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10 transition-all text-sm font-bold"
                         onClick={handleLogout}
                         title={t('logout')}
                     >
@@ -194,7 +194,7 @@ export default function AdminDashboard() {
             </div>
 
             {cronResult && (
-                <div className="mb-6 px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm font-bold">
+                <div className="mb-6 px-4 py-3 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm font-bold">
                     ✓ {cronResult}
                 </div>
             )}
@@ -211,7 +211,7 @@ export default function AdminDashboard() {
                         { icon: Target, label: t('target_rate'), value: `${stats.hitRate}%`, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
                         { icon: Globe, label: t('total_tasks'), value: stats.totalTasks.toLocaleString(), color: 'text-cyan-400', bg: 'bg-cyan-500/10' },
                     ].map(({ icon: Icon, label, value, color, bg }) => (
-                        <div key={label} className={`${bg} border border-white/10 rounded-2xl p-5 flex items-center gap-4`}>
+                        <div key={label} className={`${bg} border border-white/10 rounded-md p-5 flex items-center gap-4`}>
                             <Icon size={28} className={color} />
                             <div>
                                 <div className="text-xs text-gray-400 font-bold uppercase tracking-wider">{label}</div>
@@ -225,7 +225,7 @@ export default function AdminDashboard() {
             {/* Budget + Profitability */}
             {stats && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                    <div className="bg-[#080d1a] border border-white/5 rounded-2xl p-6">
+                    <div className="bg-[#080d1a] border border-white/5 rounded-md p-6">
                         <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 mb-3 flex items-center gap-2">
                             <Activity size={16} /> <T k="global_labor_hours" />
                         </h3>
@@ -240,7 +240,7 @@ export default function AdminDashboard() {
                         <div className="text-xs text-gray-500 mt-1">{stats.globalPct}{t('pct_achieved')}</div>
                     </div>
 
-                    <div className="bg-[#080d1a] border border-white/5 rounded-2xl p-6">
+                    <div className="bg-[#080d1a] border border-white/5 rounded-md p-6">
                         <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 mb-3 flex items-center gap-2">
                             <Euro size={16} /> <T k="profitability" /> (€43.35/h)
                         </h3>
@@ -261,7 +261,7 @@ export default function AdminDashboard() {
 
             {/* Projects Table */}
             {stats && stats.projects.length > 0 && (
-                <div className="bg-[#080d1a] border border-white/5 rounded-2xl p-6 mb-8">
+                <div className="bg-[#080d1a] border border-white/5 rounded-md p-6 mb-8">
                     <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 mb-4 flex items-center gap-2">
                         <Folder size={16} /> <T k="projects" /> ({stats.projects.length})
                     </h3>
@@ -318,20 +318,20 @@ export default function AdminDashboard() {
 
             <div className="grid grid-cols-1 gap-6">
                 {/* Pending Approvals */}
-                <div className="bg-[#080d1a] border border-white/5 rounded-2xl p-6">
+                <div className="bg-[#080d1a] border border-white/5 rounded-md p-6">
                     <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 mb-4 flex items-center gap-2">
                         <Clock size={16} className="text-amber-400" /> <T k="pending" /> ({pendingUsers.length})
                     </h3>
                     {pendingUsers.length === 0 ? (
-                        <div className="p-6 text-center text-gray-500 bg-white/3 rounded-xl"><T k="no_pending_requests" /></div>
+                        <div className="p-6 text-center text-gray-500 bg-white/3 rounded-md"><T k="no_pending_requests" /></div>
                     ) : (
                         <div className="flex flex-col gap-3">
                             {pendingUsers.map(user => (
-                                <div key={user.id} className="flex justify-between items-center p-4 bg-white/3 rounded-xl border border-white/5">
+                                <div key={user.id} className="flex justify-between items-center p-4 bg-white/3 rounded-md border border-white/5">
                                     <div className="flex items-center gap-3">
                                         <UserIcon size={20} className="text-gray-500" />
                                         <div>
-                                            <div className="font-bold text-white">{user.name || t('no_name')} <span className="text-xs bg-white/10 px-2 py-0.5 rounded-full ml-2">{user.role}</span></div>
+                                            <div className="font-bold text-white">{user.name || t('no_name')} <span className="text-xs bg-white/10 px-2 py-0.5 rounded-sm ml-2">{user.role}</span></div>
                                             <div className="text-sm text-gray-500">{user.email}</div>
                                         </div>
                                     </div>
@@ -350,7 +350,7 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* Users Ranking Table */}
-                <div className="bg-[#080d1a] border border-white/5 rounded-2xl p-6">
+                <div className="bg-[#080d1a] border border-white/5 rounded-md p-6">
                     <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 mb-4 flex items-center gap-2">
                         <ListOrdered size={16} className="text-purple-400" /> <T k="personnel_ranking" /> ({processedUsers.length})
                     </h3>
@@ -384,7 +384,7 @@ export default function AdminDashboard() {
                                                 </Link>
                                             </td>
                                             <td className="py-3 pr-4">
-                                                <span className={`text-xs px-3 py-1 rounded-full font-bold shadow-sm ${user.role === 'PM' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'}`}>
+                                                <span className={`text-xs px-3 py-1 rounded-sm font-bold shadow-sm ${user.role === 'PM' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'}`}>
                                                     {user.role}
                                                 </span>
                                             </td>
@@ -399,7 +399,7 @@ export default function AdminDashboard() {
                                                 user.status === 'APPROVED' ? 'text-emerald-400 border border-emerald-500/30 bg-emerald-500/10' :
                                                     user.status === 'REJECTED' ? 'text-red-400 border border-red-500/30 bg-red-500/10' :
                                                         'text-gray-400 border border-gray-500/30 bg-gray-500/10'
-                                            } px-2 py-1 rounded-full`}>
+                                            } px-2 py-1 rounded-sm`}>
                                                 {user.status === 'APPROVED' ? t('approved') : user.status === 'REJECTED' ? t('rejected') : user.status}
                                             </span>
                                         </td>
@@ -424,9 +424,9 @@ export default function AdminDashboard() {
             {/* Delete Confirmation Modal */}
             {deleteConfirm && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={() => !deleting && setDeleteConfirm(null)}>
-                    <div className="bg-[#0c1225] border border-white/10 rounded-3xl p-8 max-w-md w-full mx-4 shadow-2xl" onClick={e => e.stopPropagation()}>
+                    <div className="bg-[#0c1225] border border-white/10 rounded-md p-8 max-w-md w-full mx-4 shadow-2xl" onClick={e => e.stopPropagation()}>
                         <div className="flex items-center gap-3 mb-4">
-                            <div className="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center justify-center">
+                            <div className="w-12 h-12 rounded-md bg-red-500/10 border border-red-500/30 flex items-center justify-center">
                                 <AlertTriangle size={24} className="text-red-400" />
                             </div>
                             <div>
@@ -448,7 +448,7 @@ export default function AdminDashboard() {
                             <button
                                 onClick={() => setDeleteConfirm(null)}
                                 disabled={deleting}
-                                className="flex-1 py-3 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10 transition-all font-bold text-sm disabled:opacity-50"
+                                className="flex-1 py-3 rounded-md bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10 transition-all font-bold text-sm disabled:opacity-50"
                             >
                                 Annuler
                             </button>
@@ -458,7 +458,7 @@ export default function AdminDashboard() {
                                     else handleDeleteProject(deleteConfirm.id);
                                 }}
                                 disabled={deleting}
-                                className="flex-1 py-3 rounded-xl bg-red-500/20 border border-red-500/40 text-red-400 hover:bg-red-500/30 transition-all font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+                                className="flex-1 py-3 rounded-md bg-red-500/20 border border-red-500/40 text-red-400 hover:bg-red-500/30 transition-all font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
                             >
                                 {deleting ? (
                                     <div className="w-4 h-4 border-2 border-red-400 border-t-transparent rounded-full animate-spin" />

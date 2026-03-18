@@ -58,7 +58,7 @@ export default function PurchasesPage() {
 
   if (!projectId) {
     return (
-      <div className="bg-[#0a1a35]/60 backdrop-blur-sm rounded-2xl border border-white/5 p-12 text-center">
+      <div className="bg-[#0a1a35]/60 backdrop-blur-sm rounded-md border border-white/5 p-12 text-center">
         <p className="text-gray-400 text-lg">Sélectionnez un projet pour voir les achats</p>
       </div>
     );
@@ -82,7 +82,7 @@ export default function PurchasesPage() {
           { label: 'Prix Négocié', value: fmt(totalNegotiated), icon: '🤝', color: 'from-cyan-500/20 to-cyan-600/10' },
           { label: 'RETURN Total', value: fmt(totalReturn), icon: totalReturn >= 0 ? '📈' : '📉', color: totalReturn >= 0 ? 'from-emerald-500/20 to-emerald-600/10' : 'from-red-500/20 to-red-600/10' },
         ].map(card => (
-          <div key={card.label} className={`bg-gradient-to-br ${card.color} backdrop-blur-sm rounded-xl border border-white/5 p-5`}>
+          <div key={card.label} className={`bg-gradient-to-br ${card.color} backdrop-blur-sm rounded-md border border-white/5 p-5`}>
             <div className="flex items-center gap-3 mb-2">
               <span className="text-2xl">{card.icon}</span>
               <p className="text-gray-400 text-xs font-medium uppercase tracking-wider">{card.label}</p>
@@ -112,7 +112,7 @@ export default function PurchasesPage() {
       </div>
 
       {/* Data Table */}
-      <div className="bg-[#0a1a35]/60 backdrop-blur-sm rounded-2xl border border-white/5 overflow-hidden">
+      <div className="bg-[#0a1a35]/60 backdrop-blur-sm rounded-md border border-white/5 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -148,7 +148,7 @@ export default function PurchasesPage() {
                     <td className="px-4 py-3 text-gray-300 text-xs">{c.supplierSoum || '—'}</td>
                     <td className="px-4 py-3 text-xs">
                       {c.supplierExe ? (
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                        <span className={`px-2 py-0.5 rounded-sm text-xs font-medium ${
                           c.supplierExe !== c.supplierSoum ? 'bg-amber-500/15 text-amber-300' : 'bg-white/5 text-gray-300'
                         }`}>
                           {c.supplierExe}

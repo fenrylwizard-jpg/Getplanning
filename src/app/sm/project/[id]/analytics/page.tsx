@@ -78,7 +78,7 @@ export default async function SMProjectAnalytics({ params }: { params: Promise<{
                     <style>{`
                         .progress-bar-sm { width: ${completionPercentage}%; }
                     `}</style>
-                    <div className="w-full h-6 bg-[var(--bg-primary)] rounded-xl overflow-hidden relative">
+                    <div className="w-full h-6 bg-[var(--bg-primary)] rounded-md overflow-hidden relative">
                         <div className="absolute h-full transition-all duration-1000 ease-out bg-gradient-to-r from-[var(--accent-hover)] to-[var(--accent-primary)] progress-bar-sm"></div>
                         <div className="absolute w-full h-full flex items-center justify-center text-[0.8rem] font-bold text-white drop-shadow-md">
                             {completionPercentage.toFixed(1)}% Terminé

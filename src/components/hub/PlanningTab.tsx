@@ -182,7 +182,7 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
                 <div className={isParsed ? "opacity-50 pointer-events-none" : ""}>
                     {/* Trade selector */}
                     {!selectedTrade ? (
-                        <div className="bg-[#080d1a]/80 border border-purple-500/20 rounded-2xl p-6">
+                        <div className="bg-[#080d1a]/80 border border-purple-500/20 rounded-md p-6">
                             <h4 className="flex items-center gap-2 text-purple-300 font-bold mb-4">
                                 <Wrench size={18} />
                                 Quel est votre corps de métier ?
@@ -195,7 +195,7 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
                                     <button
                                         key={t.value}
                                         onClick={() => setSelectedTrade(t.value)}
-                                        className="px-4 py-3 rounded-xl bg-white/5 hover:bg-purple-500/20 border border-white/10 hover:border-purple-500/40 text-sm text-gray-300 hover:text-purple-300 font-medium transition-all flex items-center gap-2"
+                                        className="px-4 py-3 rounded-md bg-white/5 hover:bg-purple-500/20 border border-white/10 hover:border-purple-500/40 text-sm text-gray-300 hover:text-purple-300 font-medium transition-all flex items-center gap-2"
                                     >
                                         <span className="text-lg">{t.icon}</span>
                                         {t.label.split(" ").slice(1).join(" ")}
@@ -207,7 +207,7 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
                         <>
                             <div className="flex items-center gap-3 mb-3">
                                 <span className="text-xs text-gray-400">Corps de métier :</span>
-                                <span className="px-3 py-1 rounded-full bg-purple-500/20 border border-purple-500/30 text-purple-300 text-xs font-bold">
+                                <span className="px-3 py-1 rounded-sm bg-purple-500/20 border border-purple-500/30 text-purple-300 text-xs font-bold">
                                     {TRADE_OPTIONS.find(t => t.value === selectedTrade)?.label}
                                 </span>
                                 <button
@@ -235,7 +235,7 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
 
             {/* AI Confirmation Banner */}
             {isParsed && (
-                <div className="bg-purple-900/30 border border-purple-500/40 rounded-2xl p-6 flex flex-col md:flex-row gap-4 items-center justify-between">
+                <div className="bg-purple-900/30 border border-purple-500/40 rounded-md p-6 flex flex-col md:flex-row gap-4 items-center justify-between">
                     <div>
                         <h4 className="flex items-center gap-2 text-purple-300 font-bold mb-1">
                             <span className="text-lg">✨</span> IA Gemini a analysé le document
@@ -247,14 +247,14 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
                     <div className="flex gap-3">
                         <button 
                             onClick={clearParsed} 
-                            className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium text-sm transition-colors flex items-center gap-2"
+                            className="px-4 py-2 rounded-md bg-white/10 hover:bg-white/20 text-white font-medium text-sm transition-colors flex items-center gap-2"
                         >
                             <Trash2 size={16} /> Annuler
                         </button>
                         <button 
                             onClick={handleConfirm}
                             disabled={submitting}
-                            className="px-6 py-2 rounded-xl bg-purple-500 hover:bg-purple-400 text-white font-bold text-sm transition-colors flex items-center gap-2 disabled:opacity-50"
+                            className="px-6 py-2 rounded-md bg-purple-500 hover:bg-purple-400 text-white font-bold text-sm transition-colors flex items-center gap-2 disabled:opacity-50"
                         >
                             {submitting ? <span className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white rounded-full"/> : <Save size={16} />}
                             Sauvegarder et Valider
@@ -265,8 +265,8 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
 
             {/* KPI Summary */}
             <div className="grid grid-cols-3 gap-4">
-                <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-5 flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center">
+                <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-md p-5 flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-md bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center">
                         <Flag size={22} className="text-emerald-400" />
                     </div>
                     <div>
@@ -274,8 +274,8 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
                         <div className="text-2xl font-black text-emerald-400">{completedCount}</div>
                     </div>
                 </div>
-                <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-5 flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center">
+                <div className="bg-blue-500/10 border border-blue-500/20 rounded-md p-5 flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-md bg-blue-500/20 border border-blue-500/30 flex items-center justify-center">
                         <Clock size={22} className="text-blue-400" />
                     </div>
                     <div>
@@ -283,8 +283,8 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
                         <div className="text-2xl font-black text-blue-400">{inProgressCount}</div>
                     </div>
                 </div>
-                <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-5 flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center">
+                <div className="bg-amber-500/10 border border-amber-500/20 rounded-md p-5 flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-md bg-amber-500/20 border border-amber-500/30 flex items-center justify-center">
                         <Target size={22} className="text-amber-400" />
                     </div>
                     <div>
@@ -295,11 +295,11 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
             </div>
 
             {/* Gantt Timeline */}
-            <div className={`bg-[#080d1a]/80 border ${isParsed ? 'border-purple-500/50 shadow-[0_0_30px_rgba(168,85,247,0.15)]' : 'border-white/5'} rounded-2xl p-6 overflow-x-auto transition-all`}>
+            <div className={`bg-[#080d1a]/80 border ${isParsed ? 'border-purple-500/50 shadow-[0_0_30px_rgba(168,85,247,0.15)]' : 'border-white/5'} rounded-md p-6 overflow-x-auto transition-all`}>
                 <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 mb-6 flex items-center gap-2">
                     <CalendarRange size={16} className={isParsed ? "text-purple-400" : "text-blue-400"} />
                     <T k="hub_project_timeline" />
-                    {isParsed && <span className="ml-2 px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 text-[10px] border border-purple-500/30">PREVIEW IA</span>}
+                    {isParsed && <span className="ml-2 px-2 py-0.5 rounded-sm bg-purple-500/20 text-purple-300 text-[10px] border border-purple-500/30">PREVIEW IA</span>}
                 </h3>
 
                 {/* Timeline header with months */}
@@ -345,7 +345,7 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
                             const c = colorClasses[milestone.color || "blue"] || colorClasses.blue;
 
                             return (
-                                <div key={idx} className="flex items-center gap-4 group hover:bg-white/5 rounded-xl p-1.5 transition-colors">
+                                <div key={idx} className="flex items-center gap-4 group hover:bg-white/5 rounded-md p-1.5 transition-colors">
                                     {/* Label */}
                                     <div className="w-[200px] flex-shrink-0">
                                 <div className={`text-xs font-bold truncate ${milestone.isUserTrade ? 'text-yellow-300' : 'text-gray-200'}`}>
@@ -397,7 +397,7 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
 
             {/* Info banner if no REAL data and not currently previewing */}
             {!isShowingRealData && !isParsed && (
-                <div className="bg-purple-500/5 border border-purple-500/20 rounded-2xl p-4 text-center">
+                <div className="bg-purple-500/5 border border-purple-500/20 rounded-md p-4 text-center">
                     <p className="text-xs text-purple-300 flex items-center justify-center gap-2">
                         <CheckCircle size={14} className="text-purple-400" />
                         <T k="hub_demo_data_notice" /> — Importez un PDF Gantt pour analyser avec l&apos;IA

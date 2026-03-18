@@ -158,7 +158,7 @@ export default function LoginPage() {
                     
                     {/* Logo Area */}
                     <div className="mb-6 lg:mb-10 inline-flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#4facfe] to-[#00f2fe] flex items-center justify-center shadow-[0_0_20px_rgba(0,242,254,0.4)]">
+                        <div className="w-12 h-12 rounded-md bg-gradient-to-br from-[#4facfe] to-[#00f2fe] flex items-center justify-center shadow-[0_0_20px_rgba(0,242,254,0.4)]">
                             <Activity className="w-7 h-7 text-white" />
                         </div>
                         <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white">
@@ -184,7 +184,7 @@ export default function LoginPage() {
                             { icon: Zap, title: "Automatisation", color: "text-[#a18cd1]", bg: "bg-[#a18cd1]/10", border: "border-[#a18cd1]/20" },
                         ].map((feat, idx) => (
                             <div key={idx} className="flex items-center gap-4 group cursor-default">
-                                <div className={`w-14 h-14 rounded-2xl ${feat.bg} flex items-center justify-center border ${feat.border} group-hover:scale-110 transition-transform duration-500`}>
+                                <div className={`w-14 h-14 rounded-md ${feat.bg} flex items-center justify-center border ${feat.border} group-hover:scale-110 transition-transform duration-500`}>
                                     <feat.icon className={`w-6 h-6 ${feat.color}`} />
                                 </div>
                                 <span className="text-xl font-semibold text-slate-200 group-hover:text-white transition-colors">{feat.title}</span>
@@ -194,7 +194,7 @@ export default function LoginPage() {
 
                     {/* Presentation Link */}
                     <div className="mt-16 stagger-5">
-                        <a href="#" className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all text-lg font-semibold text-white group backdrop-blur-md">
+                        <a href="#" className="inline-flex items-center gap-2 px-8 py-4 rounded-sm bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all text-lg font-semibold text-white group backdrop-blur-md">
                             Découvrir la plateforme
                             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                         </a>
@@ -204,15 +204,15 @@ export default function LoginPage() {
 
                 {/* ── RIGHT SIDE: GLASS LOGIN CARD ── */}
                 <section className="w-full max-w-md xl:max-w-lg shrink-0 stagger-6">
-                    <div className="ultra-glass rounded-[32px] p-8 sm:p-12 relative overflow-hidden group/card">
+                    <div className="ultra-glass rounded-md p-8 sm:p-12 relative overflow-hidden group/card">
                         
                         {/* Shimmer Border Light */}
                         <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-1000 pointer-events-none"></div>
 
                         {/* Top Icon Area */}
                         <div className="text-center mb-10 relative z-10">
-                            <div className="mx-auto w-20 h-20 rounded-2xl bg-gradient-to-tr from-[#1e293b] to-[#334155] p-[2px] shadow-xl mb-6 shadow-[#00f2fe]/10">
-                                <div className="w-full h-full rounded-2xl bg-[#0f0f14] flex items-center justify-center flex-col relative overflow-hidden">
+                            <div className="mx-auto w-20 h-20 rounded-md bg-gradient-to-tr from-[#1e293b] to-[#334155] p-[2px] shadow-xl mb-6 shadow-[#00f2fe]/10">
+                                <div className="w-full h-full rounded-md bg-[#0f0f14] flex items-center justify-center flex-col relative overflow-hidden">
                                      <Lock className="w-8 h-8 text-[#00f2fe] relative z-10" />
                                      <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-[#00f2fe]/20 blur-xl"></div>
                                 </div>
@@ -222,7 +222,7 @@ export default function LoginPage() {
                         </div>
 
                         {errorMsg && (
-                            <div className="mb-8 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-center font-medium flex items-center justify-center gap-3 backdrop-blur-sm animate-[fade-in-up_0.3s_ease]">
+                            <div className="mb-8 p-4 rounded-md bg-red-500/10 border border-red-500/20 text-red-400 text-center font-medium flex items-center justify-center gap-3 backdrop-blur-sm animate-[fade-in-up_0.3s_ease]">
                                 <span className="flex h-3 w-3 relative">
                                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                                   <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
@@ -240,7 +240,7 @@ export default function LoginPage() {
                                         <Mail className="h-5 w-5" />
                                     </div>
                                     <input 
-                                        className="block w-full pl-14 pr-4 py-4 text-base bg-white/5 border border-white/10 rounded-2xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#00f2fe] focus:bg-white/10 transition-all" 
+                                        className="block w-full pl-14 pr-4 py-4 text-base bg-white/5 border border-white/10 rounded-md text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#00f2fe] focus:bg-white/10 transition-all" 
                                         id="email" 
                                         name="email" 
                                         placeholder="vous@entreprise.com" 
@@ -262,7 +262,7 @@ export default function LoginPage() {
                                         <KeyRound className="h-5 w-5" />
                                     </div>
                                     <input 
-                                        className="block w-full pl-14 pr-4 py-4 text-base bg-white/5 border border-white/10 rounded-2xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#00f2fe] focus:bg-white/10 transition-all" 
+                                        className="block w-full pl-14 pr-4 py-4 text-base bg-white/5 border border-white/10 rounded-md text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#00f2fe] focus:bg-white/10 transition-all" 
                                         id="password" 
                                         name="password" 
                                         placeholder="••••••••" 
@@ -283,7 +283,7 @@ export default function LoginPage() {
                             <button 
                                 type="submit" 
                                 disabled={loading}
-                                className="w-full btn-epic py-4 px-6 rounded-2xl text-white font-black uppercase tracking-wider text-xl disabled:opacity-50 mt-4 flex justify-center items-center gap-2"
+                                className="w-full btn-epic py-4 px-6 rounded-md text-white font-black uppercase tracking-wider text-xl disabled:opacity-50 mt-4 flex justify-center items-center gap-2"
                             >
                                 {loading ? (
                                     <>Connexion...</>

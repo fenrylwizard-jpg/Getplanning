@@ -103,7 +103,7 @@ export default function HubLayout({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Project Selector */}
-        <div className="bg-[#0a1a35]/60 backdrop-blur-sm rounded-xl border border-white/5 p-4 mb-4">
+        <div className="bg-[#0a1a35]/60 backdrop-blur-sm rounded-md border border-white/5 p-4 mb-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
             <label className="text-gray-400 text-xs font-medium uppercase tracking-wider whitespace-nowrap">
               Projet actif
@@ -124,7 +124,7 @@ export default function HubLayout({ children }: { children: React.ReactNode }) {
 
         {/* File Import Status Banner */}
         {projectId && !loadingStatus && uploadStatus && (
-          <div className="bg-[#0a1a35]/60 backdrop-blur-sm rounded-xl border border-white/5 p-4 mb-4">
+          <div className="bg-[#0a1a35]/60 backdrop-blur-sm rounded-md border border-white/5 p-4 mb-4">
             <div className="flex items-center gap-2 mb-3">
               <span className="text-base">📁</span>
               <h3 className="text-white text-sm font-semibold">Fichiers importés</h3>
@@ -172,7 +172,7 @@ export default function HubLayout({ children }: { children: React.ReactNode }) {
         )}
 
         {/* Tab Navigation */}
-        <div className="flex gap-1 mb-6 bg-[#0a1a35]/60 backdrop-blur-sm rounded-xl p-1.5 border border-white/5">
+        <div className="flex gap-1 mb-6 bg-[#0a1a35]/60 backdrop-blur-sm rounded-md p-1.5 border border-white/5">
           {tabs.map(tab => {
             const tabHref = `/pm/hub/${tab.path}`;
             const isActive = pathname === tabHref || pathname?.startsWith(tabHref + '/');

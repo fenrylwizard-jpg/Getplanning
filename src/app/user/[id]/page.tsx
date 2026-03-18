@@ -108,7 +108,7 @@ export default function UserProfilePage() {
 
                 {/* User Hero */}
                 <div className="flex flex-col md:flex-row items-center gap-8 mb-12">
-                    <div className="glass-card p-8 bg-[#080d1a]/80 backdrop-blur-md rounded-3xl border border-white/5 shadow-xl flex items-center gap-6">
+                    <div className="glass-card p-8 bg-[#080d1a]/80 backdrop-blur-md rounded-md border border-white/5 shadow-xl flex items-center gap-6">
                         <AvatarDisplay characterId={user.characterId} level={user.level} size={120} />
                         <div className="flex flex-col">
                             <span className="text-3xl font-black text-white">{user.name}</span>
@@ -129,7 +129,7 @@ export default function UserProfilePage() {
                             { icon: Target, label: t('target_rate'), value: `${hitRate}%`, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
                             { icon: TrendingUp, label: t('closed_plans'), value: totalClosedPlans, color: 'text-cyan-400', bg: 'bg-cyan-500/10' },
                         ].map(({ icon: Icon, label, value, color, bg }) => (
-                            <div key={label} className={`${bg} border border-white/10 rounded-2xl p-4 flex flex-col items-center gap-2`}>
+                            <div key={label} className={`${bg} border border-white/10 rounded-md p-4 flex flex-col items-center gap-2`}>
                                 <Icon size={22} className={color} />
                                 <div className="text-xs text-gray-400 font-bold uppercase tracking-wider text-center">{label}</div>
                                 <div className={`text-2xl font-black ${color}`}>{value}</div>
@@ -140,13 +140,13 @@ export default function UserProfilePage() {
 
                 {/* Badges */}
                 {user.badges.length > 0 && (
-                    <div className="bg-[#080d1a] border border-white/5 rounded-2xl p-6 mb-8">
+                    <div className="bg-[#080d1a] border border-white/5 rounded-md p-6 mb-8">
                         <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 mb-4 flex items-center gap-2">
                             <Award size={16} className="text-amber-400" /> Badges ({user.badges.length})
                         </h3>
                         <div className="flex flex-wrap gap-3">
                             {user.badges.map((badge, i) => (
-                                <div key={i} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                                <div key={i} className="flex items-center gap-2 px-4 py-2 rounded-md bg-amber-500/10 border border-amber-500/20">
                                     <span className="text-lg">{badge.icon}</span>
                                     <div>
                                         <div className="text-xs font-bold text-amber-300">{badge.name}</div>
@@ -160,7 +160,7 @@ export default function UserProfilePage() {
 
                 {/* PM Projects */}
                 {pmProjects.length > 0 && (
-                    <div className="bg-[#080d1a] border border-white/5 rounded-2xl p-6 mb-8">
+                    <div className="bg-[#080d1a] border border-white/5 rounded-md p-6 mb-8">
                         <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 mb-4 flex items-center gap-2">
                             <Folder size={16} className="text-amber-400" /> Projets en tant que PM ({pmProjects.length})
                         </h3>
@@ -208,7 +208,7 @@ export default function UserProfilePage() {
 
                 {/* SM Projects */}
                 {smProjects.length > 0 && (
-                    <div className="bg-[#080d1a] border border-white/5 rounded-2xl p-6 mb-8">
+                    <div className="bg-[#080d1a] border border-white/5 rounded-md p-6 mb-8">
                         <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 mb-4 flex items-center gap-2">
                             <Folder size={16} className="text-cyan-400" /> Projets en tant que SM ({smProjects.length})
                         </h3>
@@ -255,7 +255,7 @@ export default function UserProfilePage() {
                 )}
 
                 {totalProjects === 0 && (
-                    <div className="bg-[#080d1a] border border-white/5 rounded-2xl p-12 text-center text-gray-500">
+                    <div className="bg-[#080d1a] border border-white/5 rounded-md p-12 text-center text-gray-500">
                         Aucun projet assigné
                     </div>
                 )}

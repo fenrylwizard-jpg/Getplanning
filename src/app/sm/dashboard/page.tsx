@@ -62,7 +62,7 @@ export default async function SMDashboard() {
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-cyan-400"><T k="global_status" /></span>
                     </h2>
                     <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
-                        <div className="glass-card p-6 sm:p-8 bg-[#080d1a]/80 backdrop-blur-md rounded-3xl border border-white/5 shadow-xl flex items-center gap-6 min-w-[300px]">
+                        <div className="glass-card p-6 sm:p-8 bg-[#080d1a]/80 backdrop-blur-md rounded-md border border-white/5 shadow-xl flex items-center gap-6 min-w-[300px]">
                             <AvatarDisplay characterId={u.characterId} level={u.level} size={100} />
                             <div className="flex flex-col">
                                 <span className="text-2xl font-black text-white">{u.name}</span>
@@ -74,12 +74,12 @@ export default async function SMDashboard() {
                             </div>
                         </div>
 
-                        <div className="glass-card p-8 bg-[#080d1a]/80 backdrop-blur-md rounded-3xl border border-white/5 shadow-xl flex flex-col items-center justify-center gap-3">
+                        <div className="glass-card p-8 bg-[#080d1a]/80 backdrop-blur-md rounded-md border border-white/5 shadow-xl flex flex-col items-center justify-center gap-3">
                             <span className="text-5xl sm:text-6xl font-black text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">{user.projectsAsSM.length}</span>
                             <span className="text-sm text-gray-400 uppercase tracking-widest font-bold"><T k="active_sites" /></span>
                         </div>
 
-                        <div className="glass-card p-8 bg-[#080d1a]/80 backdrop-blur-md rounded-3xl border border-white/5 shadow-xl flex flex-col items-center justify-center gap-3 relative overflow-hidden group">
+                        <div className="glass-card p-8 bg-[#080d1a]/80 backdrop-blur-md rounded-md border border-white/5 shadow-xl flex flex-col items-center justify-center gap-3 relative overflow-hidden group">
                             <div className="absolute inset-0 bg-green-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                             <span className="text-5xl sm:text-6xl font-black text-green-400 drop-shadow-[0_0_20px_rgba(34,197,94,0.6)]">{totalTasks}</span>
                             <span className="text-sm text-gray-400 uppercase tracking-widest font-bold"><T k="total_tasks" /></span>
@@ -101,7 +101,7 @@ export default async function SMDashboard() {
                                             <span className="opacity-0 group-hover/header:opacity-100 group-hover/header:translate-x-2 transition-all text-cyan-500">→</span>
                                         </h3>
                                         <div className="flex items-center gap-3">
-                                            <span className="px-4 py-2 rounded-full border border-cyan-500/30 bg-cyan-900/20 text-cyan-300 text-sm font-bold tracking-wider uppercase">
+                                            <span className="px-4 py-2 rounded-sm border border-cyan-500/30 bg-cyan-900/20 text-cyan-300 text-sm font-bold tracking-wider uppercase">
                                                 {proj.location || <T k="on_site" />}
                                             </span>
                                             <span className="text-base text-gray-400">
@@ -109,7 +109,7 @@ export default async function SMDashboard() {
                                             </span>
                                         </div>
                                     </div>
-                                    <div className="px-6 py-3 rounded-full bg-white/5 group-hover/header:bg-white/10 border border-white/10 group-hover/header:border-cyan-500/30 text-base font-bold text-white transition-all shadow-md mt-4 sm:mt-0">
+                                    <div className="px-6 py-3 rounded-sm bg-white/5 group-hover/header:bg-white/10 border border-white/10 group-hover/header:border-cyan-500/30 text-base font-bold text-white transition-all shadow-md mt-4 sm:mt-0">
                                         Aller au projet Details
                                     </div>
                                 </div>
@@ -119,7 +119,7 @@ export default async function SMDashboard() {
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
                                 {/* Action 1: Rapport Quotidien (Orange) */}
-                                <Link href={`/sm/project/${proj.id}/report`} className="group relative bg-[#050810]/50 border border-white/5 rounded-3xl p-6 flex flex-col items-center justify-center gap-6 hover:border-orange-500/50 hover:bg-orange-900/10 transition-all duration-500 overflow-hidden text-center hover:shadow-[0_0_40px_rgba(249,115,22,0.2)] focus:outline-none focus:ring-2 focus:ring-orange-500">
+                                <Link href={`/sm/project/${proj.id}/report`} className="group relative bg-[#050810]/50 border border-white/5 rounded-md p-6 flex flex-col items-center justify-center gap-6 hover:border-orange-500/50 hover:bg-orange-900/10 transition-all duration-500 overflow-hidden text-center hover:shadow-[0_0_40px_rgba(249,115,22,0.2)] focus:outline-none focus:ring-2 focus:ring-orange-500">
                                     <div className="absolute inset-0 bg-gradient-to-t from-orange-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                                     <div className="w-24 h-24 sm:w-28 sm:h-28 relative z-10 flex items-center justify-center group-hover:scale-110 transition-transform duration-500 drop-shadow-[0_10px_25px_rgba(249,115,22,0.5)]">
                                         <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
@@ -161,7 +161,7 @@ export default async function SMDashboard() {
                                 </Link>
 
                                 {/* Action 2: Planification S+1/S+2/S+3 (Cyan) */}
-                                <Link href={`/sm/project/${proj.id}/plan`} className="group relative bg-[#050810]/50 border border-white/5 rounded-3xl p-6 flex flex-col items-center justify-center gap-6 hover:border-cyan-500/50 hover:bg-cyan-900/10 transition-all duration-500 overflow-hidden text-center hover:shadow-[0_0_40px_rgba(6,182,212,0.2)] focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                                <Link href={`/sm/project/${proj.id}/plan`} className="group relative bg-[#050810]/50 border border-white/5 rounded-md p-6 flex flex-col items-center justify-center gap-6 hover:border-cyan-500/50 hover:bg-cyan-900/10 transition-all duration-500 overflow-hidden text-center hover:shadow-[0_0_40px_rgba(6,182,212,0.2)] focus:outline-none focus:ring-2 focus:ring-cyan-500">
                                     <div className="absolute inset-0 bg-gradient-to-t from-cyan-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                                     <div className="w-24 h-24 sm:w-28 sm:h-28 relative z-10 flex items-center justify-center group-hover:scale-110 transition-transform duration-500 drop-shadow-[0_10px_25px_rgba(6,182,212,0.5)]">
                                         <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
@@ -211,7 +211,7 @@ export default async function SMDashboard() {
                                 </Link>
 
                                 {/* Action 3: Historique (Purple/Violet) */}
-                                <Link href={`/sm/project/${proj.id}/plan/history`} className="group relative bg-[#050810]/50 border border-white/5 rounded-3xl p-6 flex flex-col items-center justify-center gap-6 hover:border-violet-500/50 hover:bg-violet-900/10 transition-all duration-500 overflow-hidden text-center hover:shadow-[0_0_40px_rgba(139,92,246,0.2)] focus:outline-none focus:ring-2 focus:ring-violet-500">
+                                <Link href={`/sm/project/${proj.id}/plan/history`} className="group relative bg-[#050810]/50 border border-white/5 rounded-md p-6 flex flex-col items-center justify-center gap-6 hover:border-violet-500/50 hover:bg-violet-900/10 transition-all duration-500 overflow-hidden text-center hover:shadow-[0_0_40px_rgba(139,92,246,0.2)] focus:outline-none focus:ring-2 focus:ring-violet-500">
                                     <div className="absolute inset-0 bg-gradient-to-t from-violet-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                                     <div className="w-24 h-24 sm:w-28 sm:h-28 relative z-10 flex items-center justify-center group-hover:scale-110 transition-transform duration-500 drop-shadow-[0_10px_25px_rgba(139,92,246,0.5)]">
                                         <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">

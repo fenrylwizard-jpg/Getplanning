@@ -180,15 +180,15 @@ export default function UploadXLS() {
             <main className="max-w-5xl w-full px-6 py-12">
                 
                 {errorMsg && (
-                    <div className="mb-8 p-6 bg-red-500/10 border border-red-500/30 rounded-2xl text-red-400 flex items-center gap-4">
+                    <div className="mb-8 p-6 bg-red-500/10 border border-red-500/30 rounded-md text-red-400 flex items-center gap-4">
                         <X size={24} /> {errorMsg}
                     </div>
                 )}
 
                 {step === 1 ? (
-                    <div className="glass-card p-10 bg-[#0a1020]/80 backdrop-blur-xl border border-white/5 rounded-[32px] shadow-2xl">
+                    <div className="glass-card p-10 bg-[#0a1020]/80 backdrop-blur-xl border border-white/5 rounded-md shadow-2xl">
                         <div className="flex items-center gap-4 mb-8">
-                            <div className="w-12 h-12 rounded-2xl bg-purple-500/20 flex items-center justify-center text-purple-400">
+                            <div className="w-12 h-12 rounded-md bg-purple-500/20 flex items-center justify-center text-purple-400">
                                 <FileSpreadsheet size={24} />
                             </div>
                             <div>
@@ -201,11 +201,11 @@ export default function UploadXLS() {
                             <div className="space-y-6">
                                 <div>
                                     <label className="text-xs font-bold uppercase tracking-widest text-purple-400 mb-2 block"><T k="project_name_label" /></label>
-                                    <input required className="form-input w-full bg-white/5 border-white/10 rounded-xl p-4 text-white focus:border-purple-500 transition-all" value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder={t("project_name_placeholder")} />
+                                    <input required className="form-input w-full bg-white/5 border-white/10 rounded-md p-4 text-white focus:border-purple-500 transition-all" value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder={t("project_name_placeholder")} />
                                 </div>
                                 <div>
                                     <label className="text-xs font-bold uppercase tracking-widest text-purple-400 mb-2 block"><T k="site_manager_label" /></label>
-                                    <select title={t("site_manager_label")} required className="form-input w-full bg-white/5 border-white/10 rounded-xl p-4 text-white" value={siteManagerId} onChange={(e) => setSiteManagerId(e.target.value)}>
+                                    <select title={t("site_manager_label")} required className="form-input w-full bg-white/5 border-white/10 rounded-md p-4 text-white" value={siteManagerId} onChange={(e) => setSiteManagerId(e.target.value)}>
                                         <option value="">{t("site_manager_placeholder")}</option>
                                         {smList.map(sm => <option key={sm.id} value={sm.id}>{sm.name}</option>)}
                                     </select>
@@ -213,11 +213,11 @@ export default function UploadXLS() {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="text-xs font-bold uppercase tracking-widest text-purple-400 mb-2 block"><T k="start_date_label" /></label>
-                                        <input title={t("start_date_label")} type="date" className="form-input w-full bg-white/5 border-white/10 rounded-xl p-4 text-white" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+                                        <input title={t("start_date_label")} type="date" className="form-input w-full bg-white/5 border-white/10 rounded-md p-4 text-white" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
                                     </div>
                                     <div>
                                         <label className="text-xs font-bold uppercase tracking-widest text-purple-400 mb-2 block"><T k="end_date_label" /></label>
-                                        <input title={t("end_date_label")} type="date" className="form-input w-full bg-white/5 border-white/10 rounded-xl p-4 text-white" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+                                        <input title={t("end_date_label")} type="date" className="form-input w-full bg-white/5 border-white/10 rounded-md p-4 text-white" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
                                     </div>
                                 </div>
                             </div>
@@ -225,7 +225,7 @@ export default function UploadXLS() {
                             <div className="space-y-6">
                                 <div>
                                     <label className="text-xs font-bold uppercase tracking-widest text-blue-400 mb-2 block"><T k="location" /></label>
-                                    <input className="form-input w-full bg-white/5 border-white/10 rounded-xl p-4 text-white" value={location} onChange={(e) => setLocation(e.target.value)} placeholder={t("primary_location_placeholder")} />
+                                    <input className="form-input w-full bg-white/5 border-white/10 rounded-md p-4 text-white" value={location} onChange={(e) => setLocation(e.target.value)} placeholder={t("primary_location_placeholder")} />
                                 </div>
                                 
                                 <div>
@@ -233,12 +233,12 @@ export default function UploadXLS() {
                                     <div className="space-y-2">
                                         {subLocations.map((loc, idx) => (
                                             <div key={idx} className="flex gap-2">
-                                                <input title={t("sub_location_label") + " " + (idx + 1)} className="form-input flex-1 bg-white/5 border-white/10 rounded-xl p-3 text-white" value={loc} onChange={(e) => {
+                                                <input title={t("sub_location_label") + " " + (idx + 1)} className="form-input flex-1 bg-white/5 border-white/10 rounded-md p-3 text-white" value={loc} onChange={(e) => {
                                                     const newLocs = [...subLocations];
                                                     newLocs[idx] = e.target.value;
                                                     setSubLocations(newLocs);
                                                 }} placeholder={t("sub_location_placeholder")} />
-                                                <button title={t("remove")} type="button" onClick={() => removeSubLocation(idx)} className="p-3 text-red-400 hover:bg-red-400/10 rounded-xl"><X size={18} /></button>
+                                                <button title={t("remove")} type="button" onClick={() => removeSubLocation(idx)} className="p-3 text-red-400 hover:bg-red-400/10 rounded-md"><X size={18} /></button>
                                             </div>
                                         ))}
                                         <button type="button" onClick={addSubLocation} className="text-xs text-blue-400 font-bold hover:underline">+ <T k="add_sub_location" /></button>
@@ -251,7 +251,7 @@ export default function UploadXLS() {
                                         type="button"
                                         title={t("download_template")}
                                         onClick={handleDownloadTemplate}
-                                        className="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-sm hover:bg-emerald-500/20 transition-all"
+                                        className="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-sm hover:bg-emerald-500/20 transition-all"
                                     >
                                         <Download size={20} />
                                         <T k="download_template" />
@@ -259,7 +259,7 @@ export default function UploadXLS() {
                                 )}
 
                                 <label className="text-xs font-bold uppercase tracking-widest text-blue-400 mb-0 block"><T k="budget_file_label" /></label>
-                                <div className="border-2 border-dashed border-white/10 rounded-3xl p-10 text-center bg-white/5 hover:bg-white/10 cursor-pointer transition-all flex flex-col items-center gap-4" onClick={() => document.getElementById('file-upload')?.click()}>
+                                <div className="border-2 border-dashed border-white/10 rounded-md p-10 text-center bg-white/5 hover:bg-white/10 cursor-pointer transition-all flex flex-col items-center gap-4" onClick={() => document.getElementById('file-upload')?.click()}>
                                     <FileSpreadsheet size={48} className={file ? "text-emerald-400" : "text-white/20"} />
                                     <h4 className="font-bold">{file ? file.name : t("click_to_select_xls")}</h4>
                                     <input title={t("budget_file_label")} id="file-upload" type="file" required accept=".xls,.xlsx,.xlsm" onChange={(e) => setFile(e.target.files?.[0] || null)} className="hidden" aria-label={t("budget_file_label")} />
@@ -267,7 +267,7 @@ export default function UploadXLS() {
                             </div>
 
                             <div className="md:col-span-2 mt-4">
-                                <button type="submit" className="w-full btn-primary bg-gradient-to-r from-purple-600 to-blue-500 p-5 rounded-2xl font-black text-xl flex items-center justify-center gap-3 hover:scale-[1.01] transition-all disabled:opacity-50" disabled={!file || !projectName || loading}>
+                                <button type="submit" className="w-full btn-primary bg-gradient-to-r from-purple-600 to-blue-500 p-5 rounded-md font-black text-xl flex items-center justify-center gap-3 hover:scale-[1.01] transition-all disabled:opacity-50" disabled={!file || !projectName || loading}>
                                     {loading ? t("creating_parsing") : <><T k="continue" /> <ArrowRight /></>}
                                 </button>
                             </div>
@@ -275,7 +275,7 @@ export default function UploadXLS() {
                     </div>
                 ) : (
                     <div className="flex flex-col gap-8 w-full">
-                        <div className="glass-card p-8 bg-black/60 backdrop-blur-3xl border border-white/10 rounded-[32px] flex flex-col md:flex-row justify-between items-center gap-6">
+                        <div className="glass-card p-8 bg-black/60 backdrop-blur-3xl border border-white/10 rounded-md flex flex-col md:flex-row justify-between items-center gap-6">
                             <div>
                                 <h1 className="text-3xl font-black text-white flex items-center gap-3">
                                     <Edit3 size={24} className="text-purple-400" />
@@ -290,14 +290,14 @@ export default function UploadXLS() {
                                 <p className="text-gray-500 text-xs mt-1">Modifiez les cellules avant de finaliser</p>
                             </div>
                             <div className="flex gap-4">
-                                <button title={t("back")} onClick={() => setStep(1)} className="px-6 py-3 rounded-xl bg-white/5 border border-white/10 font-bold text-gray-400 hover:text-white transition-all"><T k="back" /></button>
-                                <button title={t("finalize_import")} onClick={handleFinalize} className="px-8 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-black flex items-center gap-2 transition-all shadow-lg" disabled={loading || tasks.length === 0}>
+                                <button title={t("back")} onClick={() => setStep(1)} className="px-6 py-3 rounded-md bg-white/5 border border-white/10 font-bold text-gray-400 hover:text-white transition-all"><T k="back" /></button>
+                                <button title={t("finalize_import")} onClick={handleFinalize} className="px-8 py-3 rounded-md bg-emerald-500 hover:bg-emerald-600 text-white font-black flex items-center gap-2 transition-all shadow-lg" disabled={loading || tasks.length === 0}>
                                     {loading ? t("creating_parsing") : <><Save size={20} /> <T k="finalize_import" /></>}
                                 </button>
                             </div>
                         </div>
 
-                        <div className="glass-card bg-[#0a1020]/90 border border-white/10 rounded-[32px] overflow-hidden">
+                        <div className="glass-card bg-[#0a1020]/90 border border-white/10 rounded-md overflow-hidden">
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left border-collapse">
                                     <thead>
