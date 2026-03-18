@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarRange, Target, Flag, Clock, ChevronRight, Save, Trash2, CheckCircle } from "lucide-react";
+import { CalendarRange, Target, Flag, Clock, ChevronRight, Save, Trash2, CheckCircle, Wrench } from "lucide-react";
 import T from "@/components/T";
 import FileUploadZone from "@/components/hub/FileUploadZone";
 import { useRouter } from "next/navigation";
@@ -13,7 +13,19 @@ interface PlanningMilestone {
     endDate: string;
     progress: number;
     color?: string;
+    isUserTrade?: boolean;
 }
+
+const TRADE_OPTIONS = [
+    { value: "electricien", label: "⚡ Électricien", icon: "⚡" },
+    { value: "chauffagiste", label: "🔥 Chauffagiste / HVAC", icon: "🔥" },
+    { value: "plombier", label: "🔧 Plombier", icon: "🔧" },
+    { value: "gainiste", label: "🌀 Gainiste", icon: "🌀" },
+    { value: "menuisier", label: "🪵 Menuisier", icon: "🪵" },
+    { value: "peintre", label: "🎨 Peintre", icon: "🎨" },
+    { value: "carreleur", label: "🧱 Carreleur", icon: "🧱" },
+    { value: "general", label: "🏗️ Tous corps d'état", icon: "🏗️" },
+];
 
 interface PlanningTabProps {
     project: {
@@ -39,15 +51,15 @@ interface PlanningTabProps {
     readonlyMode?: boolean;
 }
 
-const DEMO_MILESTONES = [
-    { name: "Terrassement & Fondations", category: "Gros Œuvre", startDate: "2025-09-01", endDate: "2025-11-15", progress: 1.0, color: "emerald" },
-    { name: "Élévation Murs Porteurs", category: "Gros Œuvre", startDate: "2025-11-01", endDate: "2026-02-28", progress: 0.85, color: "emerald" },
-    { name: "Dalle & Planchers", category: "Gros Œuvre", startDate: "2026-01-15", endDate: "2026-04-30", progress: 0.45, color: "blue" },
-    { name: "Charpente & Toiture", category: "Gros Œuvre", startDate: "2026-03-01", endDate: "2026-06-15", progress: 0.15, color: "blue" },
-    { name: "Menuiseries Extérieures", category: "Second Œuvre", startDate: "2026-04-01", endDate: "2026-07-30", progress: 0, color: "amber" },
-    { name: "Plomberie & Électricité", category: "Second Œuvre", startDate: "2026-05-15", endDate: "2026-09-30", progress: 0, color: "amber" },
-    { name: "Revêtements & Finitions", category: "Finitions", startDate: "2026-08-01", endDate: "2026-11-30", progress: 0, color: "purple" },
-    { name: "Réception & Livraison", category: "Livraison", startDate: "2026-11-15", endDate: "2026-12-31", progress: 0, color: "rose" },
+const DEMO_MILESTONES: PlanningMilestone[] = [
+    { name: "Terrassement & Fondations", category: "Gros Œuvre", startDate: "2025-09-01", endDate: "2025-11-15", progress: 1.0, color: "emerald", isUserTrade: false },
+    { name: "Élévation Murs Porteurs", category: "Gros Œuvre", startDate: "2025-11-01", endDate: "2026-02-28", progress: 0.85, color: "emerald", isUserTrade: false },
+    { name: "Dalle & Planchers", category: "Gros Œuvre", startDate: "2026-01-15", endDate: "2026-04-30", progress: 0.45, color: "blue", isUserTrade: false },
+    { name: "Charpente & Toiture", category: "Gros Œuvre", startDate: "2026-03-01", endDate: "2026-06-15", progress: 0.15, color: "blue", isUserTrade: false },
+    { name: "Menuiseries Extérieures", category: "Second Œuvre", startDate: "2026-04-01", endDate: "2026-07-30", progress: 0, color: "amber", isUserTrade: false },
+    { name: "Plomberie & Électricité", category: "Second Œuvre", startDate: "2026-05-15", endDate: "2026-09-30", progress: 0, color: "amber", isUserTrade: false },
+    { name: "Revêtements & Finitions", category: "Finitions", startDate: "2026-08-01", endDate: "2026-11-30", progress: 0, color: "purple", isUserTrade: false },
+    { name: "Réception & Livraison", category: "Livraison", startDate: "2026-11-15", endDate: "2026-12-31", progress: 0, color: "rose", isUserTrade: false },
 ];
 
 const colorClasses: Record<string, { bg: string; bar: string; text: string; border: string }> = {
@@ -87,6 +99,7 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
     const [milestones, setMilestones] = useState<PlanningMilestone[] | null>(existingMilestones);
     const [isParsed, setIsParsed] = useState<boolean>(false);
     const [submitting, setSubmitting] = useState(false);
+    const [selectedTrade, setSelectedTrade] = useState<string>("");
 
     // If no existing milestones and no parsed ones, show demo. Or show real ones.
     const activeMilestones = milestones || DEMO_MILESTONES;
@@ -111,16 +124,17 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
     const inProgressCount = activeMilestones.filter(m => m.progress > 0 && m.progress < 1).length;
     const upcomingCount = activeMilestones.filter(m => m.progress === 0).length;
 
-    const handleUploadComplete = (data: { data?: any[] }) => {
-        if (data.data && Array.isArray(data.data)) {
-            const processed = data.data.map((m: any) => ({
-                name: m.name || "Inconnu",
-                category: m.category || "Général",
-                // Fallback dates if Gemini hallucinated or failed
-                startDate: m.startDate || new Date().toISOString().split('T')[0],
-                endDate: m.endDate || new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0],
-                progress: m.progress || 0,
-                color: assignColor(m.category || "")
+    const handleUploadComplete = (data: unknown) => {
+        const d = data as { data?: Record<string, unknown>[] };
+        if (d.data && Array.isArray(d.data)) {
+            const processed: PlanningMilestone[] = d.data.map((m: Record<string, unknown>) => ({
+                name: (m.name as string) || "Inconnu",
+                category: (m.category as string) || "Général",
+                startDate: (m.startDate as string) || new Date().toISOString().split('T')[0],
+                endDate: (m.endDate as string) || new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0],
+                progress: (m.progress as number) || 0,
+                color: assignColor((m.category as string) || ""),
+                isUserTrade: (m.isUserTrade as boolean) || false
             }));
             
             // Sort by start date
@@ -166,16 +180,56 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
             {/* Upload Zone */}
             {!readonlyMode && (
                 <div className={isParsed ? "opacity-50 pointer-events-none" : ""}>
-                    <FileUploadZone
-                        projectId={project.id}
-                        module="planning"
-                        acceptTypes=".pdf,.xlsx,.xls"
-                        title="Importer le Planning"
-                        subtitle={isParsed ? "Un planning est en cours de révision..." : "Glissez un PDF (Gantt) ou Excel pour laisser l'IA Gemini extraire les jalons"}
-                        accentColor="purple"
-                        onUploadComplete={handleUploadComplete}
-                        icon={<CalendarRange size={36} className="text-purple-400" />}
-                    />
+                    {/* Trade selector */}
+                    {!selectedTrade ? (
+                        <div className="bg-[#080d1a]/80 border border-purple-500/20 rounded-2xl p-6">
+                            <h4 className="flex items-center gap-2 text-purple-300 font-bold mb-4">
+                                <Wrench size={18} />
+                                Quel est votre corps de métier ?
+                            </h4>
+                            <p className="text-xs text-gray-400 mb-4">
+                                L&apos;IA mettra en évidence les tâches qui vous concernent directement.
+                            </p>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                {TRADE_OPTIONS.map(t => (
+                                    <button
+                                        key={t.value}
+                                        onClick={() => setSelectedTrade(t.value)}
+                                        className="px-4 py-3 rounded-xl bg-white/5 hover:bg-purple-500/20 border border-white/10 hover:border-purple-500/40 text-sm text-gray-300 hover:text-purple-300 font-medium transition-all flex items-center gap-2"
+                                    >
+                                        <span className="text-lg">{t.icon}</span>
+                                        {t.label.split(" ").slice(1).join(" ")}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    ) : (
+                        <>
+                            <div className="flex items-center gap-3 mb-3">
+                                <span className="text-xs text-gray-400">Corps de métier :</span>
+                                <span className="px-3 py-1 rounded-full bg-purple-500/20 border border-purple-500/30 text-purple-300 text-xs font-bold">
+                                    {TRADE_OPTIONS.find(t => t.value === selectedTrade)?.label}
+                                </span>
+                                <button
+                                    onClick={() => setSelectedTrade("")}
+                                    className="text-[10px] text-gray-500 hover:text-purple-400 underline transition-colors"
+                                >
+                                    Changer
+                                </button>
+                            </div>
+                            <FileUploadZone
+                                projectId={project.id}
+                                module="planning"
+                                acceptTypes=".pdf"
+                                title="Importer le Planning"
+                                subtitle={isParsed ? "Un planning est en cours de révision..." : "Glissez un PDF (Gantt) pour laisser l'IA Gemini extraire les jalons"}
+                                accentColor="purple"
+                                onUploadComplete={handleUploadComplete}
+                                icon={<CalendarRange size={36} className="text-purple-400" />}
+                                extraFormData={{ trade: selectedTrade }}
+                            />
+                        </>
+                    )}
                 </div>
             )}
 
@@ -294,7 +348,10 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
                                 <div key={idx} className="flex items-center gap-4 group hover:bg-white/5 rounded-xl p-1.5 transition-colors">
                                     {/* Label */}
                                     <div className="w-[200px] flex-shrink-0">
-                                        <div className="text-xs font-bold text-gray-200 truncate">{milestone.name}</div>
+                                <div className={`text-xs font-bold truncate ${milestone.isUserTrade ? 'text-yellow-300' : 'text-gray-200'}`}>
+                                        {milestone.isUserTrade && <span className="mr-1">⭐</span>}
+                                        {milestone.name}
+                                    </div>
                                         <div className={`text-[9px] uppercase tracking-widest ${c.text} font-bold`}>{milestone.category}</div>
                                     </div>
                                     {/* Bar area */}

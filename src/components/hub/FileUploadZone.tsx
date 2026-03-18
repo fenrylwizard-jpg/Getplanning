@@ -13,6 +13,7 @@ interface FileUploadZoneProps {
     title: string;
     subtitle: string;
     accentColor?: string;
+    extraFormData?: Record<string, string>;
 }
 
 type UploadState = "idle" | "dragging" | "uploading" | "success" | "error";
@@ -26,6 +27,7 @@ export default function FileUploadZone({
     title,
     subtitle,
     accentColor = "purple",
+    extraFormData,
 }: FileUploadZoneProps) {
     const [state, setState] = useState<UploadState>("idle");
     const [errorMessage, setErrorMessage] = useState("");
@@ -73,6 +75,11 @@ export default function FileUploadZone({
         try {
             const formData = new FormData();
             formData.append("file", file);
+            if (extraFormData) {
+                Object.entries(extraFormData).forEach(([key, value]) => {
+                    formData.append(key, value);
+                });
+            }
 
             const res = await fetch(`/api/project/${projectId}/${module}/upload`, {
                 method: "POST",
@@ -110,7 +117,7 @@ export default function FileUploadZone({
                 setProgress(0);
             }, 4000);
         }
-    }, [projectId, module, onUploadComplete]);
+    }, [projectId, module, onUploadComplete, extraFormData]);
 
     const handleDrop = useCallback((e: React.DragEvent) => {
         e.preventDefault();
