@@ -8,79 +8,126 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
+
+    // Parse form data before streaming
+    let file: File;
+    let trade: string;
     try {
         const formData = await req.formData();
-        const file = formData.get("file") as File;
-        const trade = formData.get("trade") as string || "général";
-
+        file = formData.get("file") as File;
+        trade = (formData.get("trade") as string) || "général";
         if (!file) {
             return NextResponse.json({ error: "Aucun fichier fourni." }, { status: 400 });
         }
-
         if (file.type !== "application/pdf") {
             return NextResponse.json({ error: "Le fichier doit être un PDF valide." }, { status: 400 });
         }
-
-        const bytes = await file.arrayBuffer();
-        const buffer = Buffer.from(bytes);
-        console.log(`PDF received: ${file.name}, size: ${bytes.byteLength} bytes, trade: ${trade}`);
-
-        // ===== STEP 1: Deterministic extraction with pdf.js-extract =====
-        console.log("Step 1: Extracting table data with pdf.js-extract...");
-        let extractedTasks: ExtractedTask[];
-        try {
-            extractedTasks = await extractPlanningFromPDF(buffer);
-            console.log(`Extracted ${extractedTasks.length} tasks deterministically`);
-        } catch (extractError: unknown) {
-            const msg = extractError instanceof Error ? extractError.message : String(extractError);
-            console.error("PDF extraction failed:", msg);
-            return NextResponse.json({ 
-                error: `Erreur lors de l'extraction du PDF: ${msg}` 
-            }, { status: 500 });
-        }
-
-        if (extractedTasks.length === 0) {
-            const rawDump = await extractRawTextFromPDF(buffer);
-            const crashBanner = `Aucune tâche trouvée.\n\n---- DUMP RAW TEXT POUR LE DEV (Veuillez faire une capture) ----\n${rawDump.join('\n')}`;
-            return NextResponse.json({ error: crashBanner }, { status: 400 });
-        }
-
-        // ===== STEP 2: AI categorization with Gemini (trade awareness) =====
-        const apiKey = process.env.GEMINI_API_KEY;
-        let categorizedTasks;
-
-        if (apiKey) {
-            console.log("Step 2: Categorizing tasks with Gemini AI...");
-            try {
-                categorizedTasks = await categorizeTasks(extractedTasks, trade, apiKey);
-                console.log("AI categorization complete");
-            } catch (aiError: unknown) {
-                const msg = aiError instanceof Error ? aiError.message : String(aiError);
-                console.warn("AI categorization failed, using fallback:", msg);
-                categorizedTasks = fallbackCategorize(extractedTasks, trade);
-            }
-        } else {
-            console.log("Step 2: No API key, using rule-based categorization");
-            categorizedTasks = fallbackCategorize(extractedTasks, trade);
-        }
-
-        console.log(`Returning ${categorizedTasks.length} categorized milestones`);
-
-        return NextResponse.json({
-            success: true,
-            message: `${extractedTasks.length} tâches extraites du PDF, ${categorizedTasks.length} jalons catégorisés.`,
-            projectId: id,
-            fileName: file.name,
-            trade,
-            count: categorizedTasks.length,
-            data: categorizedTasks
-        });
-
-    } catch (error: unknown) {
-        const errMsg = error instanceof Error ? error.message : String(error);
-        console.error("Planning upload error:", errMsg);
-        return NextResponse.json({ error: `Erreur upload: ${errMsg}` }, { status: 500 });
+    } catch {
+        return NextResponse.json({ error: "Erreur lecture du formulaire." }, { status: 400 });
     }
+
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+    console.log(`PDF received: ${file.name}, size: ${bytes.byteLength} bytes, trade: ${trade}`);
+
+    // Use a streaming response to keep the proxy connection alive
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream({
+        async start(controller) {
+            const send = (line: string) => {
+                controller.enqueue(encoder.encode(line + "\n"));
+            };
+
+            try {
+                // ===== STEP 1: Deterministic extraction =====
+                send("event:progress");
+                send("data:Extraction du PDF...");
+                console.log("Step 1: Extracting table data with pdf.js-extract...");
+
+                let extractedTasks: ExtractedTask[];
+                try {
+                    extractedTasks = await extractPlanningFromPDF(buffer);
+                    console.log(`Extracted ${extractedTasks.length} tasks deterministically`);
+                } catch (extractError: unknown) {
+                    const msg = extractError instanceof Error ? extractError.message : String(extractError);
+                    console.error("PDF extraction failed:", msg);
+                    send("event:error");
+                    send(`data:${JSON.stringify({ error: `Erreur extraction: ${msg}` })}`);
+                    controller.close();
+                    return;
+                }
+
+                if (extractedTasks.length === 0) {
+                    send("event:error");
+                    send(`data:${JSON.stringify({ error: "Aucune tâche trouvée dans le PDF." })}`);
+                    controller.close();
+                    return;
+                }
+
+                send("event:progress");
+                send(`data:${extractedTasks.length} tâches extraites, catégorisation IA...`);
+
+                // ===== STEP 2: AI categorization =====
+                const apiKey = process.env.GEMINI_API_KEY;
+                let categorizedTasks;
+
+                // Send keepalive pings every 10 seconds to prevent proxy timeout
+                const keepalive = setInterval(() => {
+                    send("event:ping");
+                    send("data:keepalive");
+                }, 10_000);
+
+                try {
+                    if (apiKey) {
+                        console.log("Step 2: Categorizing tasks with Gemini AI...");
+                        try {
+                            categorizedTasks = await categorizeTasks(extractedTasks, trade, apiKey);
+                            console.log("AI categorization complete");
+                        } catch (aiError: unknown) {
+                            const msg = aiError instanceof Error ? aiError.message : String(aiError);
+                            console.warn("AI categorization failed, using fallback:", msg);
+                            categorizedTasks = fallbackCategorize(extractedTasks, trade);
+                        }
+                    } else {
+                        console.log("Step 2: No API key, using rule-based categorization");
+                        categorizedTasks = fallbackCategorize(extractedTasks, trade);
+                    }
+                } finally {
+                    clearInterval(keepalive);
+                }
+
+                console.log(`Returning ${categorizedTasks.length} categorized milestones`);
+
+                // Send the final result
+                send("event:result");
+                send(`data:${JSON.stringify({
+                    success: true,
+                    message: `${extractedTasks.length} tâches extraites, ${categorizedTasks.length} jalons catégorisés.`,
+                    projectId: id,
+                    fileName: file.name,
+                    trade,
+                    count: categorizedTasks.length,
+                    data: categorizedTasks
+                })}`);
+
+            } catch (error: unknown) {
+                const errMsg = error instanceof Error ? error.message : String(error);
+                console.error("Planning upload error:", errMsg);
+                send("event:error");
+                send(`data:${JSON.stringify({ error: `Erreur upload: ${errMsg}` })}`);
+            } finally {
+                controller.close();
+            }
+        }
+    });
+
+    return new Response(stream, {
+        headers: {
+            "Content-Type": "text/event-stream",
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+        },
+    });
 }
 
 /**

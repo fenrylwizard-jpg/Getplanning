@@ -96,19 +96,70 @@ export default function FileUploadZone({
             console.log(`[FileUpload] Response status: ${res.status}`);
 
             if (!res.ok) {
-                const data = await res.json();
-                throw new Error(data.error || "Upload failed");
+                // Non-streaming error (validation errors)
+                const text = await res.text();
+                try {
+                    const errData = JSON.parse(text);
+                    throw new Error(errData.error || "Upload failed");
+                } catch {
+                    throw new Error(text || "Upload failed");
+                }
             }
 
-            const data = await res.json();
-            console.log(`[FileUpload] Response data keys: ${Object.keys(data).join(', ')}, count: ${data.count}`);
+            // Parse the SSE stream from the upload route
+            const text = await res.text();
+            console.log(`[FileUpload] Stream response length: ${text.length}`);
+            const lines = text.split("\n");
+
+            // Find the result or error event
+            let data: Record<string, unknown> | null = null;
+            let errorMsg: string | null = null;
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (line === "event:result" && i + 1 < lines.length) {
+                    const dataLine = lines[i + 1].trim();
+                    if (dataLine.startsWith("data:")) {
+                        try {
+                            data = JSON.parse(dataLine.slice(5));
+                            console.log(`[FileUpload] Parsed result: count=${(data as Record<string, unknown>)?.count}`);
+                        } catch (e) {
+                            console.error("[FileUpload] Failed to parse result JSON:", e);
+                        }
+                    }
+                } else if (line === "event:error" && i + 1 < lines.length) {
+                    const dataLine = lines[i + 1].trim();
+                    if (dataLine.startsWith("data:")) {
+                        try {
+                            const errData = JSON.parse(dataLine.slice(5));
+                            errorMsg = errData.error || "Unknown error";
+                        } catch {
+                            errorMsg = dataLine.slice(5);
+                        }
+                    }
+                }
+            }
+
+            if (errorMsg) {
+                throw new Error(errorMsg);
+            }
+
+            if (!data) {
+                // Fallback: try parsing the whole response as JSON (for non-streaming routes)
+                try {
+                    data = JSON.parse(text);
+                } catch {
+                    throw new Error("Réponse invalide du serveur.");
+                }
+            }
+
             setProgress(100);
 
             // Check if any records were actually parsed
-            const count = data.count ?? 0;
+            const count = (data!.count as number) ?? 0;
             if (count === 0) {
                 setState("error");
-                setErrorMessage(`Fichier reçu mais 0 enregistrement extrait. Vérifiez le format du fichier Excel (feuilles, colonnes).`);
+                setErrorMessage(`Fichier reçu mais 0 enregistrement extrait. Vérifiez le format du fichier.`);
                 setTimeout(() => { setState("idle"); setProgress(0); }, 6000);
             } else {
                 setState("success");
