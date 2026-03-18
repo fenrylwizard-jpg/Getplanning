@@ -76,7 +76,7 @@ export default function OverviewTab({ project }: OverviewTabProps) {
     return (
         <div className="flex flex-col gap-12 w-full animate-in fade-in duration-700">
             {/* Header intro */}
-            <div className="bg-[#080d1b]/80 border border-white/5 rounded-md p-6 sm:p-10 shadow-2xl relative overflow-hidden text-center max-w-4xl mx-auto w-full mt-6">
+            <div className="glass-card relative overflow-hidden text-center max-w-4xl mx-auto w-full mt-6">
                 <div className="absolute top-0 right-1/2 w-[600px] h-[600px] bg-purple-500/10 rounded-full blur-[120px] translate-x-1/2 -translate-y-1/2 pointer-events-none" />
                 <div className="relative z-10 w-full flex flex-col items-center">
                     <h2 className="text-4xl md:text-5xl font-black mb-4 bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent uppercase tracking-wider">
@@ -96,7 +96,7 @@ export default function OverviewTab({ project }: OverviewTabProps) {
                         className={`
                             relative group flex flex-col items-center justify-center
                             w-[260px] h-[320px] sm:w-[300px] sm:h-[360px]
-                            rounded-[3rem] ${mod.bg} backdrop-blur-2xl
+                            rounded-[3rem] glass-card
                             ring-1 ring-white/5 ${mod.ring}
                             transition-all duration-700 hover:-translate-y-4 hover:scale-[1.03] 
                             ${mod.shadow} overflow-hidden

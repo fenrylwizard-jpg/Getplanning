@@ -64,6 +64,75 @@
   color: #475569 !important;
 }
 
+/* Light mode overrides for common UI colors */
+[data-theme="light"] .text-cyan-200,
+[data-theme="light"] .text-cyan-300,
+[data-theme="light"] .text-cyan-400,
+[data-theme="light"] .text-cyan-500 {
+  color: var(--accent-teal) !important;
+}
+
+[data-theme="light"] .text-blue-300,
+[data-theme="light"] .text-blue-400 {
+  color: #2563eb !important;
+}
+
+[data-theme="light"] .text-emerald-300,
+[data-theme="light"] .text-emerald-400,
+[data-theme="light"] .text-emerald-500 {
+  color: #059669 !important;
+}
+
+[data-theme="light"] .text-rose-300,
+[data-theme="light"] .text-rose-400,
+[data-theme="light"] .text-red-400 {
+  color: #e11d48 !important;
+}
+
+[data-theme="light"] .text-violet-300,
+[data-theme="light"] .text-violet-400 {
+  color: var(--accent-purple) !important;
+}
+
+[data-theme="light"] .text-amber-300,
+[data-theme="light"] .text-amber-400 {
+  color: #d97706 !important;
+}
+
+/* Background Opacity Overrides for Light Mode */
+[data-theme="light"] .bg-black\/20,
+[data-theme="light"] .bg-black\/40 {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-theme="light"] .bg-white\/5,
+[data-theme="light"] .bg-white\/10 {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-theme="light"] .bg-cyan-500\/5,
+[data-theme="light"] .bg-cyan-500\/10,
+[data-theme="light"] .bg-cyan-500\/20,
+[data-theme="light"] .bg-cyan-950\/40 {
+  background-color: rgba(8, 145, 178, 0.08) !important;
+}
+
+[data-theme="light"] .bg-emerald-500\/10,
+[data-theme="light"] .bg-emerald-500\/20 {
+  background-color: rgba(5, 150, 105, 0.08) !important;
+}
+
+/* Borders */
+[data-theme="light"] .border-white\/5,
+[data-theme="light"] .border-white\/10 {
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="light"] .border-cyan-500\/20,
+[data-theme="light"] .border-cyan-500\/30 {
+  border-color: rgba(8, 145, 178, 0.2) !important;
+}
+
 [data-theme="light"] table,
 [data-theme="light"] thead,
 [data-theme="light"] tbody {

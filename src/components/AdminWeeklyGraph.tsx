@@ -79,7 +79,7 @@ export default function AdminWeeklyGraph() {
 
     if (data.length === 0) {
         return (
-            <div className="glass-panel rounded-md p-6 min-h-[400px] flex flex-col items-center justify-center text-slate-400">
+            <div className="glass-panel rounded-md p-6 min-h-[400px] flex flex-col items-center justify-center text-gray-500">
                 <span className="material-symbols-outlined text-4xl mb-2 opacity-50">analytics</span>
                 <p>Aucune donnée historique trouvée pour le graphique.</p>
             </div>
@@ -87,13 +87,13 @@ export default function AdminWeeklyGraph() {
     }
 
     return (
-        <div className="glass-panel rounded-md p-6 w-full mt-6 bg-[#060b18]/50 border border-white/5">
+        <div className="glass-panel rounded-md p-6 w-full mt-6 border border-white/5">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
                 <div>
                     <h2 className="text-xl font-bold text-white mb-1">
                         <T k="weekly_performance_graph" />
                     </h2>
-                    <p className="text-sm text-slate-400">
+                    <p className="text-sm text-gray-400">
                         <T k="weekly_performance_desc" />
                     </p>
                 </div>

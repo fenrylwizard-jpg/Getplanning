@@ -163,7 +163,7 @@ export default function AdminDashboard() {
     };
 
     if (loading) return (
-        <div className="min-h-screen flex items-center justify-center bg-[#060b18] text-white">
+        <div className="aurora-page min-h-screen flex items-center justify-center text-white">
             <div className="text-center">
                 <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
                 <span className="text-gray-400"><T k="admin_loading" /></span>
@@ -176,7 +176,7 @@ export default function AdminDashboard() {
 
     return (
         <div className="aurora-page flex flex-col items-center w-full">
-            <main className="min-h-screen bg-[#060b18]/80 backdrop-blur-sm text-white px-6 py-10 w-full max-w-7xl flex flex-col">
+            <main className="min-h-screen bg-black/40 backdrop-blur-sm text-white px-6 py-10 w-full max-w-7xl flex flex-col">
 
             {/* Header */}
             <div className="flex justify-between items-center mb-10">
@@ -241,7 +241,7 @@ export default function AdminDashboard() {
             {/* Budget + Profitability */}
             {stats && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                    <div className="bg-[#080d1a] border border-white/5 rounded-md p-6">
+                    <div className="glass-card mb-0">
                         <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 mb-3 flex items-center gap-2">
                             <Activity size={16} /> <T k="global_labor_hours" />
                         </h3>
@@ -256,7 +256,7 @@ export default function AdminDashboard() {
                         <div className="text-xs text-gray-500 mt-1">{stats.globalPct}{t('pct_achieved')}</div>
                     </div>
 
-                    <div className="bg-[#080d1a] border border-white/5 rounded-md p-6">
+                    <div className="glass-card mb-0">
                         <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 mb-3 flex items-center gap-2">
                             <Euro size={16} /> <T k="profitability" /> (€43.35/h)
                         </h3>
@@ -277,7 +277,7 @@ export default function AdminDashboard() {
 
             {/* Projects Table */}
             {stats && stats.projects.length > 0 && (
-                <div className="bg-[#080d1a] border border-white/5 rounded-md p-6 mb-8">
+                <div className="glass-card mb-8">
                     <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 mb-4 flex items-center gap-2">
                         <Folder size={16} /> <T k="projects" /> ({stats.projects.length})
                     </h3>

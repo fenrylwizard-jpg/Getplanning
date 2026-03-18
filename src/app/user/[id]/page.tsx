@@ -59,7 +59,7 @@ export default function UserProfilePage() {
     }, [params.id]);
 
     if (loading) return (
-        <div className="min-h-screen flex items-center justify-center bg-[#060b18] text-white">
+        <div className="aurora-page min-h-screen flex items-center justify-center text-white">
             <div className="text-center">
                 <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
                 <span className="text-gray-400"><T k="admin_loading" /></span>
@@ -68,9 +68,8 @@ export default function UserProfilePage() {
     );
 
     if (!user) return (
-        <div className="min-h-screen flex items-center justify-center bg-[#060b18] text-white">
-            <div className="text-center">
-                <UserIcon size={48} className="text-gray-600 mx-auto mb-4" />
+        <div className="aurora-page min-h-screen flex items-center justify-center text-white">
+            <div className="text-center text-red-500 glass-card px-6 py-4 rounded-md border border-red-500/20 max-w-md w-full mx-4">
                 <p className="text-gray-400">Utilisateur non trouvé</p>
             </div>
         </div>
@@ -99,7 +98,7 @@ export default function UserProfilePage() {
 
     return (
         <div className="aurora-page flex flex-col items-center w-full">
-            <main className="min-h-screen bg-[#060b18]/80 backdrop-blur-sm text-white px-6 py-10 w-full max-w-6xl flex flex-col">
+            <main className="min-h-screen bg-black/40 backdrop-blur-sm text-white px-6 py-10 w-full max-w-6xl flex flex-col">
 
                 {/* Back Button */}
                 <Link href="/admin/dashboard" className="flex items-center gap-2 text-gray-500 hover:text-white transition-colors mb-8 text-sm font-bold">
@@ -108,7 +107,7 @@ export default function UserProfilePage() {
 
                 {/* User Hero */}
                 <div className="flex flex-col md:flex-row items-center gap-8 mb-12">
-                    <div className="glass-card p-8 bg-[#080d1a]/80 backdrop-blur-md rounded-md border border-white/5 shadow-xl flex items-center gap-6">
+                    <div className="glass-card p-8 bg-black/40 backdrop-blur-md rounded-md border border-white/5 shadow-xl flex items-center gap-6">
                         <AvatarDisplay characterId={user.characterId} level={user.level} size={120} />
                         <div className="flex flex-col">
                             <span className="text-3xl font-black text-white">{user.name}</span>
@@ -140,7 +139,7 @@ export default function UserProfilePage() {
 
                 {/* Badges */}
                 {user.badges.length > 0 && (
-                    <div className="bg-[#080d1a] border border-white/5 rounded-md p-6 mb-8">
+                    <div className="glass-card mb-8">
                         <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 mb-4 flex items-center gap-2">
                             <Award size={16} className="text-amber-400" /> Badges ({user.badges.length})
                         </h3>
@@ -160,7 +159,7 @@ export default function UserProfilePage() {
 
                 {/* PM Projects */}
                 {pmProjects.length > 0 && (
-                    <div className="bg-[#080d1a] border border-white/5 rounded-md p-6 mb-8">
+                    <div className="glass-card mb-8">
                         <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 mb-4 flex items-center gap-2">
                             <Folder size={16} className="text-amber-400" /> Projets en tant que PM ({pmProjects.length})
                         </h3>
@@ -208,7 +207,7 @@ export default function UserProfilePage() {
 
                 {/* SM Projects */}
                 {smProjects.length > 0 && (
-                    <div className="bg-[#080d1a] border border-white/5 rounded-md p-6 mb-8">
+                    <div className="glass-card mb-8">
                         <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 mb-4 flex items-center gap-2">
                             <Folder size={16} className="text-cyan-400" /> Projets en tant que SM ({smProjects.length})
                         </h3>
@@ -255,7 +254,7 @@ export default function UserProfilePage() {
                 )}
 
                 {totalProjects === 0 && (
-                    <div className="bg-[#080d1a] border border-white/5 rounded-md p-12 text-center text-gray-500">
+                    <div className="glass-card p-12 text-center text-gray-500">
                         Aucun projet assigné
                     </div>
                 )}
