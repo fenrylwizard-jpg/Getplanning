@@ -1,0 +1,157 @@
+// Deterministic PDF planning table extraction using pdf.js-extract
+// Extracts structured task data from construction Gantt chart PDFs
+// using X/Y coordinate-based column detection
+
+import { PDFExtract } from 'pdf.js-extract';
+
+// Column boundaries for standard MS Project / Primavera Gantt PDF exports
+// These are calibrated for "LOUIS DE WAELE" style plannings but work adaptively
+const DEFAULT_COLUMNS = {
+    num:      { min: 14, max: 28 },   // N° (row number)
+    wbs:      { min: 28, max: 64 },   // WBS code
+    task:     { min: 64, max: 229 },  // Nom de la tâche
+    zone:     { min: 229, max: 259 }, // ZONE
+    lot:      { min: 259, max: 282 }, // LOT
+    duration: { min: 282, max: 308 }, // Durée
+    start:    { min: 308, max: 340 }, // Début
+    end:      { min: 340, max: 372 }, // Fin
+    margin:   { min: 405, max: 425 }, // Marge totale
+};
+
+function getColumn(x: number, columns: typeof DEFAULT_COLUMNS): string | null {
+    for (const [name, bounds] of Object.entries(columns)) {
+        if (x >= bounds.min && x < bounds.max) return name;
+    }
+    return null;
+}
+
+function parseFrenchDate(dateStr: string): string {
+    // Handles "14/05/24", "6/07/24", "20/10/25", etc.
+    const parts = dateStr.trim().split('/');
+    if (parts.length !== 3) return dateStr;
+    const [d, m, y] = parts;
+    const yearNum = parseInt(y);
+    const year = yearNum < 50 ? `20${y.padStart(2, '0')}` : `19${y.padStart(2, '0')}`;
+    return `${year}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+}
+
+export interface ExtractedTask {
+    num?: string;
+    wbs: string;
+    name: string;
+    zone?: string;
+    lot?: string;
+    duration: string;
+    startDate: string;
+    endDate: string;
+    margin?: string;
+}
+
+/**
+ * Auto-detect column boundaries by analyzing the header row of the first page.
+ * Falls back to DEFAULT_COLUMNS if headers aren't found.
+ */
+function detectColumns(pages: Array<{ content: Array<{ x: number; y: number; str: string; width: number }> }>): typeof DEFAULT_COLUMNS {
+    const columns = { ...DEFAULT_COLUMNS };
+    
+    if (!pages.length) return columns;
+    
+    const page = pages[0];
+    const headerItems = page.content.filter(
+        (item: { y: number; str: string }) => item.y >= 50 && item.y <= 65 && item.str && item.str.trim()
+    );
+    
+    for (const item of headerItems) {
+        const text = item.str.trim().toLowerCase();
+        const x = Math.round(item.x);
+        
+        if (text === 'n°') columns.num = { min: x - 2, max: x + 15 };
+        else if (text === 'wbs') columns.wbs = { min: x - 2, max: x + 35 };
+        else if (text.includes('nom') || text.includes('tâche') || text.includes('task')) {
+            columns.task = { min: x - 2, max: columns.zone.min };
+        }
+        else if (text === 'zone') columns.zone = { min: x - 2, max: x + 26 };
+        else if (text === 'lot') columns.lot = { min: x - 2, max: x + 20 };
+        else if (text.includes('dur')) columns.duration = { min: x - 2, max: x + 25 };
+        else if (text.includes('déb') || text.includes('debut') || text.includes('start')) {
+            columns.start = { min: x - 2, max: x + 30 };
+        }
+        else if (text === 'fin' || text === 'end') columns.end = { min: x - 2, max: x + 28 };
+        else if (text.includes('marge') || text.includes('float')) columns.margin = { min: x - 2, max: x + 20 };
+    }
+    
+    return columns;
+}
+
+/**
+ * Extract structured task data from a planning PDF buffer.
+ * Uses coordinate-based column detection for deterministic extraction.
+ */
+export async function extractPlanningFromPDF(buffer: Buffer): Promise<ExtractedTask[]> {
+    const pdfExtract = new PDFExtract();
+    const data = await pdfExtract.extract(buffer as unknown as string, { 
+        // pdf.js-extract accepts Buffer through its internal handling
+    });
+
+    const columns = detectColumns(data.pages as unknown as Array<{ content: Array<{ x: number; y: number; str: string; width: number }> }>);
+    const allRows: Record<string, string>[] = [];
+
+    for (const page of data.pages) {
+        const items = page.content.filter((item: { str: string }) => item.str && item.str.trim());
+        
+        // Group by Y coordinate (tolerance 3px for same row)
+        const rowMap = new Map<number, Array<{ x: number; text: string }>>();
+        items.forEach((item: { x: number; y: number; str: string }) => {
+            const y = Math.round(item.y / 3) * 3;
+            if (!rowMap.has(y)) rowMap.set(y, []);
+            rowMap.get(y)!.push({ x: Math.round(item.x), text: item.str.trim() });
+        });
+
+        const sortedYs = Array.from(rowMap.keys()).sort((a, b) => a - b);
+        
+        for (const y of sortedYs) {
+            // Skip header area and footer
+            if (y < 78 || y > 815) continue;
+            
+            const rowItems = rowMap.get(y)!.sort((a, b) => a.x - b.x);
+            
+            const row: Record<string, string> = {};
+            for (const item of rowItems) {
+                const col = getColumn(item.x, columns);
+                if (col) {
+                    row[col] = (row[col] ? row[col] + ' ' : '') + item.text;
+                }
+            }
+            
+            // Only keep rows that look like actual task data
+            if ((row.wbs || row.task) && (row.start || row.duration)) {
+                allRows.push(row);
+            }
+        }
+    }
+
+    // Merge multi-line task names
+    const merged: Record<string, string>[] = [];
+    for (const row of allRows) {
+        if (!row.wbs && !row.start && !row.end && !row.duration && row.task) {
+            if (merged.length > 0) {
+                merged[merged.length - 1].task += ' ' + row.task;
+            }
+        } else {
+            merged.push({ ...row });
+        }
+    }
+
+    // Convert to structured output with parsed dates
+    return merged.map(row => ({
+        num: row.num,
+        wbs: row.wbs || '',
+        name: row.task || 'Sans nom',
+        zone: row.zone,
+        lot: row.lot,
+        duration: row.duration || '',
+        startDate: row.start ? parseFrenchDate(row.start) : '',
+        endDate: row.end ? parseFrenchDate(row.end) : '',
+        margin: row.margin,
+    }));
+}

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
+import { extractPlanningFromPDF, ExtractedTask } from "@/lib/pdfPlanningExtractor";
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
@@ -16,105 +17,205 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
             return NextResponse.json({ error: "Le fichier doit être un PDF valide." }, { status: 400 });
         }
 
-        const apiKey = process.env.GEMINI_API_KEY;
-        if (!apiKey) {
-            console.error("GEMINI_API_KEY is not set in environment variables!");
-            return NextResponse.json({ 
-                error: "La clé API Gemini (GEMINI_API_KEY) n'est pas configurée. Ajoutez-la dans Dokploy." 
-            }, { status: 500 });
-        }
-
-        const ai = new GoogleGenAI({ apiKey });
-
         const bytes = await file.arrayBuffer();
-        const base64Data = Buffer.from(bytes).toString("base64");
+        const buffer = Buffer.from(bytes);
         console.log(`PDF received: ${file.name}, size: ${bytes.byteLength} bytes, trade: ${trade}`);
 
+        // ===== STEP 1: Deterministic extraction with pdf.js-extract =====
+        console.log("Step 1: Extracting table data with pdf.js-extract...");
+        let extractedTasks: ExtractedTask[];
         try {
-            console.log("Calling Gemini 3.1 Pro Preview...");
-            
-            const prompt = `Tu es un expert en gestion de chantiers de construction avec 20 ans d'expérience.
-
-Ce document est un planning de chantier. Il peut prendre différentes formes :
-- Diagramme de Gantt classique (MS Project, Primavera, etc.)
-- Tableau de tâches avec colonnes (WBS, nom, durée, dates, etc.)
-- Planning linéaire ou graphique
-- Les colonnes peuvent avoir des noms variés : "Tâche", "Description", "Activity", "Task Name", "Nom de la tâche", "Désignation", etc.
-- Les dates peuvent être au format français (JJ/MM/AA) ou international (YYYY-MM-DD)
-- La durée peut être en jours ("jrs", "j", "days"), semaines ("sem", "weeks"), ou mois
-
-L'utilisateur est un spécialiste en : ${trade.toUpperCase()}.
-Marque les tâches qui concernent directement son corps de métier avec "isUserTrade": true.
-Par exemple, si l'utilisateur est électricien, les tâches d'éclairage, câblage, tableaux électriques, courants forts/faibles doivent être marquées true.
-Si l'utilisateur est chauffagiste/HVAC, les tâches de chauffage, ventilation, climatisation, gaines, radiateurs doivent être marquées true.
-Si l'utilisateur est plombier, les tâches de plomberie, sanitaires, évacuation, alimentation eau doivent être marquées true.
-Toutes les autres tâches doivent avoir "isUserTrade": false.
-
-Extrais TOUTES les tâches et jalons visibles dans ce planning.
-
-Pour CHAQUE tâche, fournis un objet JSON avec :
-- "wbs": Le code WBS ou numéro de ligne si disponible (sinon "")
-- "name": Le nom exact de la tâche tel qu'écrit dans le document
-- "category": La catégorie logique basée sur le regroupement visuel ou la nature du travail. Catégories standards : "Installation Chantier", "Gros Œuvre", "Stabilité", "Enveloppe", "Second Œuvre - Électricité", "Second Œuvre - Plomberie", "Second Œuvre - HVAC", "Second Œuvre - Menuiserie", "Finitions", "Aménagements Extérieurs", "Réception", "Général"
-- "duration": La durée telle qu'écrite (ex: "14 jrs", "20 jrs")
-- "startDate": Date de début au format YYYY-MM-DD
-- "endDate": Date de fin au format YYYY-MM-DD
-- "progress": Pourcentage d'avancement entre 0 et 1 (si indiqué visuellement ou par %, sinon 0)
-- "isUserTrade": true si cette tâche concerne directement le métier "${trade}" de l'utilisateur, false sinon
-
-Réponds UNIQUEMENT avec le tableau JSON. Pas de markdown, pas de backticks, juste le JSON pur.`;
-
-            const response = await ai.models.generateContent({
-                model: 'gemini-3.1-pro-preview',
-                contents: [
-                    {
-                        inlineData: {
-                            data: base64Data,
-                            mimeType: "application/pdf"
-                        }
-                    },
-                    { text: prompt }
-                ],
-                config: {
-                    responseMimeType: "application/json"
-                }
-            });
-
-            let jsonString = response.text || "[]";
-            jsonString = jsonString.replace(/```json/g, "").replace(/```/g, "").trim();
-            console.log(`Gemini response length: ${jsonString.length} chars`);
-
-            let milestones = [];
-            try {
-                milestones = JSON.parse(jsonString);
-            } catch {
-                console.error("AI provided invalid JSON:", jsonString.substring(0, 300));
-                return NextResponse.json({ error: "L'IA n'a pas retourné un JSON valide. Réessayez." }, { status: 500 });
-            }
-
-            console.log(`Successfully extracted ${milestones.length} milestones from ${file.name}`);
-
-            return NextResponse.json({
-                success: true,
-                message: "Analyse Gemini réussie.",
-                projectId: id,
-                fileName: file.name,
-                trade,
-                count: milestones.length,
-                data: milestones
-            });
-
-        } catch (aiError: unknown) {
-            const errMsg = aiError instanceof Error ? aiError.message : String(aiError);
-            console.error("Gemini AI API Error:", errMsg);
+            extractedTasks = await extractPlanningFromPDF(buffer);
+            console.log(`Extracted ${extractedTasks.length} tasks deterministically`);
+        } catch (extractError: unknown) {
+            const msg = extractError instanceof Error ? extractError.message : String(extractError);
+            console.error("PDF extraction failed:", msg);
             return NextResponse.json({ 
-                error: `Erreur Gemini API: ${errMsg}` 
+                error: `Erreur lors de l'extraction du PDF: ${msg}` 
             }, { status: 500 });
         }
+
+        if (extractedTasks.length === 0) {
+            return NextResponse.json({ 
+                error: "Aucune tâche trouvée dans ce PDF. Vérifiez qu'il contient un planning de type Gantt avec des colonnes WBS, Tâche, Début, Fin." 
+            }, { status: 400 });
+        }
+
+        // ===== STEP 2: AI categorization with Gemini (trade awareness) =====
+        const apiKey = process.env.GEMINI_API_KEY;
+        let categorizedTasks;
+
+        if (apiKey) {
+            console.log("Step 2: Categorizing tasks with Gemini AI...");
+            try {
+                categorizedTasks = await categorizeTasks(extractedTasks, trade, apiKey);
+                console.log("AI categorization complete");
+            } catch (aiError: unknown) {
+                const msg = aiError instanceof Error ? aiError.message : String(aiError);
+                console.warn("AI categorization failed, using fallback:", msg);
+                categorizedTasks = fallbackCategorize(extractedTasks, trade);
+            }
+        } else {
+            console.log("Step 2: No API key, using rule-based categorization");
+            categorizedTasks = fallbackCategorize(extractedTasks, trade);
+        }
+
+        console.log(`Returning ${categorizedTasks.length} categorized milestones`);
+
+        return NextResponse.json({
+            success: true,
+            message: `${extractedTasks.length} tâches extraites du PDF, ${categorizedTasks.length} jalons catégorisés.`,
+            projectId: id,
+            fileName: file.name,
+            trade,
+            count: categorizedTasks.length,
+            data: categorizedTasks
+        });
 
     } catch (error: unknown) {
         const errMsg = error instanceof Error ? error.message : String(error);
         console.error("Planning upload error:", errMsg);
         return NextResponse.json({ error: `Erreur upload: ${errMsg}` }, { status: 500 });
     }
+}
+
+/**
+ * Use Gemini to intelligently categorize extracted tasks and tag user trade relevance.
+ * This is much cheaper/faster than asking Gemini to parse the entire PDF.
+ */
+async function categorizeTasks(tasks: ExtractedTask[], trade: string, apiKey: string) {
+    const ai = new GoogleGenAI({ apiKey });
+
+    // Send a compact summary to Gemini — just the task list, not the whole PDF
+    const taskSummary = tasks.map((t, i) => 
+        `${i}|${t.wbs}|${t.name}|${t.duration}|${t.startDate}|${t.endDate}|${t.lot || ''}`
+    ).join('\n');
+
+    const prompt = `Tu es un expert en gestion de chantiers de construction.
+Voici une liste de tâches extraites d'un planning de chantier. Format: index|WBS|Tâche|Durée|Début|Fin|Lot
+
+${taskSummary}
+
+L'utilisateur est spécialiste en: ${trade.toUpperCase()}.
+
+Pour CHAQUE tâche (par index), retourne un objet JSON avec:
+- "i": l'index de la tâche
+- "category": la catégorie logique parmi: "Installation Chantier", "Gros Œuvre", "Stabilité", "Enveloppe", "Second Œuvre", "Techniques Spéciales", "HVAC", "Plomberie", "Électricité", "Ascenseurs", "Parachèvements", "Finitions", "Abords", "Réception", "Général", "Congés"
+- "isUserTrade": true si cette tâche concerne directement le métier "${trade}", false sinon
+
+Réponds UNIQUEMENT avec le tableau JSON. Pas de markdown, pas de backticks.`;
+
+    const response = await ai.models.generateContent({
+        model: 'gemini-2.0-flash',
+        contents: [{ text: prompt }],
+        config: { responseMimeType: "application/json" }
+    });
+
+    let jsonString = response.text || "[]";
+    jsonString = jsonString.replace(/```json/g, "").replace(/```/g, "").trim();
+    
+    let categories: Array<{ i: number; category: string; isUserTrade: boolean }>;
+    try {
+        categories = JSON.parse(jsonString);
+    } catch {
+        console.warn("AI returned invalid JSON, using fallback categorization");
+        return fallbackCategorize(tasks, trade);
+    }
+
+    // Merge AI categories with extracted data
+    const categoryMap = new Map(categories.map(c => [c.i, c]));
+    
+    return tasks.map((task, idx) => {
+        const cat = categoryMap.get(idx);
+        return {
+            wbs: task.wbs,
+            name: task.name,
+            category: cat?.category || guessCategory(task),
+            startDate: task.startDate,
+            endDate: task.endDate,
+            duration: task.duration,
+            progress: 0,
+            isUserTrade: cat?.isUserTrade || false,
+            zone: task.zone,
+            lot: task.lot,
+            margin: task.margin,
+        };
+    });
+}
+
+/**
+ * Rule-based fallback categorization when Gemini is unavailable.
+ * Uses keyword matching on task names and WBS codes.
+ */
+function fallbackCategorize(tasks: ExtractedTask[], trade: string) {
+    return tasks.map(task => ({
+        wbs: task.wbs,
+        name: task.name,
+        category: guessCategory(task),
+        startDate: task.startDate,
+        endDate: task.endDate,
+        duration: task.duration,
+        progress: 0,
+        isUserTrade: isTradeRelated(task, trade),
+        zone: task.zone,
+        lot: task.lot,
+        margin: task.margin,
+    }));
+}
+
+function guessCategory(task: ExtractedTask): string {
+    const name = (task.name || '').toLowerCase();
+    const lot = (task.lot || '').toLowerCase();
+    
+    if (name.includes('congé') || name.includes('vacance') || name.includes('rentrée')) return 'Congés';
+    if (name.includes('installation chantier') || name.includes('inst.chant')) return 'Installation Chantier';
+    if (name.includes('stabilit') || name.includes('gros oeuvre') || name.includes('fondation')) return 'Gros Œuvre';
+    if (name.includes('enveloppe') || name.includes('façade') || name.includes('toiture') || name.includes('étanchéit')) return 'Enveloppe';
+    if (name.includes('hvac') || name.includes('chauff') || name.includes('ventilation') || name.includes('radiateur') || lot.includes('hvac')) return 'HVAC';
+    if (name.includes('sanitaire') || name.includes('plomberie') || name.includes('égouttage') || name.includes('bain') || name.includes('tub') || lot.includes('sanit')) return 'Plomberie';
+    if (name.includes('electric') || name.includes('câbl') || name.includes('luminaire') || name.includes('prise') || name.includes('tableau') || lot.includes('electr')) return 'Électricité';
+    if (name.includes('ascenseur')) return 'Ascenseurs';
+    if (name.includes('parachèv') || name.includes('cloison') || name.includes('chape') || name.includes('enduit') || name.includes('carrelage') || name.includes('plafond')) return 'Parachèvements';
+    if (name.includes('peinture') || name.includes('finition') || name.includes('ferronnerie') || name.includes('menuiserie')) return 'Finitions';
+    if (name.includes('abord') || name.includes('parking') || name.includes('clôture') || name.includes('horticole')) return 'Abords';
+    if (name.includes('réception') || name.includes('nettoyage') || name.includes('préréception') || name.includes('correction')) return 'Réception';
+    if (name.includes('mise en service') || name.includes('réglage')) return 'Mise en service';
+    
+    return 'Général';
+}
+
+function isTradeRelated(task: ExtractedTask, trade: string): boolean {
+    const name = (task.name || '').toLowerCase();
+    const lot = (task.lot || '').toLowerCase();
+    const t = trade.toLowerCase();
+    
+    if (t.includes('electr')) {
+        return name.includes('electric') || name.includes('câbl') || name.includes('luminaire') || 
+               name.includes('prise') || name.includes('interrupteur') || name.includes('tableau') ||
+               name.includes('détect') || name.includes('petit materiel') || lot.includes('electr');
+    }
+    if (t.includes('chauff') || t.includes('hvac')) {
+        return name.includes('hvac') || name.includes('chauff') || name.includes('ventilation') || 
+               name.includes('radiateur') || name.includes('grille') || name.includes('hotte') ||
+               name.includes('gtc') || name.includes('gaz') || lot.includes('hvac');
+    }
+    if (t.includes('plomb')) {
+        return name.includes('sanitaire') || name.includes('plomberie') || name.includes('égouttage') || 
+               name.includes('bain') || name.includes('tub') || name.includes('caniveau') || lot.includes('sanit');
+    }
+    if (t.includes('gainist')) {
+        return name.includes('gaine') || name.includes('ventilation') || name.includes('conduit');
+    }
+    if (t.includes('menuisi')) {
+        return name.includes('menuiser') || name.includes('lambris') || name.includes('mobilier') || 
+               name.includes('logette') || lot.includes('menuis');
+    }
+    if (t.includes('peintr')) {
+        return name.includes('peinture') || name.includes('enduit') || lot.includes('peinture');
+    }
+    if (t.includes('carrel')) {
+        return name.includes('carrelage') || name.includes('plinthe') || lot.includes('carrelage');
+    }
+    
+    return false; // "general" trade → nothing highlighted
 }
