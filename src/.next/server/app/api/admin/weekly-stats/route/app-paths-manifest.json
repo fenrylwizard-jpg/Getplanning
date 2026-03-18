@@ -1,0 +1,3 @@
+{
+  "/api/admin/weekly-stats/route": "app/api/admin/weekly-stats/route.js"
+}

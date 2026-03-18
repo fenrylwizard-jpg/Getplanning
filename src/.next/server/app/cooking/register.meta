@@ -1,0 +1,16 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/cooking/layout,_N_T_/cooking/register/layout,_N_T_/cooking/register/page,_N_T_/cooking/register"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/cooking/register/__PAGE__",
+    "/cooking/register",
+    "/cooking",
+    "/_index",
+    "/_head"
+  ]
+}
