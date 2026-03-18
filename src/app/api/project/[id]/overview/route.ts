@@ -112,10 +112,10 @@ export async function GET(
             totalReturn += p.returnAmount || 0;
         }
 
-        // Compute margin % — fallback to result/revenue if marginPercent is null
+        // Compute margin % — fallback to result/revenue if marginPercent is null or 0
         let computedMargin: number | null = null;
         if (latestFinance) {
-            if (latestFinance.marginPercent != null) {
+            if (latestFinance.marginPercent != null && latestFinance.marginPercent !== 0) {
                 computedMargin = latestFinance.marginPercent;
             } else if (latestFinance.result != null && latestFinance.totalRevenue && latestFinance.totalRevenue > 0) {
                 computedMargin = Math.round((latestFinance.result / latestFinance.totalRevenue) * 100 * 10) / 10;
