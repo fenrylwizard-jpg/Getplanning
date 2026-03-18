@@ -1,8 +1,5 @@
 import { NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
-import { writeFile, unlink } from "fs/promises";
-import path from "path";
-import os from "os";
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
@@ -24,24 +21,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         // Initialize Gemini
         const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-        // Save file locally to upload to Gemini
         const bytes = await file.arrayBuffer();
-        const buffer = Buffer.from(bytes);
-        
-        // Use a secure random name in the OS temp directory
-        const tempFilePath = path.join(os.tmpdir(), `planning-${Date.now()}-${Math.random().toString(36).substring(7)}.pdf`);
-        await writeFile(tempFilePath, buffer);
+        const base64Data = Buffer.from(bytes).toString("base64");
 
         try {
-            console.log(`Uploading ${file.name} to Gemini...`);
-            // Upload to Google File API
-            const uploadResponse = await ai.files.upload({
-                file: tempFilePath,
-                mimeType: "application/pdf",
-            } as any);
-            console.log(`Upload complete. URI: ${uploadResponse.uri}`);
-
-            // Prompt Gemini 2.5 Flash to extract the Gantt chart
+            console.log(`Analyzing ${file.name} with Gemini 3.1 Pro...`);
+            
             const prompt = `This is a construction project planning (Gantt chart).
 Please extract all the major task milestones from this schedule.
 Return ONLY a valid JSON array of objects without markdown blocks or backticks.
@@ -55,11 +40,15 @@ For each task, provide:
 
 Respond with ONLY the JSON array. Do not include markdown formatting like \`\`\`json.`;
 
-            console.log("Analyzing with Gemini...");
             const response = await ai.models.generateContent({
-                model: 'gemini-2.5-flash',
+                model: 'gemini-3.1-pro',
                 contents: [
-                    uploadResponse,
+                    {
+                        inlineData: {
+                            data: base64Data,
+                            mimeType: "application/pdf"
+                        }
+                    },
                     { text: prompt }
                 ],
                 config: {
@@ -81,9 +70,6 @@ Respond with ONLY the JSON array. Do not include markdown formatting like \`\`\`
 
             console.log(`Extracted ${milestones.length} milestones successfully.`);
 
-            // Cleanup local temp file
-            await unlink(tempFilePath).catch(e => console.error("Error deleting temp file:", e));
-
             return NextResponse.json({
                 success: true,
                 message: "Analyse Gemini réussie.",
@@ -95,8 +81,6 @@ Respond with ONLY the JSON array. Do not include markdown formatting like \`\`\`
 
         } catch (aiError) {
             console.error("Gemini AI API Error:", aiError);
-            // Cleanup local temp file even on error
-            await unlink(tempFilePath).catch(e => console.error("Error deleting temp file:", e));
             return NextResponse.json({ error: "Erreur lors de l'analyse IA du calendrier." }, { status: 500 });
         }
 
