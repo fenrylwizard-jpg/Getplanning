@@ -4,7 +4,6 @@ import { verifyToken } from "@/lib/auth";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { UploadCloud, Folder, Activity, ArrowRight, Building2, HeartPulse, FileText, Calendar } from "lucide-react";
-import DeleteProjectButton from "@/components/DeleteProjectButton";
 import T from "@/components/T";
 import AvatarDisplay from "@/components/AvatarDisplay";
 import { HOURLY_RATE_EUR } from "@/lib/xp-engine";
@@ -159,7 +158,7 @@ export default async function PMDashboard() {
                             const spentEur = Math.round(earnedHours * HOURLY_RATE_EUR);
 
                             return (
-                            <div key={proj.id} className="relative glass-card bg-[#0a1020]/90 backdrop-blur-xl border border-white/10 rounded-[32px] p-8 sm:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] hover:border-purple-500/30 transition-all duration-300">
+                            <Link href={`/pm/project/${proj.id}`} key={proj.id} className="block relative glass-card bg-[#0a1020]/90 backdrop-blur-xl border border-white/10 rounded-[32px] p-8 sm:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] hover:border-purple-500/30 transition-all duration-300 group cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-500">
                                 
                                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                                     <div className="flex-1">
@@ -214,14 +213,13 @@ export default async function PMDashboard() {
                                         )}
                                     </div>
                                     
-                                    <div className="flex flex-row md:flex-col gap-3 w-full md:w-auto">
-                                        <Link href={`/pm/project/${proj.id}`} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold transition-all shadow-md text-base">
-                                            <T k="view_details" /> <ArrowRight size={18} />
-                                        </Link>
-                                        <DeleteProjectButton projectId={proj.id} projectName={proj.name} />
+                                    <div className="flex flex-row md:flex-col gap-3 w-full md:w-auto mt-4 md:mt-0">
+                                        <div className="flex-1 md:flex-none flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-white/5 group-hover:bg-white/10 border border-white/10 group-hover:border-purple-500/30 text-white font-bold transition-all shadow-md text-base">
+                                            <T k="view_details" /> <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            </Link>
                         );
                         })}
                         {allProjects.length === 0 && (

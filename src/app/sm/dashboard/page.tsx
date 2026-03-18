@@ -90,25 +90,30 @@ export default async function SMDashboard() {
                 {/* Projects & Quick Actions */}
                 <section className="flex flex-col gap-8">
                     {user.projectsAsSM.map((proj) => (
-                        <div key={proj.id} className="relative glass-card bg-[#0a1020]/90 backdrop-blur-xl border border-white/10 rounded-[40px] p-8 sm:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] hover:border-cyan-500/30 transition-all duration-500 flex flex-col gap-8">
+                        <div key={proj.id} className="relative glass-card bg-[#0a1020]/90 backdrop-blur-xl border border-white/10 rounded-[40px] p-8 sm:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all duration-500 flex flex-col gap-8 focus-within:ring-2 focus-within:ring-cyan-500 focus-within:border-cyan-500/50">
                             
-                            {/* Project Header */}
-                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/5 pb-6">
-                                <div>
-                                    <h3 className="text-3xl sm:text-4xl font-black text-white drop-shadow-md mb-3">{proj.name}</h3>
-                                    <div className="flex items-center gap-3">
-                                        <span className="px-4 py-2 rounded-full border border-cyan-500/30 bg-cyan-900/20 text-cyan-300 text-sm font-bold tracking-wider uppercase">
-                                            {proj.location || <T k="on_site" />}
-                                        </span>
-                                        <span className="text-base text-gray-400">
-                                            {proj.tasks.length} <T k="assigned_tasks" />
-                                        </span>
+                            {/* Project Header - Clickable Link to project */}
+                            <Link href={`/sm/project/${proj.id}`} className="group/header block outline-none">
+                                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/5 pb-6 group-hover/header:border-cyan-500/30 transition-colors">
+                                    <div>
+                                        <h3 className="text-3xl sm:text-4xl font-black text-white drop-shadow-md mb-3 group-hover/header:text-cyan-400 transition-colors flex items-center gap-3">
+                                            {proj.name} 
+                                            <span className="opacity-0 group-hover/header:opacity-100 group-hover/header:translate-x-2 transition-all text-cyan-500">→</span>
+                                        </h3>
+                                        <div className="flex items-center gap-3">
+                                            <span className="px-4 py-2 rounded-full border border-cyan-500/30 bg-cyan-900/20 text-cyan-300 text-sm font-bold tracking-wider uppercase">
+                                                {proj.location || <T k="on_site" />}
+                                            </span>
+                                            <span className="text-base text-gray-400">
+                                                {proj.tasks.length} <T k="assigned_tasks" />
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="px-6 py-3 rounded-full bg-white/5 group-hover/header:bg-white/10 border border-white/10 group-hover/header:border-cyan-500/30 text-base font-bold text-white transition-all shadow-md mt-4 sm:mt-0">
+                                        Aller au projet Details
                                     </div>
                                 </div>
-                                <Link href={`/sm/project/${proj.id}/analytics`} className="px-6 py-3 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-base font-bold text-white transition-colors">
-                                    <T k="view_analytics" />
-                                </Link>
-                            </div>
+                            </Link>
 
                             {/* Quick Action Grid (SVG Icons) */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
-import { extractPlanningFromPDF, ExtractedTask } from "@/lib/pdfPlanningExtractor";
+import { extractPlanningFromPDF, ExtractedTask, extractRawTextFromPDF } from "@/lib/pdfPlanningExtractor";
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
@@ -36,9 +36,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         }
 
         if (extractedTasks.length === 0) {
-            return NextResponse.json({ 
-                error: "Aucune tâche trouvée dans ce PDF. Vérifiez qu'il contient un planning de type Gantt avec des colonnes WBS, Tâche, Début, Fin." 
-            }, { status: 400 });
+            const rawDump = await extractRawTextFromPDF(buffer);
+            const crashBanner = `Aucune tâche trouvée.\n\n---- DUMP RAW TEXT POUR LE DEV (Veuillez faire une capture) ----\n${rawDump.join('\n')}`;
+            return NextResponse.json({ error: crashBanner }, { status: 400 });
         }
 
         // ===== STEP 2: AI categorization with Gemini (trade awareness) =====

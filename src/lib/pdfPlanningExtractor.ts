@@ -63,7 +63,7 @@ function detectColumns(pages: Array<{ content: Array<{ x: number; y: number; str
     for (const item of page.content) {
         if (item.y > 400) continue; // Only look in the top half
         const text = (item.str || '').trim().toLowerCase();
-        if (text === 'wbs' || text === 'tâche' || text === 'task' || text === 'nom' || text.includes('déb')) {
+        if (text === 'wbs' || text === 'tâche' || text === 'task' || text === 'nom' || text.includes('déb') || text.includes('libell') || text.includes('désign') || text.includes('descrip') || text.includes('activ')) {
             headerY = Math.round(item.y / 3) * 3;
             break;
         }
@@ -172,4 +172,34 @@ export async function extractPlanningFromPDF(buffer: Buffer): Promise<ExtractedT
             endDate: row.end ? parseFrenchDate(row.end) : '',
             margin: row.margin,
         }));
+}
+
+/**
+ * DEBUG FUNCTION: Extracts and formats the exact text with coordinates
+ * from the top of the first page to help us understand non-standard PDF structures.
+ */
+export async function extractRawTextFromPDF(buffer: Buffer): Promise<string[]> {
+    const pdfExtract = new PDFExtract();
+    const data = await pdfExtract.extractBuffer(buffer, {});
+    const lines: string[] = [];
+    if (!data.pages.length) return ["Aucune page trouvée."];
+    
+    const page = data.pages[0];
+    const items = page.content.filter((item: { str: string }) => item.str && item.str.trim());
+    
+    // Sort by Y first (top to bottom), then X (left to right)
+    items.sort((a: { x: number; y: number }, b: { x: number; y: number }) => {
+        const yA = Math.round(a.y / 3) * 3;
+        const yB = Math.round(b.y / 3) * 3;
+        if (yA !== yB) return yA - yB;
+        return a.x - b.x;
+    });
+
+    lines.push("--- PDF RAW HEADERS & TOP TASKS ---");
+    // Limit to top ~120 elements to fit in a screenshot/alert box nicely
+    items.slice(0, 120).forEach((item: { x: number; y: number; str: string }) => {
+        lines.push(`Y:${Math.round(item.y).toString().padStart(3, ' ')} X:${Math.round(item.x).toString().padStart(3, ' ')} | "${item.str.trim()}"`);
+    });
+    
+    return lines;
 }

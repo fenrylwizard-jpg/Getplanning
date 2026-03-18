@@ -65,101 +65,132 @@ export default function OverviewTab({ project }: OverviewTabProps) {
 
     return (
         <div className="flex flex-col gap-8">
-            {/* Health Indicators */}
-            <div className="flex flex-wrap gap-4">
-                <HealthBadge status={planningStatus} type="planning" />
-                <HealthBadge status={feedbackStatus} type="feedback" />
-                <HealthBadge status={efficiencyStatus} type="efficiency" />
+            {/* Header intro */}
+            <div className="bg-[#080d1b]/80 border border-white/5 rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-purple-500/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3" />
+                <div className="relative z-10 max-w-2xl">
+                    <h2 className="text-3xl font-black mb-4"><T k="hub_overview" /></h2>
+                    <p className="text-gray-400 text-lg leading-relaxed">
+                        Bienvenue sur le tableau de bord du projet <strong>{project.name}</strong>. Cet espace centralise toutes les données clés. Cliquez sur les modules ci-dessous pour plonger dans les détails.
+                    </p>
+                </div>
             </div>
 
-            {/* KPI Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {[
-                    { icon: ClipboardList, label: "tasks_tracked", value: totalTasks.toString(), color: "text-cyan-400", bg: "bg-cyan-500/10", border: "border-cyan-500/20" },
-                    { icon: Activity, label: "submitted_plans", value: planCount.toString(), color: "text-purple-400", bg: "bg-purple-500/10", border: "border-purple-500/20" },
-                    { icon: CheckCircle2, label: "hub_objectives_hit", value: `${hitPlans}/${closedPlans}`, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20" },
-                    { icon: Users, label: "site_manager", value: project.siteManager?.name || "N/A", color: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/20" },
-                ].map(({ icon: Icon, label, value, color, bg, border }) => (
-                    <div key={label} className={`${bg} border ${border} rounded-2xl p-5 flex items-center gap-4`}>
-                        <Icon size={24} className={color} />
+            {/* BENTO GRID RECAP */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                
+                {/* 1. Production (Takes 2 columns on wide screens) */}
+                <div className="lg:col-span-2 group relative bg-[#0a1020]/90 backdrop-blur-xl border border-white/10 rounded-[32px] p-8 shadow-xl hover:border-cyan-500/40 transition-all duration-500 overflow-hidden text-left">
+                    <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="relative z-10 h-full flex flex-col justify-between">
                         <div>
-                            <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider"><T k={label} /></div>
-                            <div className={`text-lg font-black ${color}`}>{value}</div>
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="p-3 bg-cyan-500/10 rounded-xl border border-cyan-500/20 text-cyan-400">
+                                    <Activity size={24} />
+                                </div>
+                                <h3 className="text-2xl font-black text-white"><T k="hub_production" /></h3>
+                            </div>
+                            <p className="text-gray-400 mb-6">Suivez l&apos;avancement heure par heure. {totalTasks} tâches modélisées.</p>
+                        </div>
+                        
+                        <div className="bg-[#060a14]/50 rounded-2xl p-5 border border-white/5">
+                            <div className="flex justify-between text-xs text-gray-400 mb-2 font-bold uppercase tracking-wider">
+                                <span><T k="progress" /> Main d&apos;Œuvre</span>
+                                <span className="text-cyan-400">{progressPct}%</span>
+                            </div>
+                            <div className="w-full bg-white/5 h-3 rounded-full overflow-hidden mb-2">
+                                <div className={`h-full rounded-full transition-all duration-1000 bg-gradient-to-r from-blue-500 to-cyan-400`} style={{ width: `${progressPct}%` }} />
+                            </div>
+                            <div className="text-xs text-gray-500">{Math.round(earnedHours)}h réalisées sur {Math.round(budgetHours)}h prévues</div>
                         </div>
                     </div>
-                ))}
-            </div>
-
-            {/* Budget Progress */}
-            <div className="bg-[#080d1a]/80 border border-white/5 rounded-2xl p-6">
-                <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 mb-4 flex items-center gap-2">
-                    <TrendingUp size={16} className="text-blue-400" /> <T k="global_budget_progress" />
-                </h3>
-
-                <div className="grid grid-cols-3 gap-6 text-center mb-6">
-                    <div>
-                        <div className="text-gray-400 text-xs uppercase tracking-wider font-bold"><T k="total_scheduled_labor" /></div>
-                        <div className="text-2xl font-black text-white">{Math.round(budgetHours)} <span className="text-sm text-gray-500">h</span></div>
-                    </div>
-                    <div>
-                        <div className="text-gray-400 text-xs uppercase tracking-wider font-bold"><T k="achieved_labor_value" /></div>
-                        <div className="text-2xl font-black text-cyan-400">{Math.round(earnedHours)} <span className="text-sm text-gray-500">h</span></div>
-                    </div>
-                    <div>
-                        <div className="text-gray-400 text-xs uppercase tracking-wider font-bold"><T k="progress" /></div>
-                        <div className="text-2xl font-black text-white">{progressPct}%</div>
-                    </div>
                 </div>
 
-                {/* Progress Bar */}
-                <div className="w-full bg-white/5 h-3 rounded-full overflow-hidden mb-6">
-                    <style>{`.overview-progress-bar{width:${progressPct}%}`}</style>
-                    <div className={`overview-progress-bar h-full rounded-full transition-all duration-700 bg-gradient-to-r ${
-                        progressPct >= 80 ? 'from-emerald-500 to-green-400' : progressPct >= 40 ? 'from-blue-500 to-purple-500' : 'from-amber-500 to-orange-400'
-                    }`} />
-                </div>
-
-                {/* Budget Cards */}
-                <div className="grid grid-cols-3 gap-4">
-                    <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 text-center">
-                        <div className="text-[10px] uppercase tracking-widest text-blue-400 font-black mb-1">Budget MO</div>
-                        <div className="text-xl font-black text-white">{budgetEur.toLocaleString()} €</div>
-                        <div className="text-xs text-gray-500">{Math.round(budgetHours)}h × {HOURLY_RATE_EUR}€</div>
-                    </div>
-                    <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 text-center">
-                        <div className="text-[10px] uppercase tracking-widest text-emerald-400 font-black mb-1"><T k="achieved_value" /></div>
-                        <div className="text-xl font-black text-emerald-400">{valoriseEur.toLocaleString()} €</div>
-                        <div className="text-xs text-gray-500">{Math.round(earnedHours)}h <T k="completed" /></div>
-                    </div>
-                    <div className={`${restantEur >= 0 ? 'bg-amber-500/10 border-amber-500/20' : 'bg-red-500/10 border-red-500/20'} border rounded-xl p-4 text-center`}>
-                        <div className={`text-[10px] uppercase tracking-widest font-black mb-1 ${restantEur >= 0 ? 'text-amber-400' : 'text-red-400'}`}><T k="remaining" /></div>
-                        <div className={`text-xl font-black ${restantEur >= 0 ? 'text-amber-400' : 'text-red-400'}`}>{restantEur.toLocaleString()} €</div>
-                        <div className="text-xs text-gray-500">Taux: {HOURLY_RATE_EUR} €/h</div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Recent Activity */}
-            {project.revisions && project.revisions.length > 0 && (
-                <div className="bg-[#080d1a]/80 border border-white/5 rounded-2xl p-6">
-                    <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 mb-4 flex items-center gap-2">
-                        <FileText size={16} className="text-purple-400" /> <T k="hub_recent_activity" />
-                    </h3>
-                    <div className="flex flex-col gap-3">
-                        {project.revisions.slice(0, 5).map((rev) => (
-                            <div key={rev.id} className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-2 h-2 rounded-full bg-purple-500" />
-                                    <span className="text-sm text-gray-200 font-medium">{rev.fileName}</span>
-                                </div>
-                                <span className="text-xs text-gray-500">
-                                    {new Date(rev.uploadedAt).toLocaleDateString()}
-                                </span>
+                {/* 2. Planning */}
+                <div className="group relative bg-[#0a1020]/90 backdrop-blur-xl border border-white/10 rounded-[32px] p-8 shadow-xl hover:border-violet-500/40 transition-all duration-500 overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-br from-violet-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="relative z-10">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="p-3 bg-violet-500/10 rounded-xl border border-violet-500/20 text-violet-400">
+                                <Calendar size={24} />
                             </div>
-                        ))}
+                            <h3 className="text-2xl font-black text-white"><T k="hub_planning" /></h3>
+                        </div>
+                        <p className="text-gray-400 mb-6">Planification hebdomadaire S+1 à S+3 par le Chef de Chantier.</p>
+                        
+                        <div className="grid grid-cols-2 gap-3 mt-4">
+                            <div className="bg-violet-500/10 border border-violet-500/20 rounded-2xl p-4 text-center">
+                                <span className="block text-2xl font-black text-violet-400">{planCount}</span>
+                                <span className="text-[10px] uppercase text-gray-500 font-bold">Soumissions</span>
+                            </div>
+                            <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 text-center">
+                                <span className="block text-2xl font-black text-emerald-400">{hitPlans}</span>
+                                <span className="text-[10px] uppercase text-gray-500 font-bold">Obj. Atteints</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            )}
+
+                {/* 3. Finances */}
+                <div className="group relative bg-[#0a1020]/90 backdrop-blur-xl border border-white/10 rounded-[32px] p-8 shadow-xl hover:border-emerald-500/40 transition-all duration-500 overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="relative z-10">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="p-3 bg-emerald-500/10 rounded-xl border border-emerald-500/20 text-emerald-400">
+                                <TrendingUp size={24} />
+                            </div>
+                            <h3 className="text-2xl font-black text-white"><T k="hub_finances" /></h3>
+                        </div>
+                        <p className="text-gray-400 mb-6">Monétisation de la main d&apos;œuvre et suivi du budget alloué au projet.</p>
+                        <div className="bg-[#060a14]/50 rounded-2xl p-5 border border-white/5 flex flex-col items-center">
+                            <span className="text-[10px] uppercase tracking-widest text-emerald-500 font-bold mb-1">Valeur Réalisée</span>
+                            <span className="text-3xl font-black text-emerald-400 drop-shadow-md">{valoriseEur.toLocaleString()} €</span>
+                            <span className="text-xs text-gray-500 mt-1">sur {budgetEur.toLocaleString()} €</span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* 4. Achats / Purchases */}
+                <div className="group relative bg-[#0a1020]/90 backdrop-blur-xl border border-white/10 rounded-[32px] p-8 shadow-xl hover:border-amber-500/40 transition-all duration-500 overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="relative z-10 h-full flex flex-col justify-between">
+                        <div>
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20 text-amber-400">
+                                    <ClipboardList size={24} />
+                                </div>
+                                <h3 className="text-2xl font-black text-white"><T k="hub_achats" /></h3>
+                            </div>
+                            <p className="text-gray-400">Bordereaux, Factures et suivis de commandes fournisseurs.</p>
+                        </div>
+                        <div className="mt-6 flex items-center gap-2 text-amber-400/80 font-bold text-sm">
+                            Explorer le module <span>→</span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* 5. Dossier Technique */}
+                <div className="group relative bg-[#0a1020]/90 backdrop-blur-xl border border-white/10 rounded-[32px] p-8 shadow-xl hover:border-rose-500/40 transition-all duration-500 overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-br from-rose-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="relative z-10 h-full flex flex-col justify-between">
+                        <div>
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="p-3 bg-rose-500/10 rounded-xl border border-rose-500/20 text-rose-400">
+                                    <FileText size={24} />
+                                </div>
+                                <h3 className="text-2xl font-black text-white"><T k="hub_technique" /></h3>
+                            </div>
+                            <p className="text-gray-400">Plans techniques à jour, schémas, et documentations du site.</p>
+                        </div>
+                        
+                        <div className="mt-6 bg-[#060a14]/50 rounded-2xl p-4 border border-white/5 flex items-center justify-between">
+                            <span className="text-xs text-gray-400 font-bold uppercase">Documents récents</span>
+                            <span className="text-rose-400 font-black px-2 py-1 bg-rose-500/10 text-sm rounded-lg">{project.revisions?.length ?? 0}</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
     );
 }
