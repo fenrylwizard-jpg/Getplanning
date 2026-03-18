@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
 import { extractPlanningFromPDF, ExtractedTask, extractRawTextFromPDF } from "@/lib/pdfPlanningExtractor";
 
+// Allow up to 5 minutes for large PDF processing + AI categorization
+export const maxDuration = 300;
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
     try {

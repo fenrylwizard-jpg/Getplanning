@@ -81,12 +81,19 @@ export default function FileUploadZone({
                 });
             }
 
+            // 5-minute timeout for the fetch (AI categorization can take ~1 min)
+            const controller = new AbortController();
+            const fetchTimeout = setTimeout(() => controller.abort(), 300_000);
+
             const res = await fetch(`/api/project/${projectId}/${module}/upload`, {
                 method: "POST",
                 body: formData,
+                signal: controller.signal,
             });
 
+            clearTimeout(fetchTimeout);
             clearInterval(progressInterval);
+            console.log(`[FileUpload] Response status: ${res.status}`);
 
             if (!res.ok) {
                 const data = await res.json();
@@ -94,6 +101,7 @@ export default function FileUploadZone({
             }
 
             const data = await res.json();
+            console.log(`[FileUpload] Response data keys: ${Object.keys(data).join(', ')}, count: ${data.count}`);
             setProgress(100);
 
             // Check if any records were actually parsed
