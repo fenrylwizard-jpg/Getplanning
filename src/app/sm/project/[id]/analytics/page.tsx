@@ -16,6 +16,13 @@ export default async function SMProjectAnalytics({ params }: { params: Promise<{
                 include: {
                     tasks: { include: { task: true } }
                 }
+            },
+            dailyReports: {
+                where: { status: 'SUBMITTED' },
+                orderBy: { date: 'asc' },
+                include: {
+                    taskProgress: { include: { task: true } }
+                }
             }
         }
     });
@@ -86,7 +93,7 @@ export default async function SMProjectAnalytics({ params }: { params: Promise<{
                     </div>
                 </div>
 
-                <ProjectAnalyticsCharts tasks={project.tasks} weeklyPlans={project.weeklyPlans} />
+                <ProjectAnalyticsCharts tasks={project.tasks} weeklyPlans={project.weeklyPlans} dailyReports={project.dailyReports} />
 
             </main>
         </>

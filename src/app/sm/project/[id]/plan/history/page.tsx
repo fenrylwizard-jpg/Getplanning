@@ -123,7 +123,7 @@ export default async function SMHistoryPage({ params }: { params: Promise<{ id: 
                                 const totalHours = report.taskProgress.reduce((acc, p) => acc + (p.hours || 0), 0);
                                 return (
                                     <div key={report.id} className="relative">
-                                        <div className="glass-panel p-4 border border-white/5 hover:border-cyan-500/30 bg-[#0a1020]/60 backdrop-blur-xl transition-all rounded-md flex justify-between items-center group overflow-hidden">
+                                        <Link href={`/sm/project/${id}/report/${report.id}`} className="block glass-panel p-4 border border-white/5 hover:border-cyan-500/30 bg-[#0a1020]/60 backdrop-blur-xl transition-all rounded-md flex justify-between items-center group overflow-hidden cursor-pointer">
                                             <div className="absolute top-0 right-0 w-24 h-24 bg-cyan-500/5 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
                                             <div className="relative z-10 flex items-center gap-4">
                                                 <div className="w-12 h-12 rounded-md bg-white/5 border border-white/10 flex flex-col items-center justify-center group-hover:bg-cyan-500/10 group-hover:border-cyan-500/30 transition-all">
@@ -150,7 +150,7 @@ export default async function SMHistoryPage({ params }: { params: Promise<{ id: 
                                                     {report.status}
                                                 </span>
                                             </div>
-                                        </div>
+                                        </Link>
                                         {isAdmin && <AdminDeleteReportButton reportId={report.id} projectId={id} reportDate={report.date.toISOString()} />}
                                     </div>
                                 );

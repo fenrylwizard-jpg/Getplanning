@@ -408,9 +408,10 @@ const BENTO_CSS = `
     margin: 0 auto 0.75rem;
 }
 .icon-glass-sm {
-    width: 100px;
-    height: 100px;
-    padding: 6px;
+    width: 140px;
+    height: 140px;
+    padding: 10px;
+    margin: 0.5rem auto;
 }
 .bento-card:hover .icon-glass { transform: scale(1.06); }
 .icon-img { width: 100%; height: 100%; object-fit: contain; display: block; }

@@ -7,11 +7,12 @@ import { PieChart, Pie, Cell, Tooltip as PieTooltip, ResponsiveContainer, Cartes
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTranslation } from '@/lib/LanguageContext';
 
-export default function ProjectAnalyticsCharts({ tasks, weeklyPlans }: { tasks: any[], weeklyPlans: any[] }) {
+export default function ProjectAnalyticsCharts({ tasks, weeklyPlans, dailyReports = [] }: { tasks: any[], weeklyPlans: any[], dailyReports?: any[] }) {
     const { t, tData } = useTranslation();
     const [weeksToShow, setWeeksToShow] = useState<number>(0);
     const [startIndex, setStartIndex] = useState<number>(0);
     const [activeIndex, setActiveIndex] = useState<number>(-1);
+    const [chartMode, setChartMode] = useState<'percent' | 'hours'>('percent');
 
     // 1. Prepare Pie Chart Data (Hours per Category)
     const pieData = useMemo(() => {
@@ -316,11 +317,24 @@ export default function ProjectAnalyticsCharts({ tasks, weeklyPlans }: { tasks: 
                 </div>
             </div>
 
+
             <div className="glass-card neon-card-green h-[400px] flex flex-col">
                 <div className="flex justify-between items-center mb-4">
-                    <h3>{t("efficiency_progression")}</h3>
+                    <h3>{t("efficiency_progression")} <span className="text-xs text-gray-500 font-normal ml-2">(par jour)</span></h3>
                     
                     <div className="flex items-center gap-4">
+                        {/* Toggle % / Hours */}
+                        <div className="flex bg-[#0a1020]/80 rounded-md p-0.5 border border-white/10">
+                            <button
+                                className={`px-3 py-1 rounded-sm text-xs font-black uppercase tracking-wider transition-all ${chartMode === 'percent' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'text-gray-500 hover:text-white border border-transparent'}`}
+                                onClick={() => setChartMode('percent')}
+                            >%</button>
+                            <button
+                                className={`px-3 py-1 rounded-sm text-xs font-black uppercase tracking-wider transition-all ${chartMode === 'hours' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' : 'text-gray-500 hover:text-white border border-transparent'}`}
+                                onClick={() => setChartMode('hours')}
+                            >Heures</button>
+                        </div>
+
                         <select 
                             aria-label={t("select_weeks")}
                             className="bg-transparent text-secondary border border-gray-700 rounded p-1 text-sm outline-none"
@@ -347,19 +361,67 @@ export default function ProjectAnalyticsCharts({ tasks, weeklyPlans }: { tasks: 
                 </div>
                 
                 <div className="flex-1">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={displayLineData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                            <XAxis dataKey="name" stroke="var(--text-secondary)" tick={{fontSize: 12}} />
-                            <YAxis stroke="var(--text-secondary)" />
-                            <BarTooltip
-                                contentStyle={{ backgroundColor: 'var(--bg-tertiary)', border: 'none', borderRadius: 'var(--radius-md)' }}
-                                itemStyle={{ color: 'var(--text-primary)' }}
-                            />
-                            <Line type="stepAfter" dataKey={t("planned")} stroke="var(--text-secondary)" strokeWidth={2} strokeDasharray="5 5" />
-                            <Line type="monotone" dataKey={t("executed")} stroke="var(--accent-primary)" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
-                        </LineChart>
-                    </ResponsiveContainer>
+                    {dailyReports.length > 0 ? (
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={(() => {
+                                const dayNames = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+                                return dailyReports.map((r: any) => {
+                                    const d = new Date(r.date);
+                                    const dayLabel = `${dayNames[d.getUTCDay()]} ${d.getUTCDate()}/${(d.getUTCMonth()+1).toString().padStart(2,'0')}`;
+                                    const standardHours = (r.taskProgress || []).reduce((sum: number, p: any) => sum + (p.hours || 0), 0);
+                                    const workers = r.workersCount || 1;
+                                    const expected = workers * 8;
+                                    const effPct = expected > 0 ? (standardHours / expected) * 100 : 0;
+                                    return {
+                                        name: dayLabel,
+                                        value: chartMode === 'percent' ? Number(effPct.toFixed(1)) : Number(standardHours.toFixed(1)),
+                                        workers,
+                                        standardHours: Number(standardHours.toFixed(1)),
+                                        effPct: Number(effPct.toFixed(1)),
+                                    };
+                                });
+                            })()} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" vertical={false} />
+                                <XAxis dataKey="name" stroke="var(--text-secondary)" tick={{fontSize: 11}} />
+                                <YAxis stroke="var(--text-secondary)" unit={chartMode === 'percent' ? '%' : 'H'} />
+                                {chartMode === 'percent' && (
+                                    <Line type="monotone" dataKey={() => 100} stroke="#10b981" strokeWidth={1} strokeDasharray="5 5" dot={false} name="Objectif" />
+                                )}
+                                <BarTooltip
+                                    contentStyle={{ backgroundColor: 'var(--bg-tertiary)', border: 'none', borderRadius: 'var(--radius-md)' }}
+                                    itemStyle={{ color: 'var(--text-primary)' }}
+                                    cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+                                    formatter={(value: any, name: any) => {
+                                        if (name === 'value') return [`${value}${chartMode === 'percent' ? '%' : 'H'}`, chartMode === 'percent' ? 'Efficience' : 'Heures Standard'];
+                                        return [value, name || ""];
+                                    }}
+                                />
+                                <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                                    {dailyReports.map((_: any, index: number) => {
+                                        const r = dailyReports[index];
+                                        const stdHrs = (r.taskProgress || []).reduce((sum: number, p: any) => sum + (p.hours || 0), 0);
+                                        const exp = (r.workersCount || 1) * 8;
+                                        const eff = exp > 0 ? (stdHrs / exp) * 100 : 0;
+                                        return <Cell key={`cell-${index}`} fill={getEfficiencyColor(eff)} />;
+                                    })}
+                                </Bar>
+                            </BarChart>
+                        </ResponsiveContainer>
+                    ) : (
+                        <ResponsiveContainer width="100%" height="100%">
+                            <LineChart data={displayLineData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                                <XAxis dataKey="name" stroke="var(--text-secondary)" tick={{fontSize: 12}} />
+                                <YAxis stroke="var(--text-secondary)" />
+                                <BarTooltip
+                                    contentStyle={{ backgroundColor: 'var(--bg-tertiary)', border: 'none', borderRadius: 'var(--radius-md)' }}
+                                    itemStyle={{ color: 'var(--text-primary)' }}
+                                />
+                                <Line type="stepAfter" dataKey={t("planned")} stroke="var(--text-secondary)" strokeWidth={2} strokeDasharray="5 5" />
+                                <Line type="monotone" dataKey={t("executed")} stroke="var(--accent-primary)" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                            </LineChart>
+                        </ResponsiveContainer>
+                    )}
                 </div>
             </div>
 
