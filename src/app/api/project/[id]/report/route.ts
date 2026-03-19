@@ -3,9 +3,55 @@ import { prisma } from '@/lib/prisma';
 import { Prisma } from '@prisma/client';
 import { calculateXpAward, getLevelFromXp } from '@/lib/xp-engine';
 import { getConsecutiveDaysReported, getConsecutiveWeeksTargetReached } from '@/lib/streak-utils';
-import { startOfDay } from 'date-fns';
 
-export async function POST(req: Request) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
+    const resolvedParams = await params;
+    const id = resolvedParams.id;
+    const { searchParams } = new URL(req.url);
+    const dateQuery = searchParams.get('date');
+
+    if (!dateQuery) {
+        return NextResponse.json({ error: "Date parameter is required" }, { status: 400 });
+    }
+
+    try {
+        const queryDate = new Date(dateQuery);
+        queryDate.setUTCHours(12, 0, 0, 0);
+
+        // Calculate start and end of the query date in UTC to find the report
+        const startOfDay = new Date(queryDate);
+        startOfDay.setUTCHours(0, 0, 0, 0);
+        
+        const endOfDay = new Date(queryDate);
+        endOfDay.setUTCHours(23, 59, 59, 999);
+
+        const report = await prisma.dailyReport.findFirst({
+            where: {
+                projectId: id,
+                date: {
+                    gte: startOfDay,
+                    lte: endOfDay
+                }
+            },
+            include: {
+                dailyTaskProgress: true,
+                adHocTaskProgress: true
+            }
+        });
+
+        if (!report) {
+            return NextResponse.json({ report: null });
+        }
+
+        return NextResponse.json({ report });
+    } catch (err) {
+        return NextResponse.json({ error: "Failed to fetch report" }, { status: 500 });
+    }
+}
+
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
+    const resolvedParams = await params;
+    const id = resolvedParams.id;
     try {
         const body: { 
             planId: string, 
@@ -33,14 +79,31 @@ export async function POST(req: Request) {
         });
         if (!plan) return NextResponse.json({ error: "Plan not found" }, { status: 404 });
 
-        // Determine the date for this report
-        const effectiveDate = reportDate ? startOfDay(new Date(reportDate)) : startOfDay(new Date());
+        // Determine the date for this report. 
+        // We must avoid startOfDay(new Date(reportDate)) because reportDate is "2026-03-18T23:00:00.000Z" (midnight Paris).
+        // Calling startOfDay in a UTC Node environment truncates it to "2026-03-18T00:00:00.000Z" (shifting it back a whole day).
+        let effectiveDate: Date;
+        if (reportDate) {
+            effectiveDate = new Date(reportDate); // Already start of day in the user's localized browser
+        } else {
+            // If strictly today, get today's date but anchor it to UTC noon to avoid any boundary issues
+            const today = new Date();
+            effectiveDate = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate(), 12, 0, 0));
+        }
+
+        // To ensure absolute stability in the DB unique constraint when matching dates, 
+        // we lock all dates to 12:00:00 UTC.
+        effectiveDate.setUTCHours(12, 0, 0, 0);
 
         // Check for existing report on this date
+        // We use a date range instead of exact match in case previous buggy dates sit at 00:00 UTC
         const existingReport = await prisma.dailyReport.findFirst({
             where: {
                 projectId: plan.projectId,
-                date: effectiveDate,
+                date: {
+                    gte: new Date(Date.UTC(effectiveDate.getUTCFullYear(), effectiveDate.getUTCMonth(), effectiveDate.getUTCDate(), 0, 0, 0)),
+                    lt: new Date(Date.UTC(effectiveDate.getUTCFullYear(), effectiveDate.getUTCMonth(), effectiveDate.getUTCDate() + 1, 0, 0, 0))
+                }
             }
         });
         if (existingReport) {

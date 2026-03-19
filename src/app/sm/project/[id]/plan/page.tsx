@@ -56,6 +56,7 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
     const [loadingTasks, setLoadingTasks] = useState(true);
     const [loadingPlan, setLoadingPlan] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isSubmitted, setIsSubmitted] = useState(false);
 
     const HOURS_PER_WORKER = 40;
     const targetProductivityRatio = 1.0; 
@@ -87,6 +88,7 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
             .then(data => {
                 if (data && data.id) {
                     setWorkers(data.numberOfWorkers || 5);
+                    setIsSubmitted(data.isSubmitted || false);
                     setChecks({
                         drawings: data.hasDrawings || false,
                         materials: data.hasMaterials || false,
@@ -103,6 +105,7 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
                 } else {
                     // Reset if no plan exists for this week
                     setCartItems([]);
+                    setIsSubmitted(false);
                 }
                 setLoadingPlan(false);
             })
@@ -236,6 +239,28 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
         }
     };
 
+    const unsubmitPlan = async () => {
+        setIsSubmitting(true);
+        try {
+            const res = await fetch(`/api/project/${id}/plan/unsubmit`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ weekNumber: activeWeek.week, year: activeWeek.year })
+            });
+
+            if (res.ok) {
+                setIsSubmitted(false);
+                toast.success(t("plan_unlocked"));
+            } else {
+                toast.error(t("error_unlocking_plan"));
+            }
+        } catch (err) {
+            toast.error(t("error_unlocking_plan"));
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     const materialsForecast = React.useMemo(() => {
         const forecast: Record<string, { desc: string, qty: number, unit: string }> = {};
         cartItems.forEach(item => {
@@ -317,11 +342,12 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
                                                 id="workersAmount" 
                                                 type="number" 
                                                 title={t("available_workers_count")}
-                                                className="w-full bg-black/40 border border-white/10 rounded-md py-4 px-6 text-2xl font-black text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all group-hover:border-white/20" 
+                                                className="w-full bg-black/40 border border-white/10 rounded-md py-4 px-6 text-2xl font-black text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all group-hover:border-white/20 disabled:opacity-50" 
                                                 min="1" 
                                                 max="100" 
                                                 value={workers} 
                                                 onChange={e => setWorkers(parseInt(e.target.value) || 0)} 
+                                                disabled={isSubmitted}
                                             />
                                             <span className="absolute right-6 top-1/2 -translate-y-1/2 text-sm font-bold text-cyan-500/40 uppercase"><T k="persons" /></span>
                                         </div>
@@ -435,7 +461,8 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
                                                                             <button 
                                                                                 title={t("add_to_plan")}
                                                                                 onClick={(e) => { e.stopPropagation(); addToCart(ot); }} 
-                                                                                className="px-4 py-2 rounded-md bg-cyan-500 text-white font-black text-[10px] uppercase tracking-widest hover:bg-cyan-600 transition-all shadow-lg shadow-cyan-500/20 active:scale-95 flex items-center gap-2"
+                                                                                disabled={isSubmitted}
+                                                                                className="px-4 py-2 rounded-md bg-cyan-500 text-white font-black text-[10px] uppercase tracking-widest hover:bg-cyan-600 transition-all shadow-lg shadow-cyan-500/20 active:scale-95 flex items-center gap-2 disabled:opacity-30 disabled:pointer-events-none"
                                                                             >
                                                                                 <PlusCircle size={14} /> <T k="add_to_cart" />
                                                                             </button>
@@ -506,7 +533,8 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
                                                         <button 
                                                             title={t("remove_item")}
                                                             onClick={() => removeCartItem(item.id)} 
-                                                            className="p-2 rounded-md text-gray-600 hover:text-red-400 hover:bg-red-400/10 transition-all"
+                                                            disabled={isSubmitted}
+                                                            className="p-2 rounded-md text-gray-600 hover:text-red-400 hover:bg-red-400/10 transition-all disabled:opacity-30 disabled:pointer-events-none"
                                                         >
                                                             <Trash2 size={16} />
                                                         </button>
@@ -516,9 +544,10 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
                                                         <div className="relative flex-1">
                                                             <input 
                                                                 type="number" 
-                                                                className={`w-full rounded-md py-3 pl-4 pr-16 text-white text-xl font-black focus:outline-none focus:ring-2 transition-all placeholder:text-white/20 ${isOverflow ? 'bg-red-950/40 border-2 border-red-500/50 hover:border-red-500/70 focus:border-red-400 focus:ring-red-400/20' : 'bg-cyan-950/40 border-2 border-cyan-500/30 hover:border-cyan-500/60 focus:border-cyan-400 focus:ring-cyan-400/20'}`}
+                                                                className={`w-full rounded-md py-3 pl-4 pr-16 text-white text-xl font-black focus:outline-none focus:ring-2 transition-all placeholder:text-white/20 disabled:opacity-50 ${isOverflow ? 'bg-red-950/40 border-2 border-red-500/50 hover:border-red-500/70 focus:border-red-400 focus:ring-red-400/20' : 'bg-cyan-950/40 border-2 border-cyan-500/30 hover:border-cyan-500/60 focus:border-cyan-400 focus:ring-cyan-400/20'}`}
                                                                 value={item.planQty || ''} 
                                                                 onChange={(e) => updateCartItem(item.id, { planQty: parseFloat(e.target.value) || 0 })}
+                                                                disabled={isSubmitted}
                                                                 placeholder="0.0"
                                                             />
                                                             <div className="absolute right-3 top-1/2 -translate-y-1/2 px-2 py-1 bg-black/40 border border-white/5 rounded-lg pointer-events-none">
@@ -545,8 +574,9 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
                                                             <select 
                                                                 key={locIndex}
                                                                 title={locIndex === 0 ? t("location") : t("add_location")}
-                                                                className="bg-black/20 border border-white/5 rounded-md py-2 px-3 text-[10px] font-bold text-gray-400 focus:outline-none focus:border-cyan-500/40"
+                                                                className={`bg-black/20 border border-white/5 rounded-md py-2 px-3 text-[10px] font-bold text-gray-400 focus:outline-none focus:border-cyan-500/40 disabled:opacity-50`}
                                                                 value={item.locations[locIndex] || ''}
+                                                                disabled={isSubmitted}
                                                                 onChange={(e) => {
                                                                     const newLocs = [...item.locations];
                                                                     newLocs[locIndex] = e.target.value;
@@ -582,7 +612,8 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
                                                 key={item.k}
                                                 title={t(item.label)}
                                                 onClick={() => setChecks(p => ({ ...p, [item.k]: !p[item.k as keyof typeof checks] }))}
-                                                className={`px-4 py-3 rounded-md text-[10px] font-black uppercase tracking-widest border transition-all flex items-center justify-between group ${ checks[item.k as keyof typeof checks] ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-white/5 border-white/5 text-gray-600 hover:border-white/10' }`}
+                                                disabled={isSubmitted}
+                                                className={`px-4 py-3 rounded-md text-[10px] font-black uppercase tracking-widest border transition-all flex items-center justify-between group disabled:opacity-50 ${ checks[item.k as keyof typeof checks] ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-white/5 border-white/5 text-gray-600 hover:border-white/10' }`}
                                             >
                                                 <span><T k={item.label} /></span>
                                                 <div className={`w-2 h-2 rounded-full ${checks[item.k as keyof typeof checks] ? 'bg-emerald-400 animate-pulse' : 'bg-gray-800'}`} />
@@ -602,17 +633,33 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
                                             <span>Un ou plusieurs postes dépassent le budget restant. Corrigez les quantités avant de soumettre.</span>
                                         </div>
                                     )}
-                                    <button 
-                                        className="w-full py-5 rounded-[25px] bg-gradient-to-r from-cyan-600 via-cyan-500 to-blue-600 text-white font-black uppercase tracking-[0.2em] text-sm shadow-[0_20px_40px_rgba(6,182,212,0.3)] hover:shadow-cyan-500/50 hover:-translate-y-1 transition-all disabled:opacity-30 disabled:translate-y-0 disabled:shadow-none flex items-center justify-center gap-3 relative overflow-hidden" 
-                                        onClick={submitPlan} 
-                                        disabled={cartItems.length === 0 || isSubmitting || cartItems.some(item => {
-                                            const t2 = tasks.find(tk => tk.id === item.taskId);
-                                            return t2 && item.planQty > (t2.quantity - t2.completedQuantity);
-                                        })}
-                                    >
-                                        <div className="absolute inset-0 bg-white/20 opacity-0 hover:opacity-100 transition-opacity" />
-                                        {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <T k="validate_and_save_plan" />}
-                                    </button>
+                                    {isSubmitted ? (
+                                        <div className="flex flex-col gap-3">
+                                            <div className="flex items-center justify-center gap-2 px-4 py-4 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-bold mb-1">
+                                                <AlertTriangle size={16} />
+                                                <span><T k="plan_is_frozen" /></span>
+                                            </div>
+                                            <button 
+                                                className="w-full py-4 rounded-[25px] bg-orange-600/20 border border-orange-500/30 text-orange-400 font-black uppercase tracking-[0.2em] text-[10px] hover:bg-orange-500/30 hover:-translate-y-1 transition-all disabled:opacity-30 disabled:translate-y-0 disabled:shadow-none flex items-center justify-center gap-2 relative overflow-hidden" 
+                                                onClick={unsubmitPlan} 
+                                                disabled={isSubmitting}
+                                            >
+                                                {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <><T k="correction" /> <T k="plan" /></>}
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <button 
+                                            className="w-full py-5 rounded-[25px] bg-gradient-to-r from-cyan-600 via-cyan-500 to-blue-600 text-white font-black uppercase tracking-[0.2em] text-sm shadow-[0_20px_40px_rgba(6,182,212,0.3)] hover:shadow-cyan-500/50 hover:-translate-y-1 transition-all disabled:opacity-30 disabled:translate-y-0 disabled:shadow-none flex items-center justify-center gap-3 relative overflow-hidden" 
+                                            onClick={submitPlan} 
+                                            disabled={cartItems.length === 0 || isSubmitting || cartItems.some(item => {
+                                                const t2 = tasks.find(tk => tk.id === item.taskId);
+                                                return t2 && item.planQty > (t2.quantity - t2.completedQuantity);
+                                            })}
+                                        >
+                                            <div className="absolute inset-0 bg-white/20 opacity-0 hover:opacity-100 transition-opacity" />
+                                            {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <T k="validate_and_save_plan" />}
+                                        </button>
+                                    )}
                                     
                                     {materialsForecast.length > 0 && (
                                         <p className="text-[10px] text-center text-gray-500 font-medium px-4">

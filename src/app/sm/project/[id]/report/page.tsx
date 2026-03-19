@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, use, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { Camera, AlertCircle, WifiOff, AlertTriangle, Calendar, Clock, Users, ChevronLeft, CheckCircle2 } from "lucide-react";
+import { Camera, AlertCircle, WifiOff, AlertTriangle, Calendar, Clock, Users, ChevronLeft, CheckCircle2, Unlock } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "@/lib/LanguageContext";
 import T from "@/components/T";
@@ -66,6 +66,8 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
     const [issueDescription, setIssueDescription] = useState("");
     const [emptyDrumsCount, setEmptyDrumsCount] = useState<number>(0);
     const [loading, setLoading] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isReportSubmitted, setIsReportSubmitted] = useState(false);
     const [isOffline, setIsOffline] = useState(false);
 
     const [workersCount, setWorkersCount] = useState<number | ''>(0);
@@ -220,6 +222,62 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
         };
     }, [t]);
 
+    // Fetch daily report data when selectedDate changes and it has a report
+    useEffect(() => {
+        if (!selectedDate || !activePlan) return;
+        
+        const hasReport = existingReports.some(r => isSameDay(new Date(r.date), selectedDate));
+        
+        if (hasReport) {
+            setLoading(true);
+            fetch(`/api/project/${id}/report?date=${selectedDate.toISOString()}`)
+                .then(res => res.json())
+                .then(data => {
+                    setLoading(false);
+                    if (data.report) {
+                        setIsReportSubmitted(data.report.status === 'SUBMITTED');
+                        setWorkersCount(data.report.workersCount || activePlan?.workersCount || '');
+                        
+                        const newActuals: Record<string, number> = {};
+                        if (data.report.dailyTaskProgress) {
+                            data.report.dailyTaskProgress.forEach((p: any) => {
+                                newActuals[p.planTaskId] = p.quantity;
+                            });
+                        }
+                        if (data.report.adHocTaskProgress) {
+                            data.report.adHocTaskProgress.forEach((p: any) => {
+                                newActuals[p.tempId || p.taskId] = p.quantity;
+                            });
+                        }
+                        setActuals(prev => ({ ...prev, ...newActuals }));
+                        
+                        if (data.report.issues) {
+                            setIssueDescription(data.report.issues);
+                        }
+                        if (data.report.lateReason) {
+                            setLateReason(data.report.lateReason);
+                            setLateDescription(data.report.lateDescription || '');
+                        }
+                    }
+                })
+                .catch(err => {
+                    setLoading(false);
+                    console.error("Failed to fetch report detail:", err);
+                });
+        } else {
+            // Reset state for new report
+            setIsReportSubmitted(false);
+            setIssueDescription("");
+            setLateReason("");
+            setLateDescription("");
+            const initActuals: Record<string, number> = {};
+            activePlan.tasks.forEach((t: PlanTask) => {
+                initActuals[t.id] = 0;
+            });
+            setActuals(initActuals);
+        }
+    }, [selectedDate, activePlan, existingReports, id]);
+
     const handleActualChange = (planTaskId: string, valStr: string) => {
         const val = parseFloat(valStr) || 0;
         setActuals(prev => ({ ...prev, [planTaskId]: val }));
@@ -353,7 +411,29 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
         }
     };
 
-    if (loading) return <div className="aurora-page flex items-center justify-center text-cyan-400 font-bold animate-pulse"><T k="checking_db" /></div>;
+    const unsubmitReport = async () => {
+        setIsSubmitting(true);
+        try {
+            const res = await fetch(`/api/project/${id}/report/unsubmit`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ date: selectedDate ? selectedDate.toISOString() : undefined })
+            });
+
+            if (res.ok) {
+                setIsReportSubmitted(false);
+                toast.success(t("report_unlocked") || "Report unsubmitted");
+            } else {
+                toast.error(t("error_unlocking_report") || "Error unlocking report");
+            }
+        } catch (err) {
+            toast.error(t("error_unlocking_report") || "Error unlocking report");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    if (loading && !activePlan) return <div className="aurora-page flex items-center justify-center text-cyan-400 font-bold animate-pulse"><T k="checking_db" /></div>;
 
     if (!activePlan) return (
         <div className="aurora-page flex flex-col items-center justify-center text-center p-6">
@@ -515,11 +595,12 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                         </select>
                         {lateReason === 'OTHER' && (
                             <textarea
-                                className="w-full bg-[#050810]/60 border border-amber-500/20 text-white rounded-md py-3 px-4 outline-none focus:border-amber-500 resize-none placeholder:text-gray-600"
+                                className="w-full bg-[#050810]/60 border border-amber-500/20 text-white rounded-md py-3 px-4 outline-none focus:border-amber-500 resize-none placeholder:text-gray-600 disabled:opacity-50"
                                 rows={2}
                                 placeholder={t("describe_reason") || "Describe the reason..."}
                                 value={lateDescription}
                                 onChange={(e) => setLateDescription(e.target.value)}
+                                disabled={isReportSubmitted}
                             />
                         )}
                     </div>
@@ -539,10 +620,11 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                             <input
                                 id="workersCount"
                                 type="number"
-                                className="w-full bg-[#050810]/50 border border-white/10 text-white text-2xl font-black rounded-md py-4 px-4 outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 transition-all text-center"
+                                className="w-full bg-[#050810]/50 border border-white/10 text-white text-2xl font-black rounded-md py-4 px-4 outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 transition-all text-center disabled:opacity-50"
                                 placeholder="0"
                                 min="0"
                                 value={workersCount}
+                                disabled={isReportSubmitted}
                                 onChange={(e) => setWorkersCount(e.target.value === '' ? '' : parseInt(e.target.value) || 0)}
                             />
                         </div>
@@ -600,6 +682,7 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                                         min="0"
                                         value={actuals[pt.id] || ''}
                                         onChange={(e) => handleActualChange(pt.id, e.target.value)}
+                                        disabled={isReportSubmitted}
                                     />
                                     <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
                                         <span className="text-gray-500 font-bold"><T k={pt.task.unit} /></span>
@@ -612,6 +695,7 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                                         id={`photo_${pt.id}`}
                                         className="hidden"
                                         onChange={(e) => handlePhotoCapture(pt.id, e)} 
+                                        disabled={isReportSubmitted}
                                     />
                                 </label>
                             </div>
@@ -624,8 +708,9 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                                         <select 
                                             key={locIndex}
                                             aria-label={`Localisation ${locIndex + 1}`}
-                                            className="bg-[#050810]/50 border border-white/10 text-gray-300 text-xs py-2 px-2 rounded-md outline-none focus:border-cyan-400 font-medium transition-colors"
+                                            className="bg-[#050810]/50 border border-white/10 text-gray-300 text-xs py-2 px-2 rounded-md outline-none focus:border-cyan-400 font-medium transition-colors disabled:opacity-50"
                                             value={(taskLocations[pt.id] || [])[locIndex] || ''}
+                                            disabled={isReportSubmitted}
                                             onChange={(e) => {
                                                 const newLocs = [...(taskLocations[pt.id] || [])];
                                                 newLocs[locIndex] = e.target.value;
@@ -650,8 +735,9 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                                     </div>
                                     <select
                                         aria-label="Raison du dépassement"
-                                        className="w-full bg-amber-950/30 border border-amber-500/30 text-amber-200 text-sm py-2.5 px-4 rounded-md outline-none focus:border-amber-400 font-medium mb-2"
+                                        className="w-full bg-amber-950/30 border border-amber-500/30 text-amber-200 text-sm py-2.5 px-4 rounded-md outline-none focus:border-amber-400 font-medium mb-2 disabled:opacity-50"
                                         value={blockageLogs[pt.id]?.reason || ''}
+                                        disabled={isReportSubmitted}
                                         onChange={(e) => setBlockageLogs(prev => ({ ...prev, [pt.id]: { ...prev[pt.id], reason: e.target.value, description: prev[pt.id]?.description || '' } }))}
                                     >
                                         <option value="">-- <T k="select_reason" /> --</option>
@@ -661,10 +747,11 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                                         <option value="OTHER"><T k="other_reason" /></option>
                                     </select>
                                     <textarea
-                                        className="w-full bg-amber-950/20 border border-amber-500/20 text-white text-sm py-2.5 px-4 rounded-md outline-none focus:border-amber-400 placeholder:text-amber-800 resize-none"
+                                        className="w-full bg-amber-950/20 border border-amber-500/20 text-white text-sm py-2.5 px-4 rounded-md outline-none focus:border-amber-400 placeholder:text-amber-800 resize-none disabled:opacity-50"
                                         rows={2}
                                         placeholder={t("describe_overrun") || "Describe the reason for exceeding planned quantity..."}
                                         value={blockageLogs[pt.id]?.description || ''}
+                                        disabled={isReportSubmitted}
                                         onChange={(e) => setBlockageLogs(prev => ({ ...prev, [pt.id]: { ...prev[pt.id], reason: prev[pt.id]?.reason || 'OTHER', description: e.target.value } }))}
                                     />
                                 </div>
@@ -679,9 +766,10 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                     <h3 className="text-xl font-bold flex items-center gap-2 mb-4 text-orange-400"><T k="add_unplanned_task" /></h3>
                     <div className="flex flex-col sm:flex-row gap-4">
                         <select 
-                            className="flex-1 bg-[#050810]/50 border border-white/10 text-white py-3 px-4 rounded-md outline-none focus:border-orange-400"
-                            value={selectedCategory}
+                            className="flex-1 bg-[#050810]/50 border border-white/10 text-white py-3 px-4 rounded-md outline-none focus:border-orange-400 disabled:opacity-50"
+                            value={selectedCategory || ""}
                             title={t('select_category')}
+                            disabled={isReportSubmitted}
                             onChange={(e) => {
                                 setSelectedCategory(e.target.value);
                                 setSelectedAdHocTaskId("");
@@ -693,10 +781,10 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                         
                         <select
                             className="flex-[2] bg-[#050810]/50 border border-white/10 text-white py-3 px-4 rounded-md outline-none focus:border-orange-400 disabled:opacity-50"
-                            value={selectedAdHocTaskId}
+                            value={selectedAdHocTaskId || ""}
                             title={t('select_task')}
                             onChange={(e) => setSelectedAdHocTaskId(e.target.value)}
-                            disabled={!selectedCategory}
+                            disabled={!selectedCategory || isReportSubmitted}
                         >
                             <option value="">-- <T k="select_task" /> --</option>
                             {projectTasks.filter(t => (t.category || 'Uncategorized') === selectedCategory).map(t => (
@@ -730,8 +818,9 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                             </p>
                             <select 
                                 aria-label="Raison de l'objectif manqué"
-                                className="w-full bg-[#050810]/80 border border-orange-500/50 text-white rounded-md py-4 px-4 outline-none focus:ring-1 focus:ring-orange-500 appearance-none font-bold" 
+                                className="w-full bg-[#050810]/80 border border-orange-500/50 text-white rounded-md py-4 px-4 outline-none focus:ring-1 focus:ring-orange-500 appearance-none font-bold disabled:opacity-50" 
                                 value={issueCategory}
+                                disabled={isReportSubmitted}
                                 onChange={(e) => setIssueCategory(e.target.value)}
                             >
                                 <option value=""><T k="select_rca_cause" /></option>
@@ -749,9 +838,10 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
 
                     <textarea
                         aria-label="Description du problème"
-                        className="w-full bg-[#050810]/80 border border-white/10 text-white rounded-md py-4 px-4 min-h-[120px] outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/50 resize-y placeholder-gray-600"
+                        className="w-full bg-[#050810]/80 border border-white/10 text-white rounded-md py-4 px-4 min-h-[120px] outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/50 resize-y placeholder-gray-600 disabled:opacity-50"
                         placeholder={t("problem_details_placeholder")}
                         value={issueDescription}
+                        disabled={isReportSubmitted}
                         onChange={(e) => setIssueDescription(e.target.value)}
                     />
 
@@ -763,9 +853,10 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                             <input 
                                 id="emptyDrums"
                                 type="number" 
-                                className="w-[100px] bg-[#050810] border border-white/20 text-white text-xl font-bold rounded-md py-2 px-3 outline-none text-center focus:border-cyan-400" 
+                                className="w-[100px] bg-[#050810] border border-white/20 text-white text-xl font-bold rounded-md py-2 px-3 outline-none text-center focus:border-cyan-400 disabled:opacity-50" 
                                 min="0"
                                 value={emptyDrumsCount}
+                                disabled={isReportSubmitted}
                                 onChange={(e) => setEmptyDrumsCount(parseInt(e.target.value) || 0)}
                                 aria-label={t("empty_drums_label")}
                             />
@@ -784,14 +875,35 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                         >
                             <T k="cancel" />
                         </button>
-                        <button 
-                            className={`flex-[2] py-4 sm:py-5 rounded-full font-black tracking-wider uppercase text-sm text-white shadow-[0_0_20px_rgba(249,115,22,0.4)] hover:shadow-[0_0_30px_rgba(249,115,22,0.6)] transition-all hover:scale-[1.02] ${isOffline ? 'bg-yellow-600' : isBackfill ? 'bg-gradient-to-r from-amber-500 to-orange-500' : 'bg-gradient-to-r from-orange-500 to-red-500'}`} 
-                            onClick={submitReport}
-                            disabled={isBackfill && !lateReason}
-                            title={isOffline ? t("save_locally") : isBackfill ? (t("submit_late_report") || "Submit Late Report") : t("submit_report")}
-                        >
-                            {isOffline ? <T k="save_locally" /> : isBackfill ? (t("submit_late_report") || "Submit Late Report") : <T k="submit_report" />}
-                        </button>
+                        {isReportSubmitted ? (
+                            <button 
+                                className="flex-[2] py-4 sm:py-5 rounded-full font-black tracking-wider uppercase text-sm text-white shadow-[0_0_20px_rgba(234,179,8,0.4)] hover:shadow-[0_0_30px_rgba(234,179,8,0.6)] transition-all hover:scale-[1.02] bg-gradient-to-r from-yellow-500 to-orange-500 flex items-center justify-center gap-2" 
+                                onClick={unsubmitReport}
+                                disabled={isSubmitting}
+                            >
+                                {isSubmitting ? (
+                                    <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                                ) : (
+                                    <>
+                                        <Unlock size={18} />
+                                        Correction Rapport
+                                    </>
+                                )}
+                            </button>
+                        ) : (
+                            <button 
+                                className={`flex-[2] py-4 sm:py-5 rounded-full font-black tracking-wider uppercase text-sm text-white shadow-[0_0_20px_rgba(249,115,22,0.4)] hover:shadow-[0_0_30px_rgba(249,115,22,0.6)] transition-all hover:scale-[1.02] ${isOffline ? 'bg-yellow-600' : isBackfill ? 'bg-gradient-to-r from-amber-500 to-orange-500' : 'bg-gradient-to-r from-orange-500 to-red-500'}`} 
+                                onClick={submitReport}
+                                disabled={isBackfill && !lateReason || isSubmitting}
+                                title={isOffline ? t("save_locally") : isBackfill ? (t("submit_late_report") || "Submit Late Report") : t("submit_report")}
+                            >
+                                {isSubmitting ? (
+                                    <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin mx-auto"></div>
+                                ) : (
+                                    isOffline ? <T k="save_locally" /> : isBackfill ? (t("submit_late_report") || "Submit Late Report") : <T k="submit_report" />
+                                )}
+                            </button>
+                        )}
                     </div>
                 </div>
 
