@@ -176,7 +176,7 @@ export default function OverviewTab({ project }: OverviewTabProps) {
                     <div className="card-glow glow-fin" />
                     <div className="card-header-flex">
                         <h3 className="card-title text-fin">Finances</h3>
-                        <div className="icon-glass icon-glass-sm"><Image src="/hub-icons/finances.png" alt="Finances" width={64} height={64} className="icon-img" /></div>
+                        <div className="icon-glass icon-glass-sm"><Image src="/hub-icons/finances.png" alt="Finances" width={256} height={256} className="icon-img" /></div>
                     </div>
                     <p className="card-sub">Aperçu budgétaire</p>
                     {fin ? (
@@ -198,7 +198,7 @@ export default function OverviewTab({ project }: OverviewTabProps) {
                     <div className="card-glow glow-etu" />
                     <div className="card-header-flex">
                         <h3 className="card-title text-etu">Études</h3>
-                        <div className="icon-glass icon-glass-sm"><Image src="/hub-icons/technical.png" alt="Études" width={64} height={64} className="icon-img" /></div>
+                        <div className="icon-glass icon-glass-sm"><Image src="/hub-icons/technical.png" alt="Études" width={256} height={256} className="icon-img" /></div>
                     </div>
                     <p className="card-sub">Documents techniques</p>
                     {etu && etu.totalDocs > 0 ? (
@@ -220,7 +220,7 @@ export default function OverviewTab({ project }: OverviewTabProps) {
                     <div className="card-glow glow-ach" />
                     <div className="card-header-flex">
                         <h3 className="card-title text-ach">Achats</h3>
-                        <div className="icon-glass icon-glass-sm"><Image src="/hub-icons/purchases.png" alt="Achats" width={64} height={64} className="icon-img" /></div>
+                        <div className="icon-glass icon-glass-sm"><Image src="/hub-icons/purchases.png" alt="Achats" width={256} height={256} className="icon-img" /></div>
                     </div>
                     <p className="card-sub">Bilan sous-traitance</p>
                     {ach && ach.totalBudget > 0 ? (
@@ -406,6 +406,11 @@ const BENTO_CSS = `
     height: 160px;
     padding: 8px;
     margin: 0 auto 0.75rem;
+}
+.icon-glass-sm {
+    width: 100px;
+    height: 100px;
+    padding: 6px;
 }
 .bento-card:hover .icon-glass { transform: scale(1.06); }
 .icon-img { width: 100%; height: 100%; object-fit: contain; display: block; }
