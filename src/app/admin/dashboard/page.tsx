@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
     ShieldCheck, CheckCircle, XCircle, Clock, UserIcon, LogOut,
-    TrendingUp, Euro, Activity, Folder, Target, RefreshCw, Globe, ListOrdered, Trash2, AlertTriangle, Eye
+    TrendingUp, Euro, Activity, Folder, Target, RefreshCw, Globe, ListOrdered, Trash2, AlertTriangle, Eye, Settings
 } from 'lucide-react';
 import { toast } from 'sonner';
 import AvatarDisplay from '@/components/AvatarDisplay';
@@ -317,6 +317,13 @@ export default function AdminDashboard() {
                                         </td>
                                         <td className="py-3 text-center">
                                             <div className="flex items-center justify-center gap-1">
+                                                <Link
+                                                    href={`/admin/project/${p.id}`}
+                                                    className="p-1.5 rounded-lg border border-amber-500/20 text-amber-400/60 hover:text-amber-400 hover:bg-amber-500/10 hover:border-amber-500/40 transition-all"
+                                                    title="Configuration du projet"
+                                                >
+                                                    <Settings size={14} />
+                                                </Link>
                                                 <Link
                                                     href={`/sm/project/${p.id}/plan/history`}
                                                     className="p-1.5 rounded-lg border border-cyan-500/20 text-cyan-400/60 hover:text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500/40 transition-all"
