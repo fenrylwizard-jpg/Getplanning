@@ -78,12 +78,16 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         });
         if (!plan) return NextResponse.json({ error: "Plan not found" }, { status: 404 });
 
-        // Determine the date for this report. 
-        // We must avoid startOfDay(new Date(reportDate)) because reportDate is "2026-03-18T23:00:00.000Z" (midnight Paris).
-        // Calling startOfDay in a UTC Node environment truncates it to "2026-03-18T00:00:00.000Z" (shifting it back a whole day).
+        // We must avoid startOfDay(new Date(reportDate)) because reportDate might be an ISO string 
+        // sent from a local browser exactly at midnight (e.g. "2026-03-18T23:00:00.000Z" for March 19th in Paris).
         let effectiveDate: Date;
         if (reportDate) {
-            effectiveDate = new Date(reportDate); // Already start of day in the user's localized browser
+            effectiveDate = new Date(reportDate); 
+            // If the time is late evening in UTC (>= 22:00), it's overwhelmingly likely it's a timezone offset 
+            // from a European client for midnight the NEXT day. We shift by 4 hours to be safe.
+            if (reportDate.includes('T') && effectiveDate.getUTCHours() >= 21) {
+                effectiveDate = new Date(effectiveDate.getTime() + 4 * 60 * 60 * 1000);
+            }
         } else {
             // If strictly today, get today's date but anchor it to UTC noon to avoid any boundary issues
             const today = new Date();

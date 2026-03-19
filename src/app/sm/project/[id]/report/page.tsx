@@ -242,7 +242,7 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                         if (data.report.taskProgress) {
                             data.report.taskProgress.forEach((p: any) => {
                                 // Map from global taskId back to this week's plan task ID if possible
-                                const wpt = activePlan?.tasks.find(t => t.taskId === p.taskId);
+                                const wpt = activePlan?.tasks.find(t => t.task?.id === p.taskId);
                                 if (wpt) {
                                     newActuals[wpt.id] = p.quantity;
                                 } else {
@@ -347,6 +347,9 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                 locations: taskLocations[t.id]
             }));
 
+        // Format selectedDate to strictly YYYY-MM-DD in local time
+        const localDateStr = selectedDate ? `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}` : undefined;
+
         const payload = {
             planId: activePlan?.id,
             actuals,
@@ -357,7 +360,7 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
             workersCount: typeof workersCount === 'number' ? workersCount : undefined,
             adHocTasks: adHocTasksPayload,
             blockageLogs,
-            reportDate: selectedDate ? selectedDate.toISOString() : undefined,
+            reportDate: localDateStr,
             lateReason: isBackfill ? lateReason : undefined,
             lateDescription: isBackfill ? lateDescription : undefined,
         };
