@@ -144,7 +144,8 @@ model FinanceSnapshot {
   sheetName           String?   // Original sheet name for reference
   
   // Revenue
-  totalRevenue        Float?    // Revenu total
+  totalRevenue        Float?    // Revenu total (actual billed so far)
+  finalRevenue        Float?    // Revenu total including revisions (FIN PRÉVUE)
   approvedSettlements Float?    // Règlements approuvés
   
   // Labor

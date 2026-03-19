@@ -4,6 +4,7 @@ export interface FinanceSnapshotData {
   month: Date;
   sheetName: string;
   totalRevenue: number | null;
+  finalRevenue: number | null;  // Total revenue including revisions (FIN PRÉVUE)
   approvedSettlements: number | null;
   laborHours: number | null;
   laborHourlyRate: number | null;
@@ -135,7 +136,14 @@ export function parseFinances(buffer: Buffer): FinanceSnapshotData[] {
     // ── Revenue ──
     const revenueRow = findRow('Revenu total', 8, 25);
     const totalRevenue = revenueRow >= 0 ? getNum(revenueRow, ACTUAL_COL) : null;
-    console.log(`[parse-finances]   Revenue: row=${revenueRow}, actual(c7)=${totalRevenue}, budget(c11)=${revenueRow >= 0 ? getNum(revenueRow, BUDGET_COL) : '-'}`);
+    
+    // Final revenue including revisions ("Revenu total:" with colon, row ~19, col 11 = FIN PRÉVUE)
+    // This is the total projected revenue at project end = 1,086,558€ for Herlin
+    const revenueTotalWithRevRow = findRow('Revenu total:', revenueRow >= 0 ? revenueRow + 1 : 8, 25);
+    const finalRevenue = revenueTotalWithRevRow >= 0 
+      ? getNum(revenueTotalWithRevRow, BUDGET_COL) 
+      : (revenueRow >= 0 ? getNum(revenueRow, BUDGET_COL) : null);
+    console.log(`[parse-finances]   Revenue: row=${revenueRow}, actual(c7)=${totalRevenue}, finalRevenue(row${revenueTotalWithRevRow},c11)=${finalRevenue}`);
     
     // Settlements
     const settlementsRow = findRow('glements approuv', 10, 25);
@@ -302,6 +310,7 @@ export function parseFinances(buffer: Buffer): FinanceSnapshotData[] {
       month,
       sheetName,
       totalRevenue: totalRevenue ?? getNum(revenueRow, BUDGET_COL),
+      finalRevenue,
       approvedSettlements,
       laborHours,
       laborHourlyRate,

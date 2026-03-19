@@ -18,6 +18,7 @@ interface FinanceSnapshot {
     month: string;
     sheetName: string | null;
     totalRevenue: number | null;
+    finalRevenue: number | null;
     laborCost: number | null;
     externalLaborCost: number | null;
     subcontractorCost: number | null;
@@ -57,8 +58,10 @@ const pctFromDecimal = (val: number | null) => {
 };
 
 const computeMargin = (snap: FinanceSnapshot) => {
-    if (snap.result != null && snap.totalRevenue && snap.totalRevenue > 0) {
-        return Math.round((snap.result / snap.totalRevenue) * 100 * 10) / 10;
+    // Marge = Résultat / Revenu final projeté (including revisions)
+    const denominator = snap.finalRevenue || snap.totalRevenue;
+    if (snap.result != null && denominator && denominator > 0) {
+        return Math.round((snap.result / denominator) * 100 * 10) / 10;
     }
     return null;
 };
@@ -219,10 +222,23 @@ function AdvancementSection({ snapshots }: { snapshots: FinanceSnapshot[] }) {
     if (snapshots.length === 0) return null;
 
     const latest = snapshots[snapshots.length - 1];
-    const first = snapshots[0];
-    const totalRevenue = latest.totalRevenue || 0;
-    const initialRevenue = first.totalRevenue || totalRevenue;
-    const pctProgress = initialRevenue > 0 ? Math.min((totalRevenue / initialRevenue) * 100, 100) : 0;
+    const currentRevenue = latest.totalRevenue || 0;
+    // finalRevenue = total projected revenue at end of project (including revisions)
+    const finalRevenue = latest.finalRevenue || currentRevenue;
+    const pctProgress = finalRevenue > 0 ? Math.min((currentRevenue / finalRevenue) * 100, 100) : 0;
+
+    // Revenue evolution dot chart
+    const values = snapshots.map(s => s.totalRevenue || 0);
+    const maxRev = Math.max(...values, 1);
+    const W = 400, H = 120, padX = 30, padY = 15;
+    const chartW = W - padX * 2;
+    const chartH = H - padY * 2;
+    const points = values.map((v, i) => ({
+        x: padX + (values.length > 1 ? (i / (values.length - 1)) * chartW : chartW / 2),
+        y: padY + chartH - (v / maxRev) * chartH,
+        val: v,
+    }));
+    const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ');
 
     return (
         <div className="advancement-section">
@@ -241,25 +257,31 @@ function AdvancementSection({ snapshots }: { snapshots: FinanceSnapshot[] }) {
                         <div className="adv-progress-fill" style={{ width: `${pctProgress}%` }} />
                     </div>
                     <div className="adv-progress-footer">
-                        <span>Facturé : {fmtK(totalRevenue)}</span>
-                        <span>Budget initial : {fmtK(initialRevenue)}</span>
+                        <span>Facturé : {fmtK(currentRevenue)}</span>
+                        <span>Revenu final projeté : {fmtK(finalRevenue)}</span>
                     </div>
                 </div>
-                {/* Revenue evolution mini chart */}
-                <div className="adv-evolution">
-                    {snapshots.map((snap, idx) => {
-                        const rev = snap.totalRevenue || 0;
-                        const maxRev = Math.max(...snapshots.map(s => s.totalRevenue || 0), 1);
-                        return (
-                            <div key={snap.id} className="adv-bar-col">
-                                <div className="adv-bar-fill" style={{ height: `${(rev / maxRev) * 100}%` }}>
-                                    <span className="adv-bar-tooltip">{fmtK(rev)}</span>
-                                </div>
-                                <span className="adv-bar-label">{monthLabel(snap)}</span>
-                            </div>
-                        );
+                {/* Revenue evolution dot chart */}
+                <svg viewBox={`0 0 ${W} ${H}`} className="adv-dot-chart">
+                    {/* Grid lines */}
+                    {[0, 0.25, 0.5, 0.75, 1].map(pct => {
+                        const y = padY + chartH - pct * chartH;
+                        return <line key={pct} x1={padX} y1={y} x2={W - padX} y2={y} stroke="rgba(255,255,255,0.05)" />;
                     })}
-                </div>
+                    {/* Line */}
+                    {points.length > 1 && (
+                        <path d={pathD} fill="none" stroke="#3b82f6" strokeWidth="2" opacity="0.6" />
+                    )}
+                    {/* Dots */}
+                    {points.map((p, i) => (
+                        <g key={i}>
+                            <circle cx={p.x} cy={p.y} r="4" fill="#3b82f6" />
+                            <circle cx={p.x} cy={p.y} r="6" fill="rgba(59,130,246,0.2)" />
+                            <text x={p.x} y={p.y - 10} textAnchor="middle" className="chart-dot-label">{fmtK(p.val)}</text>
+                            <text x={p.x} y={H - 3} textAnchor="middle" className="chart-x-label">{monthLabel(snapshots[i])}</text>
+                        </g>
+                    ))}
+                </svg>
             </div>
         </div>
     );
@@ -601,25 +623,8 @@ const FINANCES_CSS = `
 }
 .adv-progress-footer { display: flex; justify-content: space-between; font-size: 0.65rem; color: rgba(255,255,255,0.35); }
 
-/* Revenue bars */
-.adv-evolution { display: flex; align-items: flex-end; gap: 0.3rem; height: 120px; }
-.adv-bar-col {
-    flex: 1; display: flex; flex-direction: column; align-items: center;
-    justify-content: flex-end; height: 100%; position: relative;
-}
-.adv-bar-fill {
-    width: 100%; border-radius: 4px 4px 0 0;
-    background: linear-gradient(180deg, #3b82f6, rgba(59,130,246,0.3));
-    transition: height 0.6s ease; position: relative;
-    min-height: 4px;
-}
-.adv-bar-tooltip {
-    position: absolute; top: -18px; left: 50%; transform: translateX(-50%);
-    font-size: 0.5rem; font-weight: 700; color: rgba(255,255,255,0.5);
-    white-space: nowrap; opacity: 0; transition: opacity 0.2s;
-}
-.adv-bar-col:hover .adv-bar-tooltip { opacity: 1; }
-.adv-bar-label { font-size: 0.45rem; color: rgba(255,255,255,0.25); margin-top: 0.25rem; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+/* Revenue dot chart */
+.adv-dot-chart { width: 100%; height: auto; }
 
 /* ── Monthly Table ── */
 .table-container {
