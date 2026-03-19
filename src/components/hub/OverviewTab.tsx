@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import Image from "next/image";
 
 interface OverviewTabProps {
     project: {
@@ -37,17 +38,28 @@ interface OverviewData {
     };
 }
 
-function formatEuros(val: number | null | undefined): string {
-    if (val == null) return "—";
-    if (Math.abs(val) >= 1_000_000) return `${(val / 1_000_000).toFixed(1)}M€`;
-    if (Math.abs(val) >= 1_000) return `${(val / 1_000).toFixed(0)}k€`;
-    return `${val.toFixed(0)}€`;
-}
-
 function formatDate(iso: string): string {
     const d = new Date(iso);
     return d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
 }
+
+// Helpers
+const fmtK = (v: number | null | undefined) => {
+    if (v == null) return "—";
+    if (v >= 1000000 || v <= -1000000) return (v / 1000000).toFixed(1).replace(/\.0$/, '') + 'M€';
+    if (v >= 1000 || v <= -1000) return (v / 1000).toFixed(0) + 'k€';
+    return v + '€';
+};
+
+const formatEuros = (v: number | null | undefined) => {
+    if (v == null) return "—";
+    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(v);
+};
+
+const formatPct = (v: number | null | undefined) => {
+    if (v == null) return "—";
+    return `${v}%`;
+};
 
 export default function OverviewTab({ project }: OverviewTabProps) {
     const router = useRouter();
@@ -80,12 +92,12 @@ export default function OverviewTab({ project }: OverviewTabProps) {
                 <div className="kpi-item">
                     <span className="kpi-label">Avancement Global</span>
                     <span className="kpi-val">{loading ? "—" : `${kpis?.avancementGlobal ?? 0}`}<span className="kpi-unit">%</span></span>
-                    {!loading && <div className="kpi-bar"><div className="kpi-bar-fill" style={{ width: `${kpis?.avancementGlobal ?? 0}%`, background: 'linear-gradient(90deg, #06b6d4, #22d3ee)' }} /></div>}
+                    {!loading && <div className="kpi-bar"><div className="kpi-bar-fill grad-prod" style={{ width: `${kpis?.avancementGlobal ?? 0}%` }} /></div>}
                 </div>
                 <div className="kpi-item">
                     <span className="kpi-label">Budget Consommé</span>
                     <span className="kpi-val">{loading ? "—" : kpis?.budgetConsomme != null ? `${kpis.budgetConsomme}` : "—"}<span className="kpi-unit">{kpis?.budgetConsomme != null ? "%" : ""}</span></span>
-                    {!loading && kpis?.budgetConsomme != null && <div className="kpi-bar"><div className="kpi-bar-fill" style={{ width: `${Math.min(kpis.budgetConsomme, 100)}%`, background: 'linear-gradient(90deg, #10b981, #34d399)' }} /></div>}
+                    {!loading && kpis?.budgetConsomme != null && <div className="kpi-bar"><div className="kpi-bar-fill grad-ach" style={{ width: `${Math.min(kpis.budgetConsomme, 100)}%` }} /></div>}
                 </div>
                 <div className="kpi-item">
                     <span className="kpi-label">Tâches Actives</span>
@@ -109,44 +121,44 @@ export default function OverviewTab({ project }: OverviewTabProps) {
 
                 {/* PRODUCTION — wide card */}
                 <div className="bento-card card-production" onClick={() => navigateTo("production")} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter") navigateTo("production"); }}>
-                    <div className="card-glow" style={{ background: "radial-gradient(ellipse at 80% 40%, rgba(6,182,212,0.12), transparent 70%)" }} />
+                    <div className="card-glow glow-prod" />
                     <div className="card-body-wide">
                         <div className="card-info">
-                            <h3 className="card-title" style={{ color: "#22d3ee" }}>Production</h3>
+                            <h3 className="card-title text-prod">Production</h3>
                             <p className="card-sub">Avancement par catégorie</p>
                             <div className="stat-bars">
                                 {prod.length > 0 ? prod.map((cat, i) => (
                                     <div key={i}>
                                         <div className="stat-row">
                                             <span className="stat-name">{cat.category}</span>
-                                            <span className="stat-pct" style={{ color: "#22d3ee" }}>{cat.progress}%</span>
+                                            <span className="stat-pct text-prod">{cat.progress}%</span>
                                         </div>
-                                        <div className="progress-track"><div className="progress-fill" style={{ width: `${cat.progress}%`, background: "linear-gradient(90deg, #06b6d4, #22d3ee)" }} /></div>
+                                        <div className="progress-track"><div className="progress-fill grad-prod" style={{ width: `${cat.progress}%` }} /></div>
                                     </div>
                                 )) : (
                                     <p className="no-data">Aucune tâche importée</p>
                                 )}
                             </div>
-                            <div className="card-action" style={{ color: "#22d3ee" }}>Accéder <span className="arrow">→</span></div>
+                            <div className="card-action text-prod">Accéder <span className="arrow">→</span></div>
                         </div>
                         <div className="icon-glass icon-glass-lg">
-                            <img src="/hub-icons/production.png" alt="Production" className="icon-img" />
+                            <Image src="/hub-icons/production.png" alt="Production" width={160} height={160} className="icon-img" />
                         </div>
                     </div>
                 </div>
 
                 {/* PLANNING — tall card */}
                 <div className="bento-card card-planning" onClick={() => navigateTo("planning")} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter") navigateTo("planning"); }}>
-                    <div className="card-glow" style={{ background: "radial-gradient(ellipse at 50% 20%, rgba(139,92,246,0.15), transparent 70%)" }} />
+                    <div className="card-glow glow-plan" />
                     <div className="icon-glass icon-glass-center">
-                        <img src="/hub-icons/planning.png" alt="Planning" className="icon-img" />
+                        <Image src="/hub-icons/planning.png" alt="Planning" width={130} height={130} className="icon-img" />
                     </div>
-                    <h3 className="card-title" style={{ color: "#a78bfa", textAlign: "center" }}>Planning</h3>
-                    <p className="card-sub" style={{ textAlign: "center" }}>Prochaines échéances</p>
+                    <h3 className="card-title text-plan center-text">Planning</h3>
+                    <p className="card-sub center-text">Prochaines échéances</p>
                     {kpis?.prochaineEcheance ? (
                         <div className="timeline">
                             <div className="tl-item">
-                                <div className="tl-dot" style={{ background: "#a78bfa" }} />
+                                <div className="tl-dot bg-plan" />
                                 <div>
                                     <span className="tl-date">{formatDate(kpis.prochaineEcheance.date)}</span><br />
                                     <span className="tl-label">{kpis.prochaineEcheance.name}</span>
@@ -154,69 +166,75 @@ export default function OverviewTab({ project }: OverviewTabProps) {
                             </div>
                         </div>
                     ) : (
-                        <p className="no-data" style={{ textAlign: "center" }}>Module en cours de développement</p>
+                        <p className="no-data center-text">Module en cours de développement</p>
                     )}
-                    <div className="card-action" style={{ color: "#a78bfa", justifyContent: "center" }}>Accéder <span className="arrow">→</span></div>
+                    <div className="card-action text-plan center-justify">Accéder <span className="arrow">→</span></div>
                 </div>
 
-                {/* FINANCES */}
+                {/* FINANCES — standard card */}
                 <div className="bento-card card-finances" onClick={() => navigateTo("finances")} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter") navigateTo("finances"); }}>
-                    <div className="card-glow" style={{ background: "radial-gradient(ellipse at 50% 30%, rgba(16,185,129,0.12), transparent 70%)" }} />
-                    <div className="icon-glass icon-glass-center">
-                        <img src="/hub-icons/finances.png" alt="Finances" className="icon-img" />
+                    <div className="card-glow glow-fin" />
+                    <div className="card-header-flex">
+                        <h3 className="card-title text-fin">Finances</h3>
+                        <div className="icon-glass icon-glass-sm"><Image src="/hub-icons/finances.png" alt="Finances" width={64} height={64} className="icon-img" /></div>
                     </div>
-                    <h3 className="card-title" style={{ color: "#34d399", textAlign: "center" }}>Finances</h3>
+                    <p className="card-sub">Aperçu budgétaire</p>
                     {fin ? (
                         <div className="big-stat">
-                            <span className="big-num" style={{ color: (fin.marginPercent ?? 0) >= 0 ? "#34d399" : "#f87171" }}>
-                                {fin.marginPercent != null ? `${typeof fin.marginPercent === 'number' ? fin.marginPercent.toFixed(1) : fin.marginPercent}%` : "—"}
+                            <span className="big-num text-fin">{formatPct(fin.marginPercent)}</span>
+                            <span className="big-label">Marge M-1</span>
+                            <span className="stat-detail text-fin">
+                                CA: {fmtK(fin.totalRevenue)} • Res: {fmtK(fin.result)}
                             </span>
-                            <span className="big-label">Marge du projet</span>
-                            <span className="stat-detail">Résultat : {formatEuros(fin.result)}</span>
-                            <span className="stat-detail">Revenu : {formatEuros(fin.totalRevenue)} | Coûts : {formatEuros(fin.totalCost)}</span>
                         </div>
                     ) : (
-                        <p className="no-data" style={{ textAlign: "center" }}>Aucune donnée financière</p>
+                        <p className="no-data center-text">Aucun instantané importé</p>
                     )}
-                    <div className="card-action" style={{ color: "#34d399", justifyContent: "center" }}>Accéder <span className="arrow">→</span></div>
+                    <div className="card-action text-fin center-justify">Accéder <span className="arrow">→</span></div>
                 </div>
 
-                {/* ÉTUDES */}
+                {/* ÉTUDES — standard card */}
                 <div className="bento-card card-etudes" onClick={() => navigateTo("technique")} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter") navigateTo("technique"); }}>
-                    <div className="card-glow" style={{ background: "radial-gradient(ellipse at 50% 30%, rgba(236,72,153,0.12), transparent 70%)" }} />
-                    <div className="icon-glass icon-glass-center">
-                        <img src="/hub-icons/technical.png" alt="Études" className="icon-img" />
+                    <div className="card-glow glow-etu" />
+                    <div className="card-header-flex">
+                        <h3 className="card-title text-etu">Études</h3>
+                        <div className="icon-glass icon-glass-sm"><Image src="/hub-icons/technical.png" alt="Études" width={64} height={64} className="icon-img" /></div>
                     </div>
-                    <h3 className="card-title" style={{ color: "#f472b6", textAlign: "center" }}>Études</h3>
+                    <p className="card-sub">Documents techniques</p>
                     {etu && etu.totalDocs > 0 ? (
                         <div className="big-stat">
-                            <span className="big-num" style={{ color: "#f472b6" }}>{etu.approvedPct}%</span>
+                            <span className="big-num text-etu">{formatPct(etu.approvedPct)}</span>
                             <span className="big-label">Documents approuvés</span>
-                            <span className="stat-detail">{etu.approved} APP + {etu.approvedWithRemarks} BPE / {etu.totalDocs} total</span>
+                            <span className="stat-detail">
+                                {etu.approved} APP + {etu.approvedWithRemarks} BPE / {etu.totalDocs} total
+                            </span>
                         </div>
                     ) : (
-                        <p className="no-data" style={{ textAlign: "center" }}>Aucun document importé</p>
+                        <p className="no-data center-text">Aucun document importé</p>
                     )}
-                    <div className="card-action" style={{ color: "#f472b6", justifyContent: "center" }}>Accéder <span className="arrow">→</span></div>
+                    <div className="card-action text-etu center-justify">Accéder <span className="arrow">→</span></div>
                 </div>
 
-                {/* ACHATS */}
+                {/* ACHATS — standard card */}
                 <div className="bento-card card-achats" onClick={() => navigateTo("achats")} role="button" tabIndex={0} onKeyDown={e => { if (e.key === "Enter") navigateTo("achats"); }}>
-                    <div className="card-glow" style={{ background: "radial-gradient(ellipse at 50% 30%, rgba(245,158,11,0.12), transparent 70%)" }} />
-                    <div className="icon-glass icon-glass-center">
-                        <img src="/hub-icons/purchases.png" alt="Achats" className="icon-img" />
+                    <div className="card-glow glow-ach" />
+                    <div className="card-header-flex">
+                        <h3 className="card-title text-ach">Achats</h3>
+                        <div className="icon-glass icon-glass-sm"><Image src="/hub-icons/purchases.png" alt="Achats" width={64} height={64} className="icon-img" /></div>
                     </div>
-                    <h3 className="card-title" style={{ color: "#fbbf24", textAlign: "center" }}>Achats</h3>
+                    <p className="card-sub">Bilan sous-traitance</p>
                     {ach && ach.totalBudget > 0 ? (
                         <div className="big-stat">
-                            <span className="big-num" style={{ color: "#fbbf24" }}>{formatEuros(ach.totalReturn)}</span>
-                            <span className="big-label">Marge achats dégagée</span>
-                            <span className="stat-detail">Budget : {formatEuros(ach.totalBudget)} | Négocié : {formatEuros(ach.totalNegotiated)}</span>
+                            <span className="big-num text-ach">{formatEuros(ach.totalReturn)}</span>
+                            <span className="big-label">Gains négociés</span>
+                            <span className="stat-detail text-ach">
+                                Budget: {fmtK(ach.totalBudget)} • Négocié: {fmtK(ach.totalNegotiated)}
+                            </span>
                         </div>
                     ) : (
-                        <p className="no-data" style={{ textAlign: "center" }}>Aucune donnée d&apos;achats</p>
+                        <p className="no-data center-text">Aucune donnée d&apos;achats</p>
                     )}
-                    <div className="card-action" style={{ color: "#fbbf24", justifyContent: "center" }}>Accéder <span className="arrow">→</span></div>
+                    <div className="card-action text-ach center-justify">Accéder <span className="arrow">→</span></div>
                 </div>
             </div>
         </div>
@@ -268,6 +286,24 @@ const BENTO_CSS = `
 .kpi-sub { display: block; font-size: 0.7rem; color: rgba(255,255,255,0.35); margin-top: 0.15rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .kpi-bar { margin-top: 0.5rem; height: 4px; background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden; }
 .kpi-bar-fill { height: 100%; border-radius: 4px; transition: width 1s ease; }
+
+/* ── Utility Classes for Themes ── */
+.text-prod { color: #22d3ee; }
+.grad-prod { background: linear-gradient(90deg, #06b6d4, #22d3ee); }
+.glow-prod { background: radial-gradient(ellipse at 80% 40%, rgba(6,182,212,0.12), transparent 70%); }
+.text-plan { color: #a78bfa; }
+.bg-plan { background: #a78bfa; }
+.glow-plan { background: radial-gradient(ellipse at 50% 20%, rgba(139,92,246,0.15), transparent 70%); }
+.text-fin { color: #fbbf24; }
+.glow-fin { background: radial-gradient(ellipse at 20% 80%, rgba(245,158,11,0.15), transparent 70%); }
+.text-etu { color: #60a5fa; }
+.glow-etu { background: radial-gradient(ellipse at 50% 50%, rgba(59,130,246,0.15), transparent 70%); }
+.text-ach { color: #34d399; }
+.grad-ach { background: linear-gradient(90deg, #10b981, #34d399); }
+.glow-ach { background: radial-gradient(ellipse at 80% 80%, rgba(16,185,129,0.15), transparent 70%); }
+
+.center-text { text-align: center; }
+.center-justify { justify-content: center; }
 
 /* ── Bento Grid ── */
 .bento-grid {

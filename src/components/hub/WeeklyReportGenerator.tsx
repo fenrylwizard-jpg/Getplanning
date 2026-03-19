@@ -30,6 +30,7 @@ export default function WeeklyReportGenerator({ project }: { project: any }) {
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
+            // @ts-expect-error: html2pdf.js lacks proper TypeScript definitions for dynamic import
             await html2pdf().set(opt).from(element).save();
 
         } catch (error) {

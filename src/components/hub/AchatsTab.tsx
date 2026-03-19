@@ -86,7 +86,6 @@ function DonutChart({ data, palette, title, centerLabel }: {
                                 strokeDasharray={`${dash} ${gap}`}
                                 strokeDashoffset={offset}
                                 strokeLinecap="round"
-                                style={{ transition: "stroke-dasharray 0.6s ease, stroke-dashoffset 0.6s ease" }}
                             />
                         );
                     })}
@@ -161,6 +160,8 @@ function EditableCell({ value, type = "text", onSave, disabled }: {
             className="cell-input"
             type={type === "number" ? "text" : "text"}
             value={draft}
+            title="Edit cell"
+            placeholder="Value"
             onChange={e => setDraft(e.target.value)}
             onBlur={commit}
             onKeyDown={e => {
@@ -583,28 +584,22 @@ const ACHATS_CSS = `
 /* ── Charts Row ── */
 .charts-row {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
 }
 .chart-card {
-    background: rgba(15,23,42,0.7);
-    border: 1px solid rgba(255,255,255,0.05);
+    background: rgba(15, 23, 42, 0.4);
+    border: 1px solid rgba(255,255,255,0.06);
     border-radius: 16px;
     padding: 1.5rem;
-    backdrop-filter: blur(12px);
-    transition: border-color 0.3s, box-shadow 0.3s;
-}
-.chart-card:hover {
-    border-color: rgba(255,255,255,0.1);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
 }
 .chart-title {
-    font-size: 0.75rem;
-    font-weight: 800;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 1.5rem;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: rgba(255,255,255,0.5);
-    margin: 0 0 1rem 0;
+    letter-spacing: 0.05em;
 }
 .chart-empty {
     color: rgba(255,255,255,0.25);

@@ -137,7 +137,6 @@ function DonutChart({ data, title, centerLabel }: {
 
     const radius = 80, cx = 100, cy = 100, strokeWidth = 28;
     const circumference = 2 * Math.PI * radius;
-    let currentAngle = 0;
 
     return (
         <div className="chart-card">
@@ -148,8 +147,8 @@ function DonutChart({ data, title, centerLabel }: {
                         const pct = d.value / total;
                         const dash = pct * circumference;
                         const gap = circumference - dash;
-                        const offset = -(currentAngle / 360) * circumference;
-                        currentAngle += pct * 360;
+                        const prevPctSum = data.slice(0, i).reduce((sum, item) => sum + (item.value / total), 0);
+                        const offset = -prevPctSum * circumference;
                         return (
                             <circle key={i} cx={cx} cy={cy} r={radius} fill="none"
                                 stroke={d.color} strokeWidth={strokeWidth}
@@ -515,6 +514,8 @@ const FINANCES_CSS = `
     from { opacity: 0; transform: translateY(12px); }
     to   { opacity: 1; transform: translateY(0); }
 }
+
+.donut-svg circle { transition: stroke-dasharray 0.6s ease, stroke-dashoffset 0.6s ease; }
 
 /* ── Data Banners ── */
 .data-banner {
