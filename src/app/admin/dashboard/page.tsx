@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
     ShieldCheck, CheckCircle, XCircle, Clock, UserIcon, LogOut,
-    TrendingUp, Euro, Activity, Folder, Target, RefreshCw, Globe, ListOrdered, Trash2, AlertTriangle, Eye, Settings
+    TrendingUp, Euro, Activity, Folder, Target, RefreshCw, Globe, ListOrdered, Trash2, AlertTriangle, Eye, Settings, Zap
 } from 'lucide-react';
 import { toast } from 'sonner';
 import AvatarDisplay from '@/components/AvatarDisplay';
@@ -59,6 +59,9 @@ export default function AdminDashboard() {
     const [cronResult, setCronResult] = useState<string | null>(null);
     const [deleteConfirm, setDeleteConfirm] = useState<{ type: 'user' | 'project'; id: string; name: string } | null>(null);
     const [deleting, setDeleting] = useState(false);
+    const [nukeProjectId, setNukeProjectId] = useState('');
+    const [nukeDate, setNukeDate] = useState('');
+    const [nuking, setNuking] = useState(false);
 
     const fetchData = useCallback(async () => {
         try {
@@ -206,6 +209,64 @@ export default function AdminDashboard() {
                     >
                         <LogOut size={16} /> <T k="logout" />
                     </button>
+                </div>
+            </div>
+
+            {/* Admin Tools */}
+            <div className="glass-card mb-6 p-4">
+                <h3 className="text-xs font-black uppercase tracking-widest text-gray-400 mb-3 flex items-center gap-2">
+                    <Zap size={14} className="text-amber-400" /> Outils Admin
+                </h3>
+                <div className="flex flex-wrap gap-3 items-end">
+                    {/* Seed Badges */}
+                    <button
+                        onClick={async () => {
+                            const res = await fetch('/api/admin/seed-badges', { method: 'POST' });
+                            const data = await res.json();
+                            toast.success(`Badges: ${data.created} créés (${data.total} total)`);
+                        }}
+                        className="px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold hover:bg-emerald-500/20 transition-all"
+                    >
+                        🏆 Seed Badges
+                    </button>
+
+                    {/* Nuke Stuck Report */}
+                    <div className="flex items-end gap-2">
+                        <div>
+                            <span className="text-[10px] text-gray-500 font-bold uppercase block mb-1">Projet</span>
+                            <select value={nukeProjectId} onChange={e => setNukeProjectId(e.target.value)}
+                                className="bg-white/5 border border-white/10 rounded-lg px-2 py-2 text-white text-xs appearance-none min-w-[140px]" title="Sélectionner un projet">
+                                <option value="" className="bg-gray-900">-- Projet --</option>
+                                {stats?.projects.map(p => <option key={p.id} value={p.id} className="bg-gray-900">{p.name}</option>)}
+                            </select>
+                        </div>
+                        <div>
+                            <span className="text-[10px] text-gray-500 font-bold uppercase block mb-1">Date</span>
+                            <input type="date" value={nukeDate} onChange={e => setNukeDate(e.target.value)}
+                                className="bg-white/5 border border-white/10 rounded-lg px-2 py-2 text-white text-xs" title="Date du rapport" />
+                        </div>
+                        <button
+                            disabled={!nukeProjectId || !nukeDate || nuking}
+                            onClick={async () => {
+                                if (!confirm(`Supprimer TOUS les rapports pour ${nukeDate} ?`)) return;
+                                setNuking(true);
+                                try {
+                                    const res = await fetch('/api/admin/nuke-report', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ projectId: nukeProjectId, date: nukeDate })
+                                    });
+                                    const data = await res.json();
+                                    if (res.ok) toast.success(data.message);
+                                    else toast.error(data.error);
+                                } catch { toast.error('Erreur'); }
+                                finally { setNuking(false); }
+                            }}
+                            className="px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-bold hover:bg-red-500/20 transition-all disabled:opacity-30"
+                        >
+                            💣 Nuke Report
+                        </button>
+                    </div>
                 </div>
             </div>
 

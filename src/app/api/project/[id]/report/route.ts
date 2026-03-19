@@ -220,10 +220,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
             });
 
             // Award XP to SM (reduced for late backfills)
-            if (siteManagerId) {
-                const sm = await tx.user.findUnique({ where: { id: siteManagerId } });
+            const resolvedSmId = siteManagerId || plan.project.siteManagerId;
+            if (resolvedSmId) {
+                const sm = await tx.user.findUnique({ where: { id: resolvedSmId } });
                 if (sm) {
-                    const dailyStreak = await getConsecutiveDaysReported(siteManagerId);
+                    const dailyStreak = await getConsecutiveDaysReported(resolvedSmId);
                     const weeklyStreak = await getConsecutiveWeeksTargetReached(plan.projectId);
 
                     const xpResult = calculateXpAward({
@@ -239,10 +240,69 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
                     const finalXp = Math.round(xpResult.totalXp * xpMultiplier);
 
                     const newSmXp = sm.xp + finalXp;
+                    const newLevel = getLevelFromXp(newSmXp);
                     await tx.user.update({
-                        where: { id: siteManagerId },
-                        data: { xp: newSmXp, level: getLevelFromXp(newSmXp) }
+                        where: { id: resolvedSmId },
+                        data: { xp: newSmXp, level: newLevel }
                     });
+
+                    // ── Badge Awarding ──
+                    const earnedBadges = await tx.userBadge.findMany({
+                        where: { userId: resolvedSmId },
+                        include: { badge: true }
+                    });
+                    const earnedCodes = new Set(earnedBadges.map(ub => ub.badge.code));
+
+                    const badgesToAward: string[] = [];
+
+                    // FIRST_REPORT: first daily report ever
+                    if (!earnedCodes.has('FIRST_REPORT')) {
+                        badgesToAward.push('FIRST_REPORT');
+                    }
+
+                    // STREAK_5 / STREAK_10: consecutive days
+                    if (!earnedCodes.has('STREAK_5') && dailyStreak >= 5) {
+                        badgesToAward.push('STREAK_5');
+                    }
+                    if (!earnedCodes.has('STREAK_10') && dailyStreak >= 10) {
+                        badgesToAward.push('STREAK_10');
+                    }
+
+                    // LEVEL_5 / LEVEL_10: level milestones
+                    if (!earnedCodes.has('LEVEL_5') && newLevel >= 5) {
+                        badgesToAward.push('LEVEL_5');
+                    }
+                    if (!earnedCodes.has('LEVEL_10') && newLevel >= 10) {
+                        badgesToAward.push('LEVEL_10');
+                    }
+
+                    // EARLY_BIRD: report submitted before 8 AM
+                    if (!earnedCodes.has('EARLY_BIRD') && new Date().getHours() < 8) {
+                        badgesToAward.push('EARLY_BIRD');
+                    }
+
+                    // PERFECT_WEEK: 100%+ weekly efficiency (check latest closed plan)
+                    if (!earnedCodes.has('PERFECT_WEEK') && weeklyStreak >= 1) {
+                        badgesToAward.push('PERFECT_WEEK');
+                    }
+
+                    // OVERTIME_HERO: 150%+ weekly achievement
+                    if (!earnedCodes.has('OVERTIME_HERO') && plan.targetHoursCapacity > 0) {
+                        const weeklyActual = plan.tasks.reduce((sum, t) => sum + (t.actualQuantity * t.task.minutesPerUnit), 0) / 60;
+                        if ((weeklyActual / plan.targetHoursCapacity) >= 1.5) {
+                            badgesToAward.push('OVERTIME_HERO');
+                        }
+                    }
+
+                    // Award badges
+                    for (const code of badgesToAward) {
+                        const badge = await tx.badge.findUnique({ where: { code } });
+                        if (badge) {
+                            await tx.userBadge.create({
+                                data: { userId: resolvedSmId, badgeId: badge.id }
+                            }).catch(() => {}); // ignore duplicate
+                        }
+                    }
                 }
             }
             return { success: true, adHocIdsMapping };
