@@ -332,8 +332,8 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
             return;
         }
 
-        // Check if this date already has a report
-        if (selectedDate && existingReports.some(r => isSameDay(new Date(r.date), selectedDate))) {
+        // Check if this date already has a SUBMITTED report (DRAFT reports will be auto-cleaned by backend)
+        if (selectedDate && existingReports.some(r => isSameDay(new Date(r.date), selectedDate) && r.status === 'SUBMITTED')) {
             toast.error(t("report_exists_for_date") || "A report already exists for this date.");
             return;
         }

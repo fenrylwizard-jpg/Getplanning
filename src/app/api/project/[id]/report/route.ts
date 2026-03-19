@@ -103,10 +103,23 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
                     gte: new Date(Date.UTC(effectiveDate.getUTCFullYear(), effectiveDate.getUTCMonth(), effectiveDate.getUTCDate(), 0, 0, 0)),
                     lt: new Date(Date.UTC(effectiveDate.getUTCFullYear(), effectiveDate.getUTCMonth(), effectiveDate.getUTCDate() + 1, 0, 0, 0))
                 }
-            }
+            },
+            include: { taskProgress: true }
         });
         if (existingReport) {
-            return NextResponse.json({ error: "A report already exists for this date. Select a different day." }, { status: 409 });
+            if (existingReport.status === 'SUBMITTED') {
+                return NextResponse.json({ error: "A report already exists for this date. Select a different day." }, { status: 409 });
+            }
+            // DRAFT/zombie report — clean it up so the SM can resubmit
+            for (const progress of existingReport.taskProgress) {
+                if (progress.quantity > 0) {
+                    await prisma.task.update({
+                        where: { id: progress.taskId },
+                        data: { completedQuantity: { decrement: progress.quantity } }
+                    }).catch(() => {}); // ignore if task was deleted
+                }
+            }
+            await prisma.dailyReport.delete({ where: { id: existingReport.id } });
         }
 
         let achievedMins = 0;
