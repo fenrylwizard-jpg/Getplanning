@@ -19,24 +19,33 @@ export interface FinanceSnapshotData {
   marginPercent: number | null;
   plannedWorkers: number | null;
   plannedDays: number | null;
+  // RAF (Reste À Faire) fields
+  rafLabor: number | null;
+  rafSubcontractor: number | null;
+  rafMaterial: number | null;
+  rafEngineering: number | null;
+  rafSite: number | null;
+  rafTotal: number | null;
 }
 
 /**
  * Parse "Suivi financier.xlsx" — monthly EoC snapshots.
  * 
- * Each sheet = 1 monthly snapshot (222+ rows x 31 cols)
+ * Column layout (0-indexed):
+ *   Col 3:  BUDGET INITIAL D'EXÉCUTION
+ *   Col 5:  BUDGET D'EXÉCUTION (revised)
+ *   Col 7:  État des lieux (current actual values — the "blue column")
+ *   Col 9:  RAF = Reste À Faire (remaining — the "green column")
+ *   Col 11: FIN PRÉVUE DU PROJET (planned end total = budget)
  * 
- * Actual layout (0-indexed):
- *   Row 0:  "End of Completion (EoC)"
- *   Row 1-5: Project info / version
- *   Row 7:  Headers: BUDGET INITIAL D'EXÉCUTION | BUDGET D'EXÉCUTION | État des lieux DD/MM/YYYY | ...
- *   Row 11: "Revenu total" with values at col 3 (budget), col 7 (état des lieux), col 11 (FIN PRÉVUE)
- *   Row 14-15: Règlements approuvés
- *   Row 24: Main d'oeuvre – # heures
- *   Row 28: taux horaire
- *   Row 29: Total charges salariales
- *   ...
- *   Last rows: Résultat y compris révision, margin %
+ * Key rows (approximate, found by keyword search):
+ *   "Revenu total"                        — row ~11
+ *   "Total des charges salariales propres" — row ~29 (Main d'oeuvre)
+ *   "STT forfait" section, "Montant forfaitaire total OA" — row ~57 (Sous-traitance)
+ *   "Gestion totale du projet"            — row ~76 (Encadrement)  
+ *   Material total (row before "COÛTS TOTALS") — row ~209
+ *   "Frais généraux sur le chiffre d'affaires" — row ~213
+ *   "Résultat y compris révision"         — row ~221
  */
 export function parseFinances(buffer: Buffer): FinanceSnapshotData[] {
   const wb = XLSX.read(buffer, { type: 'buffer' });
@@ -44,7 +53,6 @@ export function parseFinances(buffer: Buffer): FinanceSnapshotData[] {
   
   console.log('[parse-finances] Sheet names found:', wb.SheetNames);
   
-  // Skip sheets that aren't monthly EoC sheets
   const skipPatterns = ['sheet1', 'bbd export', 'ea ', 'bbdexport'];
   
   for (const sheetName of wb.SheetNames) {
@@ -66,7 +74,6 @@ export function parseFinances(buffer: Buffer): FinanceSnapshotData[] {
     // Verify this looks like an EoC sheet
     const row0Str = data[0]?.map((c: unknown) => String(c || '')).join('') || '';
     if (!row0Str.includes('End of Completion') && !row0Str.includes('EoC')) {
-      // Try row 7/8 for BUDGET
       const row7Str = data[7]?.map((c: unknown) => String(c || '')).join('') || '';
       if (!row7Str.includes('BUDGET') && !row7Str.includes('budget')) {
         console.log(`[parse-finances] Sheet "${sheetName}" doesn't look like EoC, skipping`);
@@ -76,15 +83,13 @@ export function parseFinances(buffer: Buffer): FinanceSnapshotData[] {
     
     console.log(`[parse-finances] Processing EoC sheet: "${sheetName}"`);
     
-    // Parse month from the sheet header row 7 (État des lieux date)
+    // ── Parse month from header row 7 ──
     let month: Date = new Date();
     const row7 = data[7];
-    // Search for a date in row 7 - it's typically in the "État des lieux DD/MM/YYYY" cell
     let dateFound = false;
     if (row7) {
       for (let c = 5; c < Math.min((row7 as unknown[]).length, 15); c++) {
         const cellStr = String((row7 as unknown[])[c] || '').trim();
-        // Match dates like "État des lieux 08/06/2025" or "31/01/26" or "28.02.26"
         const dateMatch = cellStr.match(/(\d{1,2})[\/\.](\d{1,2})[\/\.](\d{2,4})/);
         if (dateMatch) {
           let year = parseInt(dateMatch[3]);
@@ -99,8 +104,16 @@ export function parseFinances(buffer: Buffer): FinanceSnapshotData[] {
       month = parseMonthFromSheetName(sheetName);
     }
     
+    // ── Helpers ──
+    // Col 7 = État des lieux (current actual totals — "blue column")
+    // Col 9 = RAF (Reste À Faire — "green column")
+    // Col 11 = FIN PRÉVUE (planned end total = budget)
+    const ACTUAL_COL = 7;
+    const RAF_COL = 9;
+    const BUDGET_COL = 11;
+    
     const getNum = (rowIdx: number, colIdx: number): number | null => {
-      if (rowIdx >= data.length) return null;
+      if (rowIdx >= data.length || rowIdx < 0) return null;
       const row = data[rowIdx] as unknown[];
       if (!row || colIdx >= row.length) return null;
       const val = row[colIdx];
@@ -109,9 +122,8 @@ export function parseFinances(buffer: Buffer): FinanceSnapshotData[] {
       return isNaN(num) ? null : num;
     };
     
-    // Generic row finder by keyword
-    const findRow = (keyword: string, startFrom = 0, maxRows = data.length): number => {
-      for (let i = startFrom; i < Math.min(data.length, maxRows); i++) {
+    const findRow = (keyword: string, startFrom = 0, maxRow = data.length): number => {
+      for (let i = startFrom; i < Math.min(data.length, maxRow); i++) {
         const row = data[i] as unknown[];
         if (!row) continue;
         const rowStr = row.map((c: unknown) => String(c || '')).join('|');
@@ -120,109 +132,201 @@ export function parseFinances(buffer: Buffer): FinanceSnapshotData[] {
       return -1;
     };
     
-    // Column L (index 11) = FIN PRÉVUE DU PROJET
-    const finCol = 11;
+    // ── Revenue ──
+    const revenueRow = findRow('Revenu total', 8, 25);
+    const totalRevenue = revenueRow >= 0 ? getNum(revenueRow, ACTUAL_COL) : null;
+    console.log(`[parse-finances]   Revenue: row=${revenueRow}, actual(c7)=${totalRevenue}, budget(c11)=${revenueRow >= 0 ? getNum(revenueRow, BUDGET_COL) : '-'}`);
     
-    // Revenue: Find "Revenu total" row — in real files it's at row 11
-    const revenueRow = findRow('Revenu total', 8, 30);
-    const totalRevenue = revenueRow >= 0 ? getNum(revenueRow, finCol) : null;
-    console.log(`[parse-finances]   Revenu total: row=${revenueRow}, value=${totalRevenue}`);
-    
-    // Settlements: Find "Règlements approuvés" (usually row 14-15)
+    // Settlements
     const settlementsRow = findRow('glements approuv', 10, 25);
-    const approvedSettlements = settlementsRow >= 0 ? getNum(settlementsRow, finCol) : null;
+    const approvedSettlements = settlementsRow >= 0 ? getNum(settlementsRow, ACTUAL_COL) : null;
     
-    
-    // Labor: Find "# heures des ouvriers" or "heures"
-    const laborHoursRow = findRow('heures des ouvriers', 18, 35);
-    const laborHours = laborHoursRow >= 0 ? getNum(laborHoursRow, finCol) : null;
-    
-    // Hourly rate: Find "taux horaire" near labor
-    const rateSearchStart = laborHoursRow > 0 ? laborHoursRow : 20;
-    const rateRow = findRow('taux horaire', rateSearchStart, rateSearchStart + 8);
-    const laborHourlyRate = rateRow >= 0 ? getNum(rateRow, finCol) : null;
-    
-    // Total salary: Find "Total des charges salariales"
+    // ── Main d'oeuvre (charges salariales propres) ──
     const salaryCostRow = findRow('Total des charges salariales', 20, 40);
-    const laborCost = salaryCostRow >= 0 ? getNum(salaryCostRow, finCol) : null;
+    const laborCost = salaryCostRow >= 0 ? getNum(salaryCostRow, ACTUAL_COL) : null;
+    const rafLabor = salaryCostRow >= 0 ? getNum(salaryCostRow, RAF_COL) : null;
+    console.log(`[parse-finances]   Labor: row=${salaryCostRow}, actual=${laborCost}, raf=${rafLabor}`);
     
-    // External labor: Find next "Total" after salary
-    const extLaborRow = findRow('Total', salaryCostRow > 0 ? salaryCostRow + 2 : 30, 50);
-    const externalLaborCost = extLaborRow >= 0 ? getNum(extLaborRow, finCol) : null;
+    // Labor hours & rate (for reference)
+    const laborHoursRow = findRow('heures des ouvriers', 18, 35);
+    const laborHours = laborHoursRow >= 0 ? getNum(laborHoursRow, ACTUAL_COL) : null;
+    const rateRow = findRow('taux horaire', laborHoursRow > 0 ? laborHoursRow : 20, (laborHoursRow > 0 ? laborHoursRow : 20) + 8);
+    const laborHourlyRate = rateRow >= 0 ? getNum(rateRow, ACTUAL_COL) : null;
     
-    // Subcontractors: Find "Sous-traitance" total
-    const subRow = findRow('Sous-traitance', 35, 90);
+    // ── External labor (Performance externe en régie) ──
+    // After salary section, look for "Total" that indicates ext. labor total
+    let externalLaborCost: number | null = null;
+    if (salaryCostRow >= 0) {
+      // Look for "performance externe" or the next "Total" row after salary
+      const extRow = findRow('performance ext', salaryCostRow + 1, salaryCostRow + 20);
+      if (extRow >= 0) {
+        const extTotalRow = findRow('Total', extRow, extRow + 10);
+        externalLaborCost = extTotalRow >= 0 ? getNum(extTotalRow, ACTUAL_COL) : null;
+      } else {
+        // Fallback: look for next "Total" after salary
+        const nextTotalRow = findRow('Total', salaryCostRow + 2, salaryCostRow + 15);
+        const nextVal = nextTotalRow >= 0 ? getNum(nextTotalRow, ACTUAL_COL) : null;
+        // Only use if different from laborCost
+        if (nextVal !== null && nextVal !== laborCost) {
+          externalLaborCost = nextVal;
+        }
+      }
+    }
+    
+    // ── Sous-traitance (SST forfait) ──
+    // Find "Montant forfaitaire total OA" or the total of the SST section
     let subcontractorCost: number | null = null;
-    if (subRow >= 0) {
-      const subTotalRow = findRow('Total', subRow, subRow + 35);
-      subcontractorCost = subTotalRow >= 0 ? getNum(subTotalRow, finCol) : null;
+    let rafSubcontractor: number | null = null;
+    const sstHeaderRow = findRow('STT forfait', 40, 65);
+    if (sstHeaderRow >= 0) {
+      // The total is the last row in this section with "Montant forfaitaire total OA"
+      const sstTotalRow = findRow('Montant forfaitaire total', sstHeaderRow, sstHeaderRow + 15);
+      if (sstTotalRow >= 0) {
+        subcontractorCost = getNum(sstTotalRow, ACTUAL_COL);
+        rafSubcontractor = getNum(sstTotalRow, RAF_COL);
+      } else {
+        // Fallback: find the last row before section separator
+        for (let i = sstHeaderRow + 10; i > sstHeaderRow; i--) {
+          const val = getNum(i, ACTUAL_COL);
+          if (val !== null && val > 0) {
+            subcontractorCost = val;
+            rafSubcontractor = getNum(i, RAF_COL);
+            break;
+          }
+        }
+      }
     }
-    
-    // Materials: Find "riel" section total  
-    const matRow = findRow('riel', 50, 160);
-    let materialCost: number | null = null;
-    if (matRow >= 0) {
-      const matTotalRow = findRow('Total', matRow, matRow + 70);
-      materialCost = matTotalRow >= 0 ? getNum(matTotalRow, finCol) : null;
+    // Alternative: look for "Sous-traitance" or the SST summary row
+    if (subcontractorCost === null) {
+      const altRow = findRow('Sous-traitance', 35, 90);
+      if (altRow >= 0) {
+        const altTotalRow = findRow('Total', altRow, altRow + 35);
+        subcontractorCost = altTotalRow >= 0 ? getNum(altTotalRow, ACTUAL_COL) : null;
+        rafSubcontractor = altTotalRow >= 0 ? getNum(altTotalRow, RAF_COL) : null;
+      }
     }
+    console.log(`[parse-finances]   SST: actual=${subcontractorCost}, raf=${rafSubcontractor}`);
     
-    // Engineering: Find "Chargé d'affaires" or internal costs section
-    const engRow = findRow("Charg", 130, 210);
+    // ── Gestion de projet (Encadrement) ──
     let engineeringCost: number | null = null;
-    if (engRow >= 0) {
-      const val1 = getNum(engRow + 3, finCol);
-      const ipRow = findRow('nieur', engRow + 3, engRow + 15);
-      const val2 = ipRow >= 0 ? getNum(ipRow + 3, finCol) : null;
-      const dessRow = findRow('essin', ipRow > 0 ? ipRow + 3 : engRow + 10, engRow + 25);
-      const val3 = dessRow >= 0 ? getNum(dessRow + 3, finCol) : null;
-      engineeringCost = (val1 || 0) + (val2 || 0) + (val3 || 0) || null;
+    let rafEngineering: number | null = null;
+    const gestionTotalRow = findRow('Gestion totale du projet', 60, 85);
+    if (gestionTotalRow >= 0) {
+      engineeringCost = getNum(gestionTotalRow, ACTUAL_COL);
+      rafEngineering = getNum(gestionTotalRow, RAF_COL);
+    } else {
+      // Fallback: look for "Gestion de projet" header and sum individual rows
+      const gestionRow = findRow('Gestion de projet', 55, 80);
+      if (gestionRow >= 0) {
+        // Find the total row (usually "Gestion totale du projet:" within 15 rows)
+        const totalRow = findRow('Total', gestionRow + 1, gestionRow + 15);
+        if (totalRow >= 0) {
+          engineeringCost = getNum(totalRow, ACTUAL_COL);
+          rafEngineering = getNum(totalRow, RAF_COL);
+        }
+      }
     }
+    console.log(`[parse-finances]   Encadrement: actual=${engineeringCost}, raf=${rafEngineering}`);
     
-    // Provisions: Find "Provision"
-    const provRow = findRow('Provision', 170, 230);
+    // ── Matériel ──
+    // The total for materials is at the row just before "COÛTS TOTALS"
+    let materialCost: number | null = null;
+    let rafMaterial: number | null = null;
+    const coutsTotalsRow = findRow('TS TOTALS', 200, 220);
+    if (coutsTotalsRow >= 0) {
+      // Material total is typically 2 rows above (the summary row of all material items)
+      materialCost = getNum(coutsTotalsRow - 2, ACTUAL_COL);
+      rafMaterial = getNum(coutsTotalsRow - 2, RAF_COL);
+      // Validate: should be a significant number. If not, try row just before
+      if (materialCost === null || materialCost === 0) {
+        materialCost = getNum(coutsTotalsRow - 1, ACTUAL_COL);
+        rafMaterial = getNum(coutsTotalsRow - 1, RAF_COL);
+      }
+    }
+    // Fallback: search for "Total des achats" or "Total matériaux"
+    if (materialCost === null) {
+      const matTotalRow = findRow('Total des achats', 80, 210);
+      if (matTotalRow >= 0) {
+        materialCost = getNum(matTotalRow, ACTUAL_COL);
+        rafMaterial = getNum(matTotalRow, RAF_COL);
+      }
+    }
+    console.log(`[parse-finances]   Matériel: actual=${materialCost}, raf=${rafMaterial}`);
+    
+    // ── Frais généraux ──
+    let siteCost: number | null = null;
+    let rafSite: number | null = null;
+    const fraisRow = findRow('Frais g', 210, 245);
+    if (fraisRow >= 0) {
+      siteCost = getNum(fraisRow, ACTUAL_COL);
+      rafSite = getNum(fraisRow, RAF_COL);
+    }
+    console.log(`[parse-finances]   Frais généraux: actual=${siteCost}, raf=${rafSite}`);
+    
+    // ── Provisions ──
     let provisionsCost: number | null = null;
+    const provRow = findRow('Provision', 170, 230);
     if (provRow >= 0) {
       const provTotalRow = findRow('Total', provRow, provRow + 12);
-      provisionsCost = provTotalRow >= 0 ? getNum(provTotalRow, finCol) : null;
+      provisionsCost = provTotalRow >= 0 ? getNum(provTotalRow, ACTUAL_COL) : null;
     }
     
-    // Result: Find "Résultat y compris révision" — could be in rows 200-250
-    const resultRow = findRow('sultat y compris', 195, 260);
-    const result = resultRow >= 0 ? getNum(resultRow, finCol) : null;
+    // ── COÛTS TOTAUX ──
+    let totalCost: number | null = null;
+    let rafTotal: number | null = null;
+    if (coutsTotalsRow >= 0) {
+      totalCost = getNum(coutsTotalsRow, ACTUAL_COL);
+      rafTotal = getNum(coutsTotalsRow, RAF_COL);
+    }
+    // If not found via "COÛTS TOTALS", compute from components
+    if (totalCost === null) {
+      totalCost = (laborCost || 0) + (externalLaborCost || 0) + (subcontractorCost || 0) +
+                  (materialCost || 0) + (engineeringCost || 0) + (siteCost || 0) + (provisionsCost || 0) || null;
+    }
     
-    // Margin %: usually right after result
-    const marginPercent = resultRow >= 0 ? getNum(resultRow + 1, finCol) : null;
+    // ── Résultat ──
+    const resultRow = findRow('sultat y compris', 210, 260);
+    // Use BUDGET_COL (col 11 = FIN PRÉVUE) for the result — this is the projected final result  
+    // Col 7 shows the result of actual vs. actuals spent so far (often very negative because
+    // the project isn't finished yet and costs have been incurred but not all revenue billed)
+    // Col 11 shows the true projected result at project end
+    const result = resultRow >= 0 ? getNum(resultRow, BUDGET_COL) : null;
     
-    // Calculate total cost = revenue - result
-    const totalCost = (totalRevenue && result) ? totalRevenue - result : null;
+    // Margin %: right after result row
+    const marginPercent = resultRow >= 0 ? getNum(resultRow + 1, BUDGET_COL) : null;
     
-    console.log(`[parse-finances]   Result: row=${resultRow}, revenue=${totalRevenue}, result=${result}, margin=${marginPercent}`);
+    console.log(`[parse-finances]   Result: row=${resultRow}, projected(c11)=${result}, margin=${marginPercent}`);
+    console.log(`[parse-finances]   Total Cost: actual=${totalCost}, raf=${rafTotal}`);
     
     results.push({
       month,
       sheetName,
-      totalRevenue,
+      totalRevenue: totalRevenue ?? getNum(revenueRow, BUDGET_COL),
       approvedSettlements,
       laborHours,
       laborHourlyRate,
       laborCost,
-      externalLaborCost: externalLaborCost !== laborCost ? externalLaborCost : null,
+      externalLaborCost,
       subcontractorCost,
       materialCost,
       engineeringCost,
-      siteCost: null,
+      siteCost,
       provisionsCost,
       totalCost,
       result,
       marginPercent,
       plannedWorkers: null,
       plannedDays: null,
+      rafLabor,
+      rafSubcontractor,
+      rafMaterial,
+      rafEngineering,
+      rafSite,
+      rafTotal,
     });
   }
   
-  // Sort by date
   results.sort((a, b) => a.month.getTime() - b.month.getTime());
-  
   console.log(`[parse-finances] Total snapshots parsed: ${results.length}`);
   return results;
 }
@@ -244,7 +348,6 @@ function parseMonthFromSheetName(name: string): Date {
     'décembre': 11, 'decembre': 11, 'dec': 11,
   };
   
-  // Try "Month Year" format
   for (const [monthName, monthIdx] of Object.entries(monthMap)) {
     if (lower.includes(monthName)) {
       const yearMatch = lower.match(/(\d{2,4})/);
@@ -254,7 +357,6 @@ function parseMonthFromSheetName(name: string): Date {
     }
   }
   
-  // Try "DD.MM.YY" format (e.g., "31.12.25")
   const dmyMatch = lower.match(/(\d{2})\.(\d{2})\.(\d{2,4})/);
   if (dmyMatch) {
     let year = parseInt(dmyMatch[3]);
@@ -262,5 +364,5 @@ function parseMonthFromSheetName(name: string): Date {
     return new Date(year, parseInt(dmyMatch[2]) - 1, parseInt(dmyMatch[1]));
   }
   
-  return new Date(2025, 0, 1); // Fallback
+  return new Date(2025, 0, 1);
 }

@@ -164,8 +164,8 @@ model FinanceSnapshot {
   // Engineering / internal costs
   engineeringCost     Float?    // CA + IP + Dessinateurs total
   
-  // Site costs
-  siteCost            Float?    // Containers, tools, consumables
+  // Site costs / Frais généraux
+  siteCost            Float?    // Frais généraux sur le chiffre d'affaires
   
   // Provisions
   provisionsCost      Float?    // Garantie, impayés, litiges
@@ -178,6 +178,14 @@ model FinanceSnapshot {
   // Workforce planning
   plannedWorkers      Int?
   plannedDays         Int?
+  
+  // RAF - Reste À Faire (remaining costs)
+  rafLabor            Float?    // Main d'oeuvre restante
+  rafSubcontractor    Float?    // Sous-traitance restante
+  rafMaterial         Float?    // Matériel restant
+  rafEngineering      Float?    // Encadrement restant
+  rafSite             Float?    // Frais généraux restants
+  rafTotal            Float?    // Total RAF
   
   createdAt           DateTime  @default(now())
 }

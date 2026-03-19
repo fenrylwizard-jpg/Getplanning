@@ -28,6 +28,13 @@ interface FinanceSnapshot {
     totalCost: number | null;
     result: number | null;
     marginPercent: number | null;
+    // RAF fields
+    rafLabor: number | null;
+    rafSubcontractor: number | null;
+    rafMaterial: number | null;
+    rafEngineering: number | null;
+    rafSite: number | null;
+    rafTotal: number | null;
 }
 
 /* ─── Helpers ─── */
@@ -381,6 +388,39 @@ export default function FinancesTab({ project }: FinancesTabProps) {
                     {/* ── Advancement ── */}
                     <AdvancementSection snapshots={snapshots} />
 
+                    {/* ── Reste À Faire ── */}
+                    {latest && (latest.rafLabor || latest.rafSubcontractor || latest.rafMaterial || latest.rafEngineering || latest.rafSite) && (
+                        <div className="chart-card">
+                            <h4 className="chart-title">Reste À Faire — Coûts Restants</h4>
+                            <div className="raf-grid">
+                                {[
+                                    { label: "Main d'œuvre", actual: latest.laborCost, raf: latest.rafLabor, color: "#3b82f6" },
+                                    { label: "Encadrement", actual: latest.engineeringCost, raf: latest.rafEngineering, color: "#8b5cf6" },
+                                    { label: "Sous-traitance", actual: latest.subcontractorCost, raf: latest.rafSubcontractor, color: "#f59e0b" },
+                                    { label: "Matériel", actual: latest.materialCost, raf: latest.rafMaterial, color: "#06b6d4" },
+                                    { label: "Frais généraux", actual: latest.siteCost, raf: latest.rafSite, color: "#ec4899" },
+                                ].filter(r => (r.actual || 0) > 0 || (r.raf || 0) > 0).map(row => {
+                                    const total = (row.actual || 0) + (row.raf || 0);
+                                    const pctDone = total > 0 ? ((row.actual || 0) / total) * 100 : 0;
+                                    return (
+                                        <div key={row.label} className="raf-row">
+                                            <span className="raf-label">{row.label}</span>
+                                            <div className="raf-bar-track">
+                                                <div className="raf-bar-actual" style={{ width: `${pctDone}%`, background: row.color }} />
+                                                <div className="raf-bar-remaining" style={{ width: `${100 - pctDone}%`, background: `${row.color}30` }} />
+                                            </div>
+                                            <div className="raf-values">
+                                                <span style={{ color: row.color }}>{fmtK(row.actual || 0)}</span>
+                                                <span className="raf-sep">/</span>
+                                                <span className="raf-total">{fmtK(total)}</span>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+
                     {/* ── Monthly Detail Table ── */}
                     <div className="table-container">
                         <h4 className="table-header-title">
@@ -617,6 +657,17 @@ const FINANCES_CSS = `
 .return-positive { color: #34d399; }
 .return-negative { color: #f87171; }
 .return-warn { color: #fbbf24; }
+
+/* ── RAF (Reste À Faire) ── */
+.raf-grid { display: flex; flex-direction: column; gap: 0.75rem; }
+.raf-row { display: grid; grid-template-columns: 120px 1fr 130px; gap: 1rem; align-items: center; }
+.raf-label { font-size: 0.75rem; font-weight: 600; color: rgba(255,255,255,0.6); }
+.raf-bar-track { display: flex; height: 20px; border-radius: 8px; overflow: hidden; }
+.raf-bar-actual { height: 100%; border-radius: 8px 0 0 8px; transition: width 0.8s ease; min-width: 2px; }
+.raf-bar-remaining { height: 100%; border-radius: 0 8px 8px 0; transition: width 0.8s ease; }
+.raf-values { display: flex; align-items: center; gap: 0.25rem; font-size: 0.75rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.raf-sep { color: rgba(255,255,255,0.2); }
+.raf-total { color: rgba(255,255,255,0.4); }
 
 /* ── Responsive ── */
 @media (max-width: 768px) {
