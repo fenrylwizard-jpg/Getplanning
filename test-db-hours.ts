@@ -1,40 +1,56 @@
 import { PrismaClient } from '@prisma/client';
+import { getISOWeek, getISOWeekYear } from 'date-fns';
+
 const prisma = new PrismaClient();
 
-async function check() {
-    const plans = await prisma.weeklyPlan.findMany({
-        where: { project: { name: { contains: 'Herlin' } }, weekNumber: 12, year: 2026 },
+async function fixWeeklyPlanTasks() {
+    console.log("Starting DB Repair...");
+    
+    const weeklyPlans = await prisma.weeklyPlan.findMany({
         include: {
-            tasks: { include: { task: true } }
+            tasks: { include: { task: true } },
+            project: {
+                include: {
+                    dailyReports: {
+                        where: { status: 'SUBMITTED' },
+                        include: { taskProgress: true }
+                    }
+                }
+            }
         }
     });
 
-    console.log("Weekly plans found:", plans.length);
-    for (const p of plans) {
-        console.log(`Plan ID: ${p.id}`);
-        let totalH = 0;
-        let actH = 0;
-        for (const pt of p.tasks) {
-            const planned = (pt.plannedQuantity * pt.task.minutesPerUnit) / 60;
-            const actual = (pt.actualQuantity * pt.task.minutesPerUnit) / 60;
-            totalH += planned;
-            actH += actual;
-        }
-        console.log(`Plan totalH: ${totalH}, actuallH: ${actH}`);
-    }
+    console.log(`Found ${weeklyPlans.length} weekly plans to check`);
 
-    const reports = await prisma.dailyReport.findMany({
-        where: { project: { name: { contains: 'Herlin' } } },
-        include: { taskProgress: { include: { task: true } } }
-    });
+    for (const plan of weeklyPlans) {
+        // Find reports for this week
+        const reportsThisWeek = plan.project.dailyReports.filter(r => {
+            const d = new Date(r.date);
+            return getISOWeek(d) === plan.weekNumber && getISOWeekYear(d) === plan.year;
+        });
 
-    console.log("\nDaily Reports:");
-    for (const r of reports) {
-        let hrs = 0;
-        for (const tp of r.taskProgress) {
-            hrs += (tp.quantity * tp.task.minutesPerUnit) / 60;
+        for (const wpt of plan.tasks) {
+            // Calculate accurate quantity from daily progress
+            let trueActualQuantity = 0;
+            for (const report of reportsThisWeek) {
+                const progressForThisTask = report.taskProgress.find(p => p.taskId === wpt.taskId);
+                if (progressForThisTask) {
+                    trueActualQuantity += progressForThisTask.quantity;
+                }
+            }
+
+            if (wpt.actualQuantity !== trueActualQuantity) {
+                console.log(`Fixing WPT ${wpt.id}: ${wpt.actualQuantity} -> ${trueActualQuantity}`);
+                await prisma.weeklyPlanTask.update({
+                    where: { id: wpt.id },
+                    data: { actualQuantity: trueActualQuantity }
+                });
+            }
         }
-        console.log(`Report ${r.date.toISOString()} [${r.status}]: ${hrs.toFixed(2)}h`);
     }
+    console.log("DB Repair Complete!");
 }
-check().finally(() => prisma.$disconnect());
+
+fixWeeklyPlanTasks()
+    .catch(e => console.error(e))
+    .finally(() => prisma.$disconnect());

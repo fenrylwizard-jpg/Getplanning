@@ -121,6 +121,18 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
                         where: { id: progress.taskId },
                         data: { completedQuantity: { decrement: progress.quantity } }
                     }).catch(() => {}); // ignore if task was deleted
+
+                    // Prevent corruption by reverting WeeklyPlanTask actuals as well
+                    const wpt = await prisma.weeklyPlanTask.findFirst({
+                        where: { taskId: progress.taskId, weeklyPlan: { projectId: plan.projectId } },
+                        orderBy: { createdAt: 'desc' }
+                    });
+                    if (wpt) {
+                        await prisma.weeklyPlanTask.update({
+                            where: { id: wpt.id },
+                            data: { actualQuantity: { decrement: progress.quantity } }
+                        }).catch(() => {});
+                    }
                 }
             }
             await prisma.dailyReport.delete({ where: { id: existingReport.id } });
