@@ -60,8 +60,24 @@ export default function AdminDashboard() {
     const [deleteConfirm, setDeleteConfirm] = useState<{ type: 'user' | 'project'; id: string; name: string } | null>(null);
     const [deleting, setDeleting] = useState(false);
     const [nukeProjectId, setNukeProjectId] = useState('');
-    const [nukeDate, setNukeDate] = useState('');
+    const [nukeReportId, setNukeReportId] = useState('');
+    const [projectReports, setProjectReports] = useState<{id: string, date: string, status: string}[]>([]);
     const [nuking, setNuking] = useState(false);
+
+    // Fetch reports when project is selected
+    useEffect(() => {
+        if (!nukeProjectId) {
+            setProjectReports([]);
+            setNukeReportId('');
+            return;
+        }
+        fetch(`/api/admin/nuke-report?projectId=${nukeProjectId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.reports) setProjectReports(data.reports);
+            })
+            .catch(console.error);
+    }, [nukeProjectId]);
 
     const fetchData = useCallback(async () => {
         try {
@@ -241,24 +257,39 @@ export default function AdminDashboard() {
                             </select>
                         </div>
                         <div>
-                            <span className="text-[10px] text-gray-500 font-bold uppercase block mb-1">Date</span>
-                            <input type="date" value={nukeDate} onChange={e => setNukeDate(e.target.value)}
-                                className="bg-white/5 border border-white/10 rounded-lg px-2 py-2 text-white text-xs" title="Date du rapport" />
+                            <span className="text-[10px] text-gray-500 font-bold uppercase block mb-1">Rapport Actuel</span>
+                            <select value={nukeReportId} onChange={e => setNukeReportId(e.target.value)}
+                                className="bg-white/5 border border-white/10 rounded-lg px-2 py-2 text-white text-xs appearance-none min-w-[180px]" title="Choisir un rapport" disabled={!nukeProjectId}>
+                                <option value="" className="bg-gray-900">-- Sélectionner --</option>
+                                {projectReports.map(r => (
+                                    <option key={r.id} value={r.id} className="bg-gray-900">
+                                        {new Date(r.date).toLocaleDateString('fr-FR')} {new Date(r.date).toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'})} ({r.status})
+                                    </option>
+                                ))}
+                            </select>
                         </div>
                         <button
-                            disabled={!nukeProjectId || !nukeDate || nuking}
+                            disabled={!nukeProjectId || !nukeReportId || nuking}
                             onClick={async () => {
-                                if (!confirm(`Supprimer TOUS les rapports pour ${nukeDate} ?`)) return;
+                                const selectedReport = projectReports.find(r => r.id === nukeReportId);
+                                if (!selectedReport || !confirm(`Supprimer définitivement ce rapport du ${new Date(selectedReport.date).toLocaleString('fr-FR')} ?`)) return;
+                                
                                 setNuking(true);
                                 try {
                                     const res = await fetch('/api/admin/nuke-report', {
                                         method: 'POST',
                                         headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({ projectId: nukeProjectId, date: nukeDate })
+                                        body: JSON.stringify({ projectId: nukeProjectId, reportId: nukeReportId })
                                     });
                                     const data = await res.json();
-                                    if (res.ok) toast.success(data.message);
-                                    else toast.error(data.error);
+                                    if (res.ok) {
+                                        toast.success(data.message);
+                                        // Refresh list
+                                        setProjectReports(prev => prev.filter(r => r.id !== nukeReportId));
+                                        setNukeReportId('');
+                                    } else {
+                                        toast.error(data.error);
+                                    }
                                 } catch { toast.error('Erreur'); }
                                 finally { setNuking(false); }
                             }}
