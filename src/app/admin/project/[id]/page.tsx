@@ -99,7 +99,7 @@ export default function AdminProjectEdit({ params }: { params: Promise<{ id: str
             <main className="max-w-3xl mx-auto px-6 py-10">
                 {/* Header */}
                 <div className="flex items-center gap-4 mb-10">
-                    <button onClick={() => router.push("/admin/dashboard")} className="p-2 rounded-lg hover:bg-white/5 transition-colors">
+                    <button title="Retour" onClick={() => router.push("/admin/dashboard")} className="p-2 rounded-lg hover:bg-white/5 transition-colors">
                         <ArrowLeft size={20} />
                     </button>
                     <div>
@@ -116,6 +116,8 @@ export default function AdminProjectEdit({ params }: { params: Promise<{ id: str
                         </label>
                         <input
                             type="text"
+                            title="Nom du projet"
+                            placeholder="Ex: Projet ABC"
                             value={name}
                             onChange={e => setName(e.target.value)}
                             className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white font-bold focus:border-purple-500/50 focus:outline-none transition-colors"
@@ -129,6 +131,7 @@ export default function AdminProjectEdit({ params }: { params: Promise<{ id: str
                         </label>
                         <input
                             type="text"
+                            title="Localisation"
                             value={location}
                             onChange={e => setLocation(e.target.value)}
                             placeholder="Ex: Bruxelles, Etage 3..."
@@ -144,12 +147,12 @@ export default function AdminProjectEdit({ params }: { params: Promise<{ id: str
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <span className="text-[10px] text-gray-500 font-bold uppercase">Début</span>
-                                <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)}
+                                <input type="date" title="Date de début" value={startDate} onChange={e => setStartDate(e.target.value)}
                                     className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-purple-500/50 focus:outline-none transition-colors mt-1" />
                             </div>
                             <div>
                                 <span className="text-[10px] text-gray-500 font-bold uppercase">Fin</span>
-                                <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)}
+                                <input type="date" title="Date de fin" value={endDate} onChange={e => setEndDate(e.target.value)}
                                     className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-purple-500/50 focus:outline-none transition-colors mt-1" />
                             </div>
                         </div>
@@ -163,7 +166,7 @@ export default function AdminProjectEdit({ params }: { params: Promise<{ id: str
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <span className="text-[10px] text-gray-500 font-bold uppercase">Chef de Projet (PM)</span>
-                                <select value={pmId} onChange={e => setPmId(e.target.value)}
+                                <select title="Chef de Projet" value={pmId} onChange={e => setPmId(e.target.value)}
                                     className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-purple-500/50 focus:outline-none transition-colors mt-1 appearance-none">
                                     <option value="" className="bg-gray-900">-- Sélectionner --</option>
                                     {pms.map(u => <option key={u.id} value={u.id} className="bg-gray-900">{u.name} ({u.email})</option>)}
@@ -171,7 +174,7 @@ export default function AdminProjectEdit({ params }: { params: Promise<{ id: str
                             </div>
                             <div>
                                 <span className="text-[10px] text-gray-500 font-bold uppercase">Chef d&apos;Équipe (SM)</span>
-                                <select value={smId} onChange={e => setSmId(e.target.value)}
+                                <select title="Chef d'Équipe" value={smId} onChange={e => setSmId(e.target.value)}
                                     className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-purple-500/50 focus:outline-none transition-colors mt-1 appearance-none">
                                     <option value="" className="bg-gray-900">-- Aucun --</option>
                                     {sms.map(u => <option key={u.id} value={u.id} className="bg-gray-900">{u.name} ({u.email})</option>)}
@@ -189,7 +192,7 @@ export default function AdminProjectEdit({ params }: { params: Promise<{ id: str
                             {subLocations.map((loc, i) => (
                                 <span key={i} className="px-3 py-1.5 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-300 text-sm font-bold flex items-center gap-2">
                                     {loc}
-                                    <button onClick={() => setSubLocations(prev => prev.filter((_, j) => j !== i))} className="hover:text-red-400 transition-colors">
+                                    <button title="Supprimer" onClick={() => setSubLocations(prev => prev.filter((_, j) => j !== i))} className="hover:text-red-400 transition-colors">
                                         <X size={12} />
                                     </button>
                                 </span>
@@ -203,9 +206,10 @@ export default function AdminProjectEdit({ params }: { params: Promise<{ id: str
                                 onChange={e => setNewSubLoc(e.target.value)}
                                 onKeyDown={e => e.key === "Enter" && (e.preventDefault(), addSubLoc())}
                                 placeholder="Ajouter une localisation..."
+                                title="Nouvelle sous-localisation"
                                 className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm focus:border-purple-500/50 focus:outline-none transition-colors"
                             />
-                            <button onClick={addSubLoc} className="px-4 py-2.5 rounded-lg bg-purple-500/20 border border-purple-500/30 text-purple-300 hover:bg-purple-500/30 transition-colors">
+                            <button title="Ajouter localisation" onClick={addSubLoc} className="px-4 py-2.5 rounded-lg bg-purple-500/20 border border-purple-500/30 text-purple-300 hover:bg-purple-500/30 transition-colors">
                                 <Plus size={16} />
                             </button>
                         </div>
