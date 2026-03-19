@@ -424,7 +424,22 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
 
             if (res.ok) {
                 setIsReportSubmitted(false);
-                toast.success(t("report_unlocked") || "Report unsubmitted");
+                // Remove the deleted report from local state so the date is free for resubmission
+                if (selectedDate) {
+                    setExistingReports(prev => prev.filter(r => !isSameDay(new Date(r.date), selectedDate)));
+                }
+                // Reset actuals to zero so the SM can fill them in fresh
+                if (activePlan) {
+                    const initActuals: Record<string, number> = {};
+                    activePlan.tasks.forEach((t: PlanTask) => {
+                        initActuals[t.id] = 0;
+                    });
+                    setActuals(initActuals);
+                }
+                setIssueDescription("");
+                setLateReason("");
+                setLateDescription("");
+                toast.success(t("report_unlocked") || "Rapport supprimé — vous pouvez le refaire");
             } else {
                 toast.error(t("error_unlocking_report") || "Error unlocking report");
             }

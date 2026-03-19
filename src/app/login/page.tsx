@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Mail, KeyRound, Activity, Users, ClipboardCheck, Zap, Lock, ArrowRight } from 'lucide-react';
+import { Mail, KeyRound, Activity, Users, ClipboardCheck, Zap, Lock, ArrowRight, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { Inter } from 'next/font/google';
 
@@ -302,6 +302,47 @@ export default function LoginPage() {
                             </p>
                         </div>
 
+                    </div>
+
+                    {/* Changelog */}
+                    <div className="mt-8 ultra-glass rounded-md p-6 relative overflow-hidden">
+                        <h3 className="text-sm font-black uppercase tracking-widest text-[#4facfe] mb-4 flex items-center gap-2">
+                            <Sparkles size={14} /> Dernières mises à jour
+                        </h3>
+                        <div className="flex flex-col gap-4 max-h-[250px] overflow-y-auto pr-2">
+                            {[
+                                { version: '0.1.3', date: '19 mars 2026', changes: [
+                                    'Admin peut supprimer plans et rapports depuis l\'historique',
+                                    'Accès admin aux pages SM/PM des projets',
+                                    'Fix rapport journalier bloqué',
+                                    'Changelog sur la page de connexion',
+                                ]},
+                                { version: '0.1.2', date: '18 mars 2026', changes: [
+                                    'Historique des rapports journaliers soumis',
+                                    'Correction de la page historique (erreur 500)',
+                                    'Amélioration qualité des images',
+                                ]},
+                                { version: '0.1.1', date: '17 mars 2026', changes: [
+                                    'Planification multi-semaine (S+1, S+2, S+3)',
+                                    'Rapports journaliers avec saisie par jour',
+                                    'Système de rattrapage (backfill) pour jours manqués',
+                                ]},
+                            ].map((release) => (
+                                <div key={release.version} className="border-l-2 border-[#4facfe]/30 pl-4">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <span className="text-xs font-black text-[#4facfe] bg-[#4facfe]/10 px-2 py-0.5 rounded-sm">v{release.version}</span>
+                                        <span className="text-[10px] text-slate-500 font-bold">{release.date}</span>
+                                    </div>
+                                    <ul className="space-y-0.5">
+                                        {release.changes.map((c, i) => (
+                                            <li key={i} className="text-xs text-slate-400 flex items-start gap-1.5">
+                                                <span className="text-[#4facfe] mt-0.5">•</span> {c}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </section>
 

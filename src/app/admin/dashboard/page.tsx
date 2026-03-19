@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
     ShieldCheck, CheckCircle, XCircle, Clock, UserIcon, LogOut,
-    TrendingUp, Euro, Activity, Folder, Target, RefreshCw, Globe, ListOrdered, Trash2, AlertTriangle
+    TrendingUp, Euro, Activity, Folder, Target, RefreshCw, Globe, ListOrdered, Trash2, AlertTriangle, Eye
 } from 'lucide-react';
 import { toast } from 'sonner';
 import AvatarDisplay from '@/components/AvatarDisplay';
@@ -316,13 +316,29 @@ export default function AdminDashboard() {
                                             {p.weeksHit}/{p.weeksClosed} sem.
                                         </td>
                                         <td className="py-3 text-center">
-                                            <button
-                                                onClick={() => setDeleteConfirm({ type: 'project', id: p.id, name: p.name })}
-                                                className="p-1.5 rounded-lg border border-red-500/20 text-red-400/60 hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/40 transition-all"
-                                                title="Supprimer le projet"
-                                            >
-                                                <Trash2 size={14} />
-                                            </button>
+                                            <div className="flex items-center justify-center gap-1">
+                                                <Link
+                                                    href={`/sm/project/${p.id}/plan/history`}
+                                                    className="p-1.5 rounded-lg border border-cyan-500/20 text-cyan-400/60 hover:text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500/40 transition-all"
+                                                    title="Vue SM (Historique)"
+                                                >
+                                                    <Eye size={14} />
+                                                </Link>
+                                                <Link
+                                                    href={`/pm/project/${p.id}`}
+                                                    className="p-1.5 rounded-lg border border-purple-500/20 text-purple-400/60 hover:text-purple-400 hover:bg-purple-500/10 hover:border-purple-500/40 transition-all"
+                                                    title="Vue PM"
+                                                >
+                                                    <Folder size={14} />
+                                                </Link>
+                                                <button
+                                                    onClick={() => setDeleteConfirm({ type: 'project', id: p.id, name: p.name })}
+                                                    className="p-1.5 rounded-lg border border-red-500/20 text-red-400/60 hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/40 transition-all"
+                                                    title="Supprimer le projet"
+                                                >
+                                                    <Trash2 size={14} />
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}

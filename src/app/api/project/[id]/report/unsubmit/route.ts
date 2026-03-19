@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { Prisma } from '@prisma/client';
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = await params;
@@ -22,7 +21,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         const endOfDay = new Date(queryDate);
         endOfDay.setUTCHours(23, 59, 59, 999);
 
-        // Find the report to unsubmit
+        // Find the report to delete
         const report = await prisma.dailyReport.findFirst({
             where: {
                 projectId,
@@ -30,6 +29,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
                     gte: startOfDay,
                     lte: endOfDay
                 }
+            },
+            include: {
+                taskProgress: true
             }
         });
 
@@ -37,18 +39,38 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
             return NextResponse.json({ error: "Report not found" }, { status: 404 });
         }
 
-        // Unsubmit the report (set status to DRAFT or similar depending on schema)
-        // Assuming status is 'SUBMITTED', setting it back to 'DRAFT' (or however the app handles it). 
-        // If status defaults to "DRAFT", we set it to that. If there's no "DRAFT" enum, maybe 'IN_PROGRESS' or simply update.
-        // Wait, looking at the schema `status String @default("SUBMITTED")` or similar? Let's assume there is a draft/submitted differentiation.
-        const updatedReport = await prisma.dailyReport.update({
-            where: { id: report.id },
-            data: { status: 'DRAFT' } // Assume DRAFT is valid if SUBMITTED is valid
+        // Revert the actualQuantity and completedQuantity increments from this report
+        for (const progress of report.taskProgress) {
+            if (progress.quantity > 0) {
+                // Revert the task's completedQuantity
+                await prisma.task.update({
+                    where: { id: progress.taskId },
+                    data: { completedQuantity: { decrement: progress.quantity } }
+                });
+
+                // Revert the weekly plan task's actualQuantity
+                const weeklyPlanTask = await prisma.weeklyPlanTask.findFirst({
+                    where: { taskId: progress.taskId },
+                    orderBy: { createdAt: 'desc' }
+                });
+                if (weeklyPlanTask) {
+                    await prisma.weeklyPlanTask.update({
+                        where: { id: weeklyPlanTask.id },
+                        data: { actualQuantity: { decrement: progress.quantity } }
+                    });
+                }
+            }
+        }
+
+        // Delete the report entirely (Attendance, DailyTaskProgress, BlockageLog cascade on delete)
+        await prisma.dailyReport.delete({
+            where: { id: report.id }
         });
 
-        return NextResponse.json({ success: true, report: updatedReport });
+        return NextResponse.json({ success: true, deleted: true });
     } catch (err) {
-        console.error("Error unsubmitting report:", err);
+        console.error("Error unsubmitting (deleting) report:", err);
         return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
 }
+
