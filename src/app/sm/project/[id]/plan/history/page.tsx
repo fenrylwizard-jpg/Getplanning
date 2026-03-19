@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowLeft, CheckCircle2, ShieldAlert, History, Calendar, Users, Clock } from "lucide-react";
 import T from "@/components/T";
 import { AdminDeletePlanButton, AdminDeleteReportButton } from "./AdminDeleteButtons";
+import { getISOWeek, getISOWeekYear } from "date-fns";
 
 const ADMIN_EMAIL = 'admin@eeg.be';
 
@@ -77,7 +78,7 @@ export default async function SMHistoryPage({ params }: { params: Promise<{ id: 
                         <div className="grid grid-cols-1 gap-4">
                             {activePlans.map(plan => (
                                 <div key={plan.id} className="relative">
-                                    <PlanHistoryCard plan={plan} projectId={id} />
+                                    <PlanHistoryCard plan={plan} projectId={id} reports={historyReports} />
                                     {isAdmin && <AdminDeletePlanButton planId={plan.id} projectId={id} weekNumber={plan.weekNumber} year={plan.year} />}
                                 </div>
                             ))}
@@ -98,7 +99,7 @@ export default async function SMHistoryPage({ params }: { params: Promise<{ id: 
                         <div className="grid grid-cols-1 gap-4">
                             {historyPlans.map(plan => (
                                 <div key={plan.id} className="relative">
-                                    <PlanHistoryCard plan={plan} projectId={id} />
+                                    <PlanHistoryCard plan={plan} projectId={id} reports={historyReports} />
                                     {isAdmin && <AdminDeletePlanButton planId={plan.id} projectId={id} weekNumber={plan.weekNumber} year={plan.year} />}
                                 </div>
                             ))}
@@ -176,11 +177,30 @@ interface PlanWithTasks {
             minutesPerUnit: number;
         };
     }[];
+    project?: {  // Optional relation needed if accessed for reports
+        dailyReports: {
+            taskProgress: {
+                hours: number | null;
+            }[];
+        }[];
+    };
 }
 
-function PlanHistoryCard({ plan, projectId }: { plan: PlanWithTasks, projectId: string }) {
+interface ReportWithProgress {
+    date: Date;
+    taskProgress: { hours: number | null }[];
+}
+
+function PlanHistoryCard({ plan, projectId, reports }: { plan: PlanWithTasks, projectId: string, reports: ReportWithProgress[] }) {
     const totalHours = plan.tasks.reduce((acc, t) => acc + (t.plannedQuantity * t.task.minutesPerUnit) / 60, 0);
-    const actualHours = plan.tasks.reduce((acc, t) => acc + (t.actualQuantity * t.task.minutesPerUnit) / 60, 0);
+    
+    // Dynamically calculate actual hours from immutable submitted reports to bypass potentially desynced denormalized cache
+    const weekReports = reports.filter(r => {
+        const d = new Date(r.date);
+        return getISOWeek(d) === plan.weekNumber && getISOWeekYear(d) === plan.year;
+    });
+    const actualHours = weekReports.reduce((sum, r) => sum + r.taskProgress.reduce((s, p) => s + (p.hours || 0), 0), 0);
+    
     const progress = totalHours > 0 ? (actualHours / totalHours) * 100 : 0;
 
     return (
