@@ -21,7 +21,7 @@ export default async function SMHistoryPage({ params }: { params: Promise<{ id: 
             dailyReports: {
                 orderBy: { date: 'desc' },
                 include: {
-                    dailyTaskProgress: { include: { task: true } }
+                    taskProgress: { include: { task: true } }
                 }
             }
         }
@@ -98,7 +98,7 @@ export default async function SMHistoryPage({ params }: { params: Promise<{ id: 
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {historyReports.map(report => {
-                                const totalHours = report.dailyTaskProgress.reduce((acc, p) => acc + p.hours, 0);
+                                const totalHours = report.taskProgress.reduce((acc, p) => acc + (p.hours || 0), 0);
                                 return (
                                     <div key={report.id} className="glass-panel p-4 border border-white/5 hover:border-cyan-500/30 bg-[#0a1020]/60 backdrop-blur-xl transition-all rounded-md flex justify-between items-center group relative overflow-hidden">
                                         <div className="absolute top-0 right-0 w-24 h-24 bg-cyan-500/5 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
