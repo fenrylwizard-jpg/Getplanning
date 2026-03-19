@@ -59,6 +59,7 @@ export async function GET(
             orderBy: { month: "desc" },
             select: {
                 totalRevenue: true,
+                finalRevenue: true,
                 totalCost: true,
                 result: true,
                 marginPercent: true,
@@ -112,10 +113,13 @@ export async function GET(
             totalReturn += p.returnAmount || 0;
         }
 
-        // Always compute margin from result/revenue for consistency
+        // Compute margin from result / finalRevenue (projected end revenue including revisions)
         let computedMargin: number | null = null;
-        if (latestFinance && latestFinance.result != null && latestFinance.totalRevenue && latestFinance.totalRevenue > 0) {
-            computedMargin = Math.round((latestFinance.result / latestFinance.totalRevenue) * 100 * 10) / 10;
+        if (latestFinance && latestFinance.result != null) {
+            const denominator = latestFinance.finalRevenue || latestFinance.totalRevenue;
+            if (denominator && denominator > 0) {
+                computedMargin = Math.round((latestFinance.result / denominator) * 100 * 10) / 10;
+            }
         }
 
         return NextResponse.json({
