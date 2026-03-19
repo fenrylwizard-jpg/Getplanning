@@ -239,14 +239,16 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                         setWorkersCount(data.report.workersCount || activePlan?.workersCount || '');
                         
                         const newActuals: Record<string, number> = {};
-                        if (data.report.dailyTaskProgress) {
-                            data.report.dailyTaskProgress.forEach((p: any) => {
-                                newActuals[p.planTaskId] = p.quantity;
-                            });
-                        }
-                        if (data.report.adHocTaskProgress) {
-                            data.report.adHocTaskProgress.forEach((p: any) => {
-                                newActuals[p.tempId || p.taskId] = p.quantity;
+                        if (data.report.taskProgress) {
+                            data.report.taskProgress.forEach((p: any) => {
+                                // Map from global taskId back to this week's plan task ID if possible
+                                const wpt = activePlan?.tasks.find(t => t.taskId === p.taskId);
+                                if (wpt) {
+                                    newActuals[wpt.id] = p.quantity;
+                                } else {
+                                    // Fallback for ad-hoc tasks, keyed by global taskId in UI state
+                                    newActuals[p.taskId] = p.quantity;
+                                }
                             });
                         }
                         setActuals(prev => ({ ...prev, ...newActuals }));
@@ -471,6 +473,7 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                 <div className="flex flex-col gap-2">
                     <button
                         onClick={() => router.push('/sm/dashboard')}
+                        title={t("back_to_dashboard")}
                         className="flex items-center gap-2 text-cyan-400/60 hover:text-cyan-400 transition-colors mb-2 group w-fit"
                     >
                         <ChevronLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
