@@ -44,6 +44,18 @@ interface ProductionTabProps {
                 };
             }[];
         }[];
+        dailyReports?: {
+            id: string;
+            date: string | Date;
+            status: string;
+            workersCount: number | null;
+            taskProgress: {
+                id: string;
+                hours: number;
+                quantity: number;
+                task: { minutesPerUnit: number };
+            }[];
+        }[];
     };
 }
 
@@ -115,7 +127,7 @@ export default function ProductionTab({ project }: ProductionTabProps) {
             </div>
 
             {/* Project Analytics Charts */}
-            <ProjectAnalyticsCharts tasks={project.tasks} weeklyPlans={project.weeklyPlans} />
+            <ProjectAnalyticsCharts tasks={project.tasks} weeklyPlans={project.weeklyPlans} dailyReports={project.dailyReports || []} />
 
             {/* Weekly Plans */}
             <div className="bg-[#080d1a]/80 border border-white/5 rounded-md p-6">

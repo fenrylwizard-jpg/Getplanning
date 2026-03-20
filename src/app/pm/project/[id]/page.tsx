@@ -31,6 +31,13 @@ export default async function ProjectHub({ params, searchParams }: { params: Pro
                     tasks: { include: { task: true } }
                 }
             },
+            dailyReports: {
+                where: { status: 'SUBMITTED' },
+                orderBy: { date: 'asc' },
+                include: {
+                    taskProgress: { include: { task: true } }
+                }
+            },
             revisions: {
                 orderBy: { uploadedAt: 'desc' }
             }
