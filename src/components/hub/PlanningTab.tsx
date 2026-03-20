@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarRange, Target, Flag, Clock, ChevronRight, Save, Trash2, CheckCircle, Wrench } from "lucide-react";
+import { CalendarRange, Target, Flag, Clock, Save, Trash2, CheckCircle, Wrench } from "lucide-react";
 import T from "@/components/T";
 import FileUploadZone from "@/components/hub/FileUploadZone";
 import { useRouter } from "next/navigation";
@@ -185,6 +185,18 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
         setIsParsed(false);
     };
 
+    const handleProgressChange = (idx: number, newProgress: number) => {
+        if (!milestones) return;
+        const updated = [...milestones];
+        // Find correct index in allMilestones (in case we're in filtered mode)
+        const milestone = activeMilestones[idx];
+        const realIdx = allMilestones.indexOf(milestone);
+        if (realIdx >= 0 && realIdx < updated.length) {
+            updated[realIdx] = { ...updated[realIdx], progress: newProgress };
+            setMilestones(updated);
+        }
+    };
+
     return (
         <div className="flex flex-col gap-8">
             {/* Upload Zone */}
@@ -352,12 +364,11 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
                     </div>
 
                     {/* Gantt bars */}
-                    <div className="flex flex-col gap-2">
+                    <div className="flex flex-col gap-1">
                         {activeMilestones.map((milestone, idx) => {
                             const startNum = new Date(milestone.startDate).getTime();
                             const endNum = new Date(milestone.endDate).getTime();
                             
-                            // Safe math in case invalid dates
                             const safeStart = isNaN(startNum) ? minDate : startNum;
                             const safeEnd = isNaN(endNum) ? maxDate : endNum;
 
@@ -365,50 +376,52 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
                             const widthPct = Math.max(1, Math.min(100, ((safeEnd - safeStart) / totalSpan) * 100));
                             
                             const c = colorClasses[milestone.color || "blue"] || colorClasses.blue;
+                            const pctValue = Math.round(milestone.progress * 100);
 
                             return (
-                                <div key={idx} className="flex items-center gap-4 group hover:bg-white/5 rounded-md p-1.5 transition-colors">
-                                    {/* Label */}
-                                    <div className="w-[200px] flex-shrink-0">
-                                <div className={`text-xs font-bold truncate ${milestone.isUserTrade ? 'text-yellow-300' : 'text-gray-200'}`}>
-                                        {milestone.isUserTrade && <span className="mr-1">⭐</span>}
-                                        {milestone.name}
+                                <div key={idx} className="flex items-center gap-3 group hover:bg-white/5 rounded-md px-1.5 py-1 transition-colors">
+                                    {/* Label — wider, no truncate */}
+                                    <div className="w-[320px] flex-shrink-0">
+                                        <div className={`text-[11px] font-bold leading-tight ${milestone.isUserTrade ? 'text-yellow-300' : 'text-gray-200'}`}>
+                                            {milestone.isUserTrade && <span className="mr-1">⭐</span>}
+                                            {milestone.name}
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <span className={`text-[9px] uppercase tracking-widest ${c.text} font-bold`}>{milestone.category}</span>
+                                            <span className="text-[8px] text-gray-600">{milestone.startDate} → {milestone.endDate}</span>
+                                        </div>
                                     </div>
-                                        <div className={`text-[9px] uppercase tracking-widest ${c.text} font-bold`}>{milestone.category}</div>
+                                    {/* Editable progress input */}
+                                    <div className="w-[52px] flex-shrink-0">
+                                        <input
+                                            type="number"
+                                            min={0}
+                                            max={100}
+                                            value={pctValue}
+                                            onChange={(e) => {
+                                                const val = Math.min(100, Math.max(0, parseInt(e.target.value) || 0));
+                                                handleProgressChange(idx, val / 100);
+                                            }}
+                                            className="w-full text-center text-[11px] font-black bg-white/5 border border-white/10 rounded px-1 py-0.5 text-white outline-none focus:border-purple-500/50 focus:bg-purple-500/10 transition-colors"
+                                            title="% avancement"
+                                        />
                                     </div>
                                     {/* Bar area */}
-                                    <div className="flex-1 relative h-8">
-                                        {/* Background track */}
+                                    <div className="flex-1 relative h-7">
                                         <div
-                                            className={`absolute top-1 h-6 rounded-lg ${c.bg} border ${c.border} overflow-hidden transition-all`}
+                                            className={`absolute top-0.5 h-6 rounded-lg ${c.bg} border ${c.border} overflow-hidden transition-all`}
                                             style={{ left: `${startPct}%`, width: `${widthPct}%` }}
                                         >
-                                            {/* Progress fill */}
                                             <div
                                                 className={`h-full ${c.bar} rounded-lg transition-all duration-700`}
-                                                style={{ width: `${Math.min(100, milestone.progress * 100)}%` }}
+                                                style={{ width: `${Math.min(100, pctValue)}%` }}
                                             />
-                                            {/* Progress label */}
                                             <div className="absolute inset-0 flex items-center justify-center">
                                                 <span className="text-[9px] font-black text-white/80 drop-shadow">
-                                                    {Math.round(milestone.progress * 100)}%
+                                                    {pctValue}%
                                                 </span>
                                             </div>
                                         </div>
-                                    </div>
-                                    {/* Status icon */}
-                                    <div className="w-6 flex-shrink-0 flex justify-center">
-                                        {milestone.progress >= 1 ? (
-                                            <div className="w-5 h-5 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center">
-                                                <ChevronRight size={10} className="text-emerald-400" />
-                                            </div>
-                                        ) : milestone.progress > 0 ? (
-                                            <div className="w-5 h-5 rounded-full bg-blue-500/20 border border-blue-500/40 flex items-center justify-center animate-pulse">
-                                                <div className="w-2 h-2 rounded-full bg-blue-400" />
-                                            </div>
-                                        ) : (
-                                            <div className="w-5 h-5 rounded-full bg-white/5 border border-white/10" />
-                                        )}
                                     </div>
                                 </div>
                             );

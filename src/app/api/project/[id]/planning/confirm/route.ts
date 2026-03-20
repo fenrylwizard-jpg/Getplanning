@@ -1,7 +1,22 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 
-const prisma = new PrismaClient();
+/**
+ * Sanitize a date string — reject dates with year outside 1900-2100.
+ * Returns a valid Date or null if unparseable.
+ */
+function sanitizeDate(dateStr: string): Date | null {
+    if (!dateStr) return null;
+    try {
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return null;
+        const year = d.getFullYear();
+        if (year < 1900 || year > 2100) return null;
+        return d;
+    } catch {
+        return null;
+    }
+}
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
@@ -21,21 +36,33 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
                 where: { projectId: id }
             });
 
-            // Insert new ones
+            // Insert new ones, skip milestones with invalid dates
+            let skipped = 0;
             for (let i = 0; i < milestones.length; i++) {
                 const m = milestones[i];
+                const startDate = sanitizeDate(m.startDate);
+                const endDate = sanitizeDate(m.endDate);
+
+                if (!startDate || !endDate) {
+                    skipped++;
+                    continue;
+                }
+
                 await tx.planningMilestone.create({
                     data: {
                         projectId: id,
-                        name: m.name,
-                        category: m.category,
-                        startDate: new Date(m.startDate),
-                        endDate: new Date(m.endDate),
-                        progress: m.progress,
-                        isComplete: m.progress >= 1,
+                        name: m.name || "Sans nom",
+                        category: m.category || "Général",
+                        startDate,
+                        endDate,
+                        progress: typeof m.progress === 'number' ? Math.min(1, Math.max(0, m.progress)) : 0,
+                        isComplete: (m.progress || 0) >= 1,
                         sortOrder: i
                     }
                 });
+            }
+            if (skipped > 0) {
+                console.log(`Planning confirm: skipped ${skipped} milestones with invalid dates`);
             }
         });
 
