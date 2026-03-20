@@ -100,29 +100,39 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
     const [isParsed, setIsParsed] = useState<boolean>(false);
     const [submitting, setSubmitting] = useState(false);
     const [selectedTrade, setSelectedTrade] = useState<string>("");
+    const [showAll, setShowAll] = useState(false);
 
     // If no existing milestones and no parsed ones, show demo. Or show real ones.
-    const activeMilestones = milestones || DEMO_MILESTONES;
+    const allMilestones = milestones || DEMO_MILESTONES;
     const isShowingRealData = milestones !== null;
 
-    // Calculate timeline bounds
-    const allDates = activeMilestones.flatMap(m => [new Date(m.startDate).getTime(), new Date(m.endDate).getTime()]).filter(d => !isNaN(d));
-    
-    // In case no dates could be parsed
-    if (allDates.length === 0) {
-        allDates.push(new Date().getTime());
-        allDates.push(new Date().getTime() + 30 * 24 * 60 * 60 * 1000);
+    // Filter: user-trade first, others collapsed behind toggle
+    const tradeCount = allMilestones.filter(m => m.isUserTrade).length;
+    const activeMilestones = (showAll || tradeCount === 0 || allMilestones.length <= 50)
+        ? allMilestones
+        : allMilestones.filter(m => m.isUserTrade);
+
+    // Calculate timeline bounds safely (no spread to avoid stack overflow with 1000+ items)
+    let minDate = Infinity;
+    let maxDate = -Infinity;
+    for (const m of activeMilestones) {
+        const s = new Date(m.startDate).getTime();
+        const e = new Date(m.endDate).getTime();
+        if (!isNaN(s)) { minDate = Math.min(minDate, s); maxDate = Math.max(maxDate, s); }
+        if (!isNaN(e)) { minDate = Math.min(minDate, e); maxDate = Math.max(maxDate, e); }
+    }
+    if (!isFinite(minDate) || !isFinite(maxDate)) {
+        minDate = Date.now();
+        maxDate = Date.now() + 30 * 24 * 60 * 60 * 1000;
     }
 
-    const minDate = Math.min(...allDates);
-    const maxDate = Math.max(...allDates);
-    const totalSpan = Math.max(86400000, maxDate - minDate); // Minimum 1 day pan
-    const today = new Date().getTime();
+    const totalSpan = Math.max(86400000, maxDate - minDate);
+    const today = Date.now();
     const todayPct = Math.max(0, Math.min(100, ((today - minDate) / totalSpan) * 100));
 
-    const completedCount = activeMilestones.filter(m => m.progress >= 1).length;
-    const inProgressCount = activeMilestones.filter(m => m.progress > 0 && m.progress < 1).length;
-    const upcomingCount = activeMilestones.filter(m => m.progress === 0).length;
+    const completedCount = allMilestones.filter(m => m.progress >= 1).length;
+    const inProgressCount = allMilestones.filter(m => m.progress > 0 && m.progress < 1).length;
+    const upcomingCount = allMilestones.filter(m => m.progress === 0).length;
 
     const handleUploadComplete = (data: unknown) => {
         const d = data as { data?: Record<string, unknown>[] };
@@ -296,11 +306,23 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
 
             {/* Gantt Timeline */}
             <div className={`bg-[#080d1a]/80 border ${isParsed ? 'border-purple-500/50 shadow-[0_0_30px_rgba(168,85,247,0.15)]' : 'border-white/5'} rounded-md p-6 overflow-x-auto transition-all`}>
-                <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 mb-6 flex items-center gap-2">
-                    <CalendarRange size={16} className={isParsed ? "text-purple-400" : "text-blue-400"} />
-                    <T k="hub_project_timeline" />
-                    {isParsed && <span className="ml-2 px-2 py-0.5 rounded-sm bg-purple-500/20 text-purple-300 text-[10px] border border-purple-500/30">PREVIEW IA</span>}
-                </h3>
+                <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 flex items-center gap-2">
+                        <CalendarRange size={16} className={isParsed ? "text-purple-400" : "text-blue-400"} />
+                        <T k="hub_project_timeline" />
+                        {isParsed && <span className="ml-2 px-2 py-0.5 rounded-sm bg-purple-500/20 text-purple-300 text-[10px] border border-purple-500/30">PREVIEW IA</span>}
+                        <span className="text-[10px] text-gray-500 font-normal ml-2">({activeMilestones.length}{!showAll && tradeCount > 0 && allMilestones.length > 50 ? ` ⭐ / ${allMilestones.length} total` : ''})</span>
+                    </h3>
+                    {allMilestones.length > 50 && tradeCount > 0 && (
+                        <button
+                            onClick={() => setShowAll(!showAll)}
+                            className="text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-sm transition-all border"
+                            style={showAll ? {background: 'rgba(168,85,247,0.2)', borderColor: 'rgba(168,85,247,0.4)', color: '#c084fc'} : {background: 'rgba(255,255,255,0.05)', borderColor: 'rgba(255,255,255,0.1)', color: '#9ca3af'}}
+                        >
+                            {showAll ? `⭐ Mon métier (${tradeCount})` : `Tout afficher (${allMilestones.length})`}
+                        </button>
+                    )}
+                </div>
 
                 {/* Timeline header with months */}
                 <div className="relative min-w-[800px]">
