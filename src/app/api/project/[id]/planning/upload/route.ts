@@ -191,8 +191,10 @@ Réponds en JSON: tableau de [index,catégorie,isUserTrade]. Catégories: "Insta
 
     return tasks.map((task, idx) => {
         const cat = categoryMap.get(idx);
+        const wbsLevel = task.wbs ? task.wbs.split('.').length : 0;
         return {
             wbs: task.wbs,
+            wbsLevel,
             name: task.name,
             category: cat?.category || guessCategory(task),
             startDate: task.startDate,
@@ -208,19 +210,23 @@ Réponds en JSON: tableau de [index,catégorie,isUserTrade]. Catégories: "Insta
 }
 
 function fallbackCategorize(tasks: ExtractedTask[], trade: string) {
-    return tasks.map(task => ({
-        wbs: task.wbs,
-        name: task.name,
-        category: guessCategory(task),
-        startDate: task.startDate,
-        endDate: task.endDate,
-        duration: task.duration,
-        progress: 0,
-        isUserTrade: isTradeRelated(task, trade),
-        zone: task.zone,
-        lot: task.lot,
-        margin: task.margin,
-    }));
+    return tasks.map(task => {
+        const wbsLevel = task.wbs ? task.wbs.split('.').length : 0;
+        return {
+            wbs: task.wbs,
+            wbsLevel,
+            name: task.name,
+            category: guessCategory(task),
+            startDate: task.startDate,
+            endDate: task.endDate,
+            duration: task.duration,
+            progress: 0,
+            isUserTrade: isTradeRelated(task, trade),
+            zone: task.zone,
+            lot: task.lot,
+            margin: task.margin,
+        };
+    });
 }
 
 function guessCategory(task: ExtractedTask): string {

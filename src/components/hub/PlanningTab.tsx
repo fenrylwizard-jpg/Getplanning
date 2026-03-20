@@ -14,6 +14,8 @@ interface PlanningMilestone {
     progress: number;
     color?: string;
     isUserTrade?: boolean;
+    wbs?: string;
+    wbsLevel?: number;
 }
 
 const TRADE_OPTIONS = [
@@ -106,11 +108,31 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
     const allMilestones = milestones || DEMO_MILESTONES;
     const isShowingRealData = milestones !== null;
 
-    // Filter: user-trade first, others collapsed behind toggle
+    // Filter smartly: trade lines + their WBS parent section headers
     const tradeCount = allMilestones.filter(m => m.isUserTrade).length;
-    const activeMilestones = (showAll || tradeCount === 0 || allMilestones.length <= 50)
-        ? allMilestones
-        : allMilestones.filter(m => m.isUserTrade);
+    const activeMilestones = (() => {
+        if (showAll || allMilestones.length <= 50 || tradeCount === 0) return allMilestones;
+        
+        // 1. Collect WBS prefixes of all trade-relevant lines
+        const parentPrefixes = new Set<string>();
+        for (const m of allMilestones) {
+            if (m.isUserTrade && m.wbs) {
+                // For WBS '3.2.1.4', add prefixes: '3', '3.2', '3.2.1'
+                const parts = m.wbs.split('.');
+                for (let i = 1; i < parts.length; i++) {
+                    parentPrefixes.add(parts.slice(0, i).join('.'));
+                }
+            }
+        }
+        
+        // 2. Include: trade lines + parent section headers (in original order)
+        return allMilestones.filter(m => {
+            if (m.isUserTrade) return true;
+            // Include if this milestone's WBS is a parent of a trade line
+            if (m.wbs && parentPrefixes.has(m.wbs)) return true;
+            return false;
+        });
+    })();
 
     // Calculate timeline bounds safely (no spread to avoid stack overflow with 1000+ items)
     let minDate = Infinity;
@@ -144,12 +166,12 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
                 endDate: (m.endDate as string) || new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0],
                 progress: (m.progress as number) || 0,
                 color: assignColor((m.category as string) || ""),
-                isUserTrade: (m.isUserTrade as boolean) || false
+                isUserTrade: (m.isUserTrade as boolean) || false,
+                wbs: (m.wbs as string) || "",
+                wbsLevel: (m.wbsLevel as number) || 0,
             }));
             
-            // Sort by start date
-            processed.sort((a: PlanningMilestone, b: PlanningMilestone) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
-            
+            // Keep original order (PDF order = planning structure)
             setMilestones(processed);
             setIsParsed(true);
         }
@@ -364,7 +386,7 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
                     </div>
 
                     {/* Gantt bars */}
-                    <div className="flex flex-col gap-1">
+                    <div className="flex flex-col gap-0.5">
                         {activeMilestones.map((milestone, idx) => {
                             const startNum = new Date(milestone.startDate).getTime();
                             const endNum = new Date(milestone.endDate).getTime();
@@ -377,13 +399,40 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
                             
                             const c = colorClasses[milestone.color || "blue"] || colorClasses.blue;
                             const pctValue = Math.round(milestone.progress * 100);
+                            const isSection = !milestone.isUserTrade && (milestone.wbsLevel || 0) <= 2;
+                            const indent = Math.min(3, (milestone.wbsLevel || 1) - 1);
+
+                            // Section headers: bold, no progress input, different style
+                            if (isSection) {
+                                return (
+                                    <div key={idx} className="flex items-center gap-3 rounded-md px-1.5 py-1.5 mt-2 border-b border-white/5">
+                                        <div className="w-[320px] flex-shrink-0" style={{ paddingLeft: `${indent * 12}px` }}>
+                                            <div className="text-[11px] font-black uppercase tracking-wide text-gray-300">
+                                                <span className="text-gray-600 mr-1.5">{milestone.wbs}</span>
+                                                {milestone.name}
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <span className={`text-[9px] uppercase tracking-widest ${c.text} font-bold`}>{milestone.category}</span>
+                                                <span className="text-[8px] text-gray-600">{milestone.startDate} → {milestone.endDate}</span>
+                                            </div>
+                                        </div>
+                                        <div className="w-[52px] flex-shrink-0" />
+                                        <div className="flex-1 relative h-5">
+                                            <div
+                                                className="absolute top-1 h-3 rounded bg-white/5 border border-white/10"
+                                                style={{ left: `${startPct}%`, width: `${widthPct}%` }}
+                                            />
+                                        </div>
+                                    </div>
+                                );
+                            }
 
                             return (
                                 <div key={idx} className="flex items-center gap-3 group hover:bg-white/5 rounded-md px-1.5 py-1 transition-colors">
-                                    {/* Label — wider, no truncate */}
-                                    <div className="w-[320px] flex-shrink-0">
+                                    <div className="w-[320px] flex-shrink-0" style={{ paddingLeft: `${indent * 12}px` }}>
                                         <div className={`text-[11px] font-bold leading-tight ${milestone.isUserTrade ? 'text-yellow-300' : 'text-gray-200'}`}>
                                             {milestone.isUserTrade && <span className="mr-1">⭐</span>}
+                                            <span className="text-gray-600 mr-1">{milestone.wbs}</span>
                                             {milestone.name}
                                         </div>
                                         <div className="flex items-center gap-2">
@@ -391,7 +440,6 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
                                             <span className="text-[8px] text-gray-600">{milestone.startDate} → {milestone.endDate}</span>
                                         </div>
                                     </div>
-                                    {/* Editable progress input */}
                                     <div className="w-[52px] flex-shrink-0">
                                         <input
                                             type="number"
@@ -406,7 +454,6 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
                                             title="% avancement"
                                         />
                                     </div>
-                                    {/* Bar area */}
                                     <div className="flex-1 relative h-7">
                                         <div
                                             className={`absolute top-0.5 h-6 rounded-lg ${c.bg} border ${c.border} overflow-hidden transition-all`}
