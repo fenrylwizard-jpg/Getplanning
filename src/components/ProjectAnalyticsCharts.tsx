@@ -7,6 +7,15 @@ import { PieChart, Pie, Cell, Tooltip as PieTooltip, ResponsiveContainer, Cartes
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTranslation } from '@/lib/LanguageContext';
 
+// Color helper for efficiency bars
+function getEfficiencyColor(efficiency: number): string {
+    if (efficiency >= 100) return '#10b981'; // emerald-500
+    if (efficiency >= 90) return '#22c55e';  // green-500
+    if (efficiency >= 70) return '#f59e0b';  // amber-500
+    if (efficiency >= 50) return '#f97316';  // orange-500
+    return '#ef4444';                        // red-500
+}
+
 export default function ProjectAnalyticsCharts({ tasks, weeklyPlans, dailyReports = [] }: { tasks: any[], weeklyPlans: any[], dailyReports?: any[] }) {
     const { t, tData } = useTranslation();
     const [weeksToShow, setWeeksToShow] = useState<number>(0);
