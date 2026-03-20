@@ -1,15 +1,14 @@
 import { NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
-import { extractPlanningFromPDF, ExtractedTask, extractRawTextFromPDF } from "@/lib/pdfPlanningExtractor";
+import { extractPlanningFromPDF, ExtractedTask } from "@/lib/pdfPlanningExtractor";
+import { createJob, updateJob } from "@/lib/planningJobStore";
 
-// Allow up to 5 minutes for large PDF processing + AI categorization
-export const maxDuration = 300;
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
 
-    // Parse form data before streaming
+    // Parse form data
     let file: File;
     let trade: string;
     try {
@@ -30,130 +29,106 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const buffer = Buffer.from(bytes);
     console.log(`PDF received: ${file.name}, size: ${bytes.byteLength} bytes, trade: ${trade}`);
 
-    // Use a streaming response to keep the proxy connection alive
-    const encoder = new TextEncoder();
-    const stream = new ReadableStream({
-        async start(controller) {
-            const send = (line: string) => {
-                controller.enqueue(encoder.encode(line + "\n"));
-            };
+    // Create a job and return immediately
+    const job = createJob(id);
 
-            try {
-                // ===== STEP 1: Deterministic extraction =====
-                send("event:progress");
-                send("data:Extraction du PDF...");
-                console.log("Step 1: Extracting table data with pdf.js-extract...");
-
-                let extractedTasks: ExtractedTask[];
-                try {
-                    extractedTasks = await extractPlanningFromPDF(buffer);
-                    console.log(`Extracted ${extractedTasks.length} tasks deterministically`);
-                } catch (extractError: unknown) {
-                    const msg = extractError instanceof Error ? extractError.message : String(extractError);
-                    console.error("PDF extraction failed:", msg);
-                    send("event:error");
-                    send(`data:${JSON.stringify({ error: `Erreur extraction: ${msg}` })}`);
-                    controller.close();
-                    return;
-                }
-
-                if (extractedTasks.length === 0) {
-                    send("event:error");
-                    send(`data:${JSON.stringify({ error: "Aucune tâche trouvée dans le PDF." })}`);
-                    controller.close();
-                    return;
-                }
-
-                send("event:progress");
-                send(`data:${extractedTasks.length} tâches extraites, catégorisation IA...`);
-
-                // ===== STEP 2: AI categorization =====
-                const apiKey = process.env.GEMINI_API_KEY;
-                let categorizedTasks;
-
-                // Send keepalive pings every 10 seconds to prevent proxy timeout
-                const keepalive = setInterval(() => {
-                    send("event:ping");
-                    send("data:keepalive");
-                }, 10_000);
-
-                try {
-                    if (apiKey) {
-                        console.log("Step 2: Categorizing tasks with Gemini AI...");
-                        try {
-                            categorizedTasks = await categorizeTasks(extractedTasks, trade, apiKey);
-                            console.log("AI categorization complete");
-                        } catch (aiError: unknown) {
-                            const msg = aiError instanceof Error ? aiError.message : String(aiError);
-                            console.warn("AI categorization failed, using fallback:", msg);
-                            categorizedTasks = fallbackCategorize(extractedTasks, trade);
-                        }
-                    } else {
-                        console.log("Step 2: No API key, using rule-based categorization");
-                        categorizedTasks = fallbackCategorize(extractedTasks, trade);
-                    }
-                } finally {
-                    clearInterval(keepalive);
-                }
-
-                console.log(`Returning ${categorizedTasks.length} categorized milestones`);
-
-                // Send the final result
-                send("event:result");
-                send(`data:${JSON.stringify({
-                    success: true,
-                    message: `${extractedTasks.length} tâches extraites, ${categorizedTasks.length} jalons catégorisés.`,
-                    projectId: id,
-                    fileName: file.name,
-                    trade,
-                    count: categorizedTasks.length,
-                    data: categorizedTasks
-                })}`);
-
-            } catch (error: unknown) {
-                const errMsg = error instanceof Error ? error.message : String(error);
-                console.error("Planning upload error:", errMsg);
-                send("event:error");
-                send(`data:${JSON.stringify({ error: `Erreur upload: ${errMsg}` })}`);
-            } finally {
-                controller.close();
-            }
-        }
+    // Process in background — fire and forget
+    processInBackground(job.id, buffer, id, trade, file.name).catch(err => {
+        console.error("Background planning processing failed:", err);
+        updateJob(job.id, { status: 'error', error: String(err) });
     });
 
-    return new Response(stream, {
-        headers: {
-            "Content-Type": "text/event-stream",
-            "Cache-Control": "no-cache",
-            "Connection": "keep-alive",
-        },
+    return NextResponse.json({ jobId: job.id, status: 'processing' });
+}
+
+async function processInBackground(jobId: string, buffer: Buffer, projectId: string, trade: string, fileName: string) {
+    // ===== STEP 1: Deterministic extraction =====
+    updateJob(jobId, { progress: 'Extraction du PDF...' });
+    console.log("Step 1: Extracting table data with pdf.js-extract...");
+
+    let extractedTasks: ExtractedTask[];
+    try {
+        extractedTasks = await extractPlanningFromPDF(buffer);
+        console.log(`Extracted ${extractedTasks.length} tasks deterministically`);
+    } catch (extractError: unknown) {
+        const msg = extractError instanceof Error ? extractError.message : String(extractError);
+        console.error("PDF extraction failed:", msg);
+        updateJob(jobId, { status: 'error', error: `Erreur extraction: ${msg}` });
+        return;
+    }
+
+    if (extractedTasks.length === 0) {
+        updateJob(jobId, { status: 'error', error: "Aucune tâche trouvée dans le PDF." });
+        return;
+    }
+
+    updateJob(jobId, { progress: `${extractedTasks.length} tâches extraites, catégorisation IA...` });
+
+    // ===== STEP 2: AI categorization =====
+    const apiKey = process.env.GEMINI_API_KEY;
+    let categorizedTasks;
+
+    try {
+        if (apiKey) {
+            console.log("Step 2: Categorizing tasks with Gemini AI...");
+            try {
+                categorizedTasks = await categorizeTasks(extractedTasks, trade, apiKey, jobId);
+                console.log("AI categorization complete");
+            } catch (aiError: unknown) {
+                const msg = aiError instanceof Error ? aiError.message : String(aiError);
+                console.warn("AI categorization failed, using fallback:", msg);
+                categorizedTasks = fallbackCategorize(extractedTasks, trade);
+            }
+        } else {
+            console.log("Step 2: No API key, using rule-based categorization");
+            categorizedTasks = fallbackCategorize(extractedTasks, trade);
+        }
+    } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        updateJob(jobId, { status: 'error', error: `Erreur catégorisation: ${msg}` });
+        return;
+    }
+
+    console.log(`Returning ${categorizedTasks.length} categorized milestones`);
+
+    updateJob(jobId, {
+        status: 'done',
+        progress: 'Terminé',
+        result: {
+            success: true,
+            message: `${extractedTasks.length} tâches extraites, ${categorizedTasks.length} jalons catégorisés.`,
+            projectId,
+            fileName,
+            trade,
+            count: categorizedTasks.length,
+            data: categorizedTasks
+        }
     });
 }
 
 /**
  * Use Gemini to intelligently categorize extracted tasks and tag user trade relevance.
- * This is much cheaper/faster than asking Gemini to parse the entire PDF.
  */
-async function categorizeTasks(tasks: ExtractedTask[], trade: string, apiKey: string) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function categorizeTasks(tasks: ExtractedTask[], trade: string, apiKey: string, jobId: string) {
     const ai = new GoogleGenAI({ apiKey });
     const BATCH_SIZE = 80;
-    const TIMEOUT_MS = 180_000; // 3 minutes total
+    const TIMEOUT_MS = 180_000;
 
-    // Split tasks into batches
     const batches: ExtractedTask[][] = [];
     for (let i = 0; i < tasks.length; i += BATCH_SIZE) {
         batches.push(tasks.slice(i, i + BATCH_SIZE));
     }
     console.log(`Splitting ${tasks.length} tasks into ${batches.length} batches of ~${BATCH_SIZE}`);
 
-    // Process all batches in parallel with a global timeout
     const timeoutPromise = new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error(`Gemini API timeout after ${TIMEOUT_MS / 1000}s`)), TIMEOUT_MS)
     );
 
+    let completedBatches = 0;
+
     const batchPromises = batches.map(async (batch, batchIdx) => {
         const offset = batchIdx * BATCH_SIZE;
-        // Compact input: just index|name|lot
         const lines = batch.map((t, i) =>
             `${offset + i}|${t.name}|${t.lot || ''}`
         ).join('\n');
@@ -175,12 +150,14 @@ Réponds en JSON: tableau de [index,catégorie,isUserTrade]. Catégories: "Insta
             json = json.replace(/```json/g, "").replace(/```/g, "").trim();
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const parsed: any[] = JSON.parse(json);
+            completedBatches++;
+            updateJob(jobId, { progress: `Catégorisation IA... (${completedBatches}/${batches.length} lots)` });
             console.log(`Batch ${batchIdx + 1}/${batches.length}: ${parsed.length} tasks categorized`);
             return parsed;
         } catch (batchErr) {
             console.warn(`Batch ${batchIdx + 1} failed:`, batchErr instanceof Error ? batchErr.message : batchErr);
-            // Return empty so other batches can still succeed
-            return [] as any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
+            completedBatches++;
+            return [] as unknown[]; // eslint-disable-line @typescript-eslint/no-explicit-any
         }
     });
 
@@ -198,7 +175,7 @@ Réponds en JSON: tableau de [index,catégorie,isUserTrade]. Catégories: "Insta
         return fallbackCategorize(tasks, trade);
     }
 
-    // Build lookup from AI results — handle both tuple [i,cat,bool] and object {i,category,isUserTrade} formats
+    // Build lookup from AI results
     const categoryMap = new Map<number, { category: string; isUserTrade: boolean }>();
     for (const item of allCategories) {
         if (Array.isArray(item)) {
@@ -207,8 +184,8 @@ Réponds en JSON: tableau de [index,catégorie,isUserTrade]. Catégories: "Insta
             const obj = item as unknown as Record<string, unknown>;
             const idx = (obj.i ?? obj.index ?? obj.idx) as number;
             const cat = (obj.category ?? obj.cat ?? 'Général') as string;
-            const trade = !!(obj.isUserTrade ?? obj.isTrade ?? false);
-            if (typeof idx === 'number') categoryMap.set(idx, { category: cat, isUserTrade: trade });
+            const isTrade = !!(obj.isUserTrade ?? obj.isTrade ?? false);
+            if (typeof idx === 'number') categoryMap.set(idx, { category: cat, isUserTrade: isTrade });
         }
     }
 
@@ -230,10 +207,6 @@ Réponds en JSON: tableau de [index,catégorie,isUserTrade]. Catégories: "Insta
     });
 }
 
-/**
- * Rule-based fallback categorization when Gemini is unavailable.
- * Uses keyword matching on task names and WBS codes.
- */
 function fallbackCategorize(tasks: ExtractedTask[], trade: string) {
     return tasks.map(task => ({
         wbs: task.wbs,
@@ -304,5 +277,5 @@ function isTradeRelated(task: ExtractedTask, trade: string): boolean {
         return name.includes('carrelage') || name.includes('plinthe') || lot.includes('carrelage');
     }
     
-    return false; // "general" trade → nothing highlighted
+    return false;
 }

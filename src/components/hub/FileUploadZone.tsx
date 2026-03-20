@@ -34,6 +34,7 @@ export default function FileUploadZone({
     const [successMessage, setSuccessMessage] = useState("");
     const [fileName, setFileName] = useState("");
     const [progress, setProgress] = useState(0);
+    const [progressText, setProgressText] = useState("");
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const colorMap: Record<string, { border: string; bg: string; text: string; glow: string }> = {
@@ -66,11 +67,7 @@ export default function FileUploadZone({
         setFileName(file.name);
         setState("uploading");
         setProgress(0);
-
-        // Simulate progress while uploading
-        const progressInterval = setInterval(() => {
-            setProgress(prev => Math.min(prev + 10, 90));
-        }, 200);
+        setProgressText("");
 
         try {
             const formData = new FormData();
@@ -81,22 +78,12 @@ export default function FileUploadZone({
                 });
             }
 
-            // 5-minute timeout for the fetch (AI categorization can take ~1 min)
-            const controller = new AbortController();
-            const fetchTimeout = setTimeout(() => controller.abort(), 300_000);
-
             const res = await fetch(`/api/project/${projectId}/${module}/upload`, {
                 method: "POST",
                 body: formData,
-                signal: controller.signal,
             });
 
-            clearTimeout(fetchTimeout);
-            clearInterval(progressInterval);
-            console.log(`[FileUpload] Response status: ${res.status}`);
-
             if (!res.ok) {
-                // Non-streaming error (validation errors)
                 const text = await res.text();
                 try {
                     const errData = JSON.parse(text);
@@ -106,73 +93,83 @@ export default function FileUploadZone({
                 }
             }
 
-            // Parse the SSE stream from the upload route
-            const text = await res.text();
-            console.log(`[FileUpload] Stream response length: ${text.length}`);
-            const lines = text.split("\n");
+            const initialData = await res.json();
 
-            // Find the result or error event
-            let data: Record<string, unknown> | null = null;
-            let errorMsg: string | null = null;
+            // If the response contains a jobId, use polling
+            if (initialData.jobId) {
+                setProgress(20);
+                setProgressText("Extraction en cours...");
 
-            for (let i = 0; i < lines.length; i++) {
-                const line = lines[i].trim();
-                if (line === "event:result" && i + 1 < lines.length) {
-                    const dataLine = lines[i + 1].trim();
-                    if (dataLine.startsWith("data:")) {
-                        try {
-                            data = JSON.parse(dataLine.slice(5));
-                            console.log(`[FileUpload] Parsed result: count=${(data as Record<string, unknown>)?.count}`);
-                        } catch (e) {
-                            console.error("[FileUpload] Failed to parse result JSON:", e);
-                        }
+                // Poll for completion
+                const jobId = initialData.jobId;
+                const POLL_INTERVAL = 3000;
+                const MAX_POLLS = 100; // 5 min max
+                let polls = 0;
+
+                while (polls < MAX_POLLS) {
+                    await new Promise(r => setTimeout(r, POLL_INTERVAL));
+                    polls++;
+
+                    const statusRes = await fetch(`/api/project/${projectId}/planning/status?jobId=${jobId}`);
+                    if (!statusRes.ok) {
+                        throw new Error("Erreur lors de la vérification du statut");
                     }
-                } else if (line === "event:error" && i + 1 < lines.length) {
-                    const dataLine = lines[i + 1].trim();
-                    if (dataLine.startsWith("data:")) {
-                        try {
-                            const errData = JSON.parse(dataLine.slice(5));
-                            errorMsg = errData.error || "Unknown error";
-                        } catch {
-                            errorMsg = dataLine.slice(5);
-                        }
+
+                    const statusData = await statusRes.json();
+                    
+                    // Update progress text from server
+                    if (statusData.progress) {
+                        setProgressText(statusData.progress);
                     }
+                    // Animate progress bar
+                    setProgress(Math.min(20 + (polls / MAX_POLLS) * 70, 90));
+
+                    if (statusData.status === 'done') {
+                        setProgress(100);
+                        const result = statusData.result;
+                        const count = result?.count ?? 0;
+                        if (count === 0) {
+                            setState("error");
+                            setErrorMessage("Fichier reçu mais 0 enregistrement extrait. Vérifiez le format.");
+                            setTimeout(() => { setState("idle"); setProgress(0); }, 6000);
+                        } else {
+                            setState("success");
+                            setSuccessMessage(`${count} enregistrement${count > 1 ? 's' : ''} importé${count > 1 ? 's' : ''} avec succès`);
+                            try {
+                                onUploadComplete?.(result);
+                            } catch (cbErr) {
+                                console.error("Error in onUploadComplete:", cbErr);
+                            }
+                            setTimeout(() => { setState("idle"); setProgress(0); setSuccessMessage(""); }, 5000);
+                        }
+                        return;
+                    } else if (statusData.status === 'error') {
+                        throw new Error(statusData.error || "Erreur de traitement");
+                    }
+                    // else 'processing' → continue polling
                 }
+
+                throw new Error("Timeout: le traitement a pris trop de temps.");
             }
 
-            if (errorMsg) {
-                throw new Error(errorMsg);
-            }
-
-            if (!data) {
-                // Fallback: try parsing the whole response as JSON (for non-streaming routes)
-                try {
-                    data = JSON.parse(text);
-                } catch {
-                    throw new Error("Réponse invalide du serveur.");
-                }
-            }
-
+            // Non-polling response (other modules) — direct JSON result
+            const count = (initialData.count as number) ?? 0;
             setProgress(100);
-
-            // Check if any records were actually parsed
-            const count = (data!.count as number) ?? 0;
             if (count === 0) {
                 setState("error");
-                setErrorMessage(`Fichier reçu mais 0 enregistrement extrait. Vérifiez le format du fichier.`);
+                setErrorMessage("Fichier reçu mais 0 enregistrement extrait. Vérifiez le format.");
                 setTimeout(() => { setState("idle"); setProgress(0); }, 6000);
             } else {
                 setState("success");
                 setSuccessMessage(`${count} enregistrement${count > 1 ? 's' : ''} importé${count > 1 ? 's' : ''} avec succès`);
                 try {
-                    onUploadComplete?.(data);
-                } catch (callbackErr) {
-                    console.error("Error in onUploadComplete callback:", callbackErr);
+                    onUploadComplete?.(initialData);
+                } catch (cbErr) {
+                    console.error("Error in onUploadComplete:", cbErr);
                 }
                 setTimeout(() => { setState("idle"); setProgress(0); setSuccessMessage(""); }, 5000);
             }
         } catch (err) {
-            clearInterval(progressInterval);
             setState("error");
             setErrorMessage(err instanceof Error ? err.message : "Upload failed");
             setTimeout(() => {
@@ -256,7 +253,7 @@ export default function FileUploadZone({
                         <Loader2 size={36} className={`${colors.text} animate-spin`} />
                         <div>
                             <p className="text-sm font-bold text-white">{fileName}</p>
-                            <p className="text-xs text-gray-400 mt-1"><T k="hub_analyzing" />...</p>
+                            <p className="text-xs text-gray-400 mt-1">{progressText || <><T k="hub_analyzing" />...</>}</p>
                         </div>
                         <div className="w-full max-w-xs bg-white/5 h-2 rounded-full overflow-hidden mt-2">
                             <div
