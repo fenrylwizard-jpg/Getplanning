@@ -4,7 +4,7 @@ import { useState } from "react";
 import { CalendarRange, Target, Flag, Clock, Save, Trash2, CheckCircle, Wrench } from "lucide-react";
 import T from "@/components/T";
 import FileUploadZone from "@/components/hub/FileUploadZone";
-import { useRouter } from "next/navigation";
+// useRouter removed — no longer needed after handleConfirm fix
 
 interface PlanningMilestone {
     name: string;
@@ -84,7 +84,6 @@ function assignColor(category: string) {
 }
 
 export default function PlanningTab({ project, readonlyMode }: PlanningTabProps) {
-    const { refresh } = useRouter();
     
     // Check if we have real DB milestones
     const existingMilestones = project.planningMilestones && project.planningMilestones.length > 0 
@@ -110,25 +109,22 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
 
     // Filter smartly: trade lines + their WBS parent section headers
     const tradeCount = allMilestones.filter(m => m.isUserTrade).length;
+    // Collect all parent WBS prefixes of trade lines
+    const parentPrefixes = new Set<string>();
+    for (const m of allMilestones) {
+        if (m.isUserTrade && m.wbs) {
+            const parts = m.wbs.split('.');
+            for (let i = 1; i < parts.length; i++) {
+                parentPrefixes.add(parts.slice(0, i).join('.'));
+            }
+        }
+    }
     const activeMilestones = (() => {
         if (showAll || allMilestones.length <= 50 || tradeCount === 0) return allMilestones;
         
-        // 1. Collect WBS prefixes of all trade-relevant lines
-        const parentPrefixes = new Set<string>();
-        for (const m of allMilestones) {
-            if (m.isUserTrade && m.wbs) {
-                // For WBS '3.2.1.4', add prefixes: '3', '3.2', '3.2.1'
-                const parts = m.wbs.split('.');
-                for (let i = 1; i < parts.length; i++) {
-                    parentPrefixes.add(parts.slice(0, i).join('.'));
-                }
-            }
-        }
-        
-        // 2. Include: trade lines + parent section headers (in original order)
+        // Include: trade lines + parent section headers (in original order)
         return allMilestones.filter(m => {
             if (m.isUserTrade) return true;
-            // Include if this milestone's WBS is a parent of a trade line
             if (m.wbs && parentPrefixes.has(m.wbs)) return true;
             return false;
         });
@@ -189,10 +185,13 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
             });
 
             if (res.ok) {
-                setIsParsed(false); // Accepted! Now it shows as real DB data
-                refresh();
+                // Mark as saved (no longer a "preview") — keep milestones in state
+                setIsParsed(false);
+                // Don't call refresh() — it would reset state to initial value
+                // The milestones are already in state and will display correctly
             } else {
-                alert("Erreur de sauvegarde");
+                const errData = await res.json().catch(() => null);
+                alert(errData?.error || "Erreur de sauvegarde");
             }
         } catch (e) {
             console.error(e);
@@ -399,7 +398,7 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
                             
                             const c = colorClasses[milestone.color || "blue"] || colorClasses.blue;
                             const pctValue = Math.round(milestone.progress * 100);
-                            const isSection = !milestone.isUserTrade && (milestone.wbsLevel || 0) <= 2;
+                            const isSection = !milestone.isUserTrade && !!milestone.wbs && parentPrefixes.has(milestone.wbs);
                             const indent = Math.min(3, (milestone.wbsLevel || 1) - 1);
 
                             // Section headers: bold, no progress input, different style
