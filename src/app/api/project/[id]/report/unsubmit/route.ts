@@ -14,12 +14,16 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
         const queryDate = new Date(date);
         
-        // Calculate start and end of the query date in UTC to find the report
-        const startOfDay = new Date(queryDate);
-        startOfDay.setUTCHours(0, 0, 0, 0);
-        
-        const endOfDay = new Date(queryDate);
-        endOfDay.setUTCHours(23, 59, 59, 999);
+        // Apply the same timezone normalization as the submit endpoint:
+        // CET midnight comes in as UTC 23:00 — shift forward to find the correct day
+        if (date.includes('T') && queryDate.getUTCHours() >= 21) {
+            queryDate.setTime(queryDate.getTime() + 4 * 60 * 60 * 1000);
+        }
+        queryDate.setUTCHours(12, 0, 0, 0);
+
+        // Search the full calendar day in UTC
+        const startOfDay = new Date(Date.UTC(queryDate.getUTCFullYear(), queryDate.getUTCMonth(), queryDate.getUTCDate(), 0, 0, 0));
+        const endOfDay = new Date(Date.UTC(queryDate.getUTCFullYear(), queryDate.getUTCMonth(), queryDate.getUTCDate() + 1, 0, 0, 0));
 
         // Find the report to delete
         const report = await prisma.dailyReport.findFirst({
@@ -27,7 +31,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
                 projectId,
                 date: {
                     gte: startOfDay,
-                    lte: endOfDay
+                    lt: endOfDay
                 }
             },
             include: {

@@ -6,6 +6,8 @@ import T from "@/components/T";
 import { AdminDeletePlanButton, AdminDeleteReportButton } from "./AdminDeleteButtons";
 import { getISOWeek, getISOWeekYear } from "date-fns";
 
+export const dynamic = 'force-dynamic';
+
 const ADMIN_EMAIL = 'admin@eeg.be';
 
 export default async function SMHistoryPage({ params }: { params: Promise<{ id: string }> }) {
