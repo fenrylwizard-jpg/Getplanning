@@ -112,10 +112,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
             include: { taskProgress: true }
         });
         if (existingReport) {
-            if (existingReport.status === 'SUBMITTED') {
-                return NextResponse.json({ error: "A report already exists for this date. Select a different day." }, { status: 409 });
-            }
-            // DRAFT/zombie report — clean it up so the SM can resubmit
+            // Auto-clean any existing report (DRAFT or SUBMITTED) to allow resubmission
+            // This handles the case where unsubmit failed to delete due to timezone mismatch
             for (const progress of existingReport.taskProgress) {
                 if (progress.quantity > 0) {
                     await prisma.task.update({
