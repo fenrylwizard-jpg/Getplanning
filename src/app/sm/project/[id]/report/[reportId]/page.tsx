@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { ArrowLeft, Users, Clock, CheckCircle2, AlertTriangle, FileText, TrendingUp, ImageIcon } from "lucide-react";
+import { ArrowLeft, Users, Clock, AlertTriangle, FileText, TrendingUp, ImageIcon } from "lucide-react";
 
 export const dynamic = 'force-dynamic';
 
@@ -37,7 +37,6 @@ export default async function DailyReportDetail({ params }: { params: Promise<{ 
 
     // Calculate totals
     const totalStandardHours = report.taskProgress.reduce((acc, p) => acc + (p.hours || 0), 0);
-    const totalUnits = report.taskProgress.reduce((acc, p) => acc + p.quantity, 0);
 
     // Efficiency: achieved standard hours vs (workers × 8h expected)
     const workersCount = report.workersCount || 1;
@@ -76,9 +75,20 @@ export default async function DailyReportDetail({ params }: { params: Promise<{ 
                         <div className="text-[10px] font-black uppercase tracking-widest text-gray-500 mt-1">Travailleurs</div>
                     </div>
                     <div className="glass-panel p-5 rounded-md border border-white/5 bg-[#0a1020]/60 backdrop-blur-xl text-center">
-                        <Clock size={18} className="text-emerald-400 mx-auto mb-2" />
-                        <div className="text-2xl font-black text-white">{totalStandardHours.toFixed(1)}<span className="text-sm text-gray-500">H</span></div>
-                        <div className="text-[10px] font-black uppercase tracking-widest text-gray-500 mt-1">Heures Standard</div>
+                        <Clock size={18} className="text-cyan-400 mx-auto mb-2" />
+                        <div className="text-2xl font-black text-white">{expectedHours}<span className="text-sm text-gray-500">H</span></div>
+                        <div className="text-[10px] font-black uppercase tracking-widest text-gray-500 mt-1">Heures Théoriques</div>
+                        <div className="text-[9px] text-gray-600 mt-0.5">{workersCount} × 8h</div>
+                    </div>
+                    <div className={`glass-panel p-5 rounded-md border bg-[#0a1020]/60 backdrop-blur-xl text-center ${totalStandardHours !== expectedHours ? 'border-red-500/40 shadow-[0_0_15px_rgba(239,68,68,0.15)]' : 'border-white/5'}`}>
+                        <Clock size={18} className={`mx-auto mb-2 ${totalStandardHours !== expectedHours ? 'text-red-400' : 'text-emerald-400'}`} />
+                        <div className={`text-2xl font-black ${totalStandardHours !== expectedHours ? 'text-red-400' : 'text-white'}`}>{totalStandardHours.toFixed(1)}<span className="text-sm text-gray-500">H</span></div>
+                        <div className={`text-[10px] font-black uppercase tracking-widest mt-1 ${totalStandardHours !== expectedHours ? 'text-red-400' : 'text-gray-500'}`}>Heures Encodées</div>
+                        {totalStandardHours !== expectedHours && (
+                            <div className="text-[9px] text-red-400 font-bold mt-0.5 animate-pulse">
+                                ≠ {expectedHours}H théoriques
+                            </div>
+                        )}
                     </div>
                     <div className="glass-panel p-5 rounded-md border border-white/5 bg-[#0a1020]/60 backdrop-blur-xl text-center">
                         <TrendingUp size={18} className="text-amber-400 mx-auto mb-2" />
@@ -86,11 +96,6 @@ export default async function DailyReportDetail({ params }: { params: Promise<{ 
                             {efficiency.toFixed(1)}<span className="text-sm text-gray-500">%</span>
                         </div>
                         <div className="text-[10px] font-black uppercase tracking-widest text-gray-500 mt-1">Efficience</div>
-                    </div>
-                    <div className="glass-panel p-5 rounded-md border border-white/5 bg-[#0a1020]/60 backdrop-blur-xl text-center">
-                        <CheckCircle2 size={18} className="text-purple-400 mx-auto mb-2" />
-                        <div className="text-2xl font-black text-white">{totalUnits}</div>
-                        <div className="text-[10px] font-black uppercase tracking-widest text-gray-500 mt-1">Unités Réalisées</div>
                     </div>
                 </div>
 

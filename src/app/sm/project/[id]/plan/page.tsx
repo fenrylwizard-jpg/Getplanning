@@ -58,10 +58,10 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
 
-    const HOURS_PER_WORKER = 40;
+    const [hoursPerWorker, setHoursPerWorker] = useState(40);
     const targetProductivityRatio = 1.0; 
 
-    const totalCapacityHours = workers * HOURS_PER_WORKER;
+    const totalCapacityHours = workers * hoursPerWorker;
     const targetHours = totalCapacityHours * targetProductivityRatio;
 
     // Fetch initial data (tasks & locations)
@@ -335,7 +335,7 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
                                     <T k="workforce_availability" />
                                 </h3>
                                 <div className="flex flex-col sm:flex-row items-center gap-10">
-                                    <div className="w-full sm:w-1/2">
+                                    <div className="w-full sm:w-1/3">
                                         <label htmlFor="workersAmount" className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3"><T k="available_workers_count" /></label>
                                         <div className="relative group">
                                             <input 
@@ -352,12 +352,31 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
                                             <span className="absolute right-6 top-1/2 -translate-y-1/2 text-sm font-bold text-cyan-500/40 uppercase"><T k="persons" /></span>
                                         </div>
                                     </div>
-                                    <div className="w-full sm:w-1/2 flex flex-col items-center justify-center p-6 bg-cyan-500/5 rounded-[30px] border border-cyan-500/10 h-full relative overflow-hidden group">
+                                    <div className="w-full sm:w-1/3">
+                                        <label htmlFor="hoursPerWorker" className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Heures / personne / semaine</label>
+                                        <div className="relative group">
+                                            <input 
+                                                id="hoursPerWorker" 
+                                                type="number" 
+                                                title="Heures par personne par semaine"
+                                                className="w-full bg-black/40 border border-white/10 rounded-md py-4 px-6 text-2xl font-black text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all group-hover:border-white/20 disabled:opacity-50" 
+                                                min="1" 
+                                                max="80" 
+                                                value={hoursPerWorker} 
+                                                onChange={e => setHoursPerWorker(parseInt(e.target.value) || 0)} 
+                                                disabled={isSubmitted}
+                                            />
+                                            <span className="absolute right-6 top-1/2 -translate-y-1/2 text-sm font-bold text-cyan-500/40 uppercase">h</span>
+                                        </div>
+                                        <div className="text-[9px] text-gray-600 mt-1">Par défaut 40h (5j × 8h). Réduire si absences.</div>
+                                    </div>
+                                    <div className="w-full sm:w-1/3 flex flex-col items-center justify-center p-6 bg-cyan-500/5 rounded-[30px] border border-cyan-500/10 h-full relative overflow-hidden group">
                                         <div className="absolute top-0 right-0 w-20 h-20 bg-cyan-500/10 blur-3xl rounded-sm" />
                                         <div className="text-[10px] text-cyan-400 font-black uppercase tracking-[0.2em] mb-2"><T k="target_100" /></div>
                                         <div className="text-5xl sm:text-6xl font-black text-white tracking-tighter drop-shadow-[0_0_20px_rgba(6,182,212,0.4)]">
                                             {targetHours} <span className="text-xl font-light text-cyan-400/60 uppercase">h</span>
                                         </div>
+                                        <div className="text-[9px] text-gray-600 mt-1">{workers} × {hoursPerWorker}h</div>
                                     </div>
                                 </div>
                             </section>

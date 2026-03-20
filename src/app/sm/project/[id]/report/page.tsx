@@ -50,7 +50,7 @@ const CameraInput = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes
 });
 CameraInput.displayName = 'CameraInput';
 
-const HOURS_PER_WORKER_PER_DAY = 8;
+const DEFAULT_HOURS_PER_WORKER_PER_DAY = 8;
 
 export default function ReportWeek({ params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = use(params);
@@ -71,6 +71,7 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
     const [isOffline, setIsOffline] = useState(false);
 
     const [workersCount, setWorkersCount] = useState<number | ''>(0);
+    const [hoursPerWorkerDay, setHoursPerWorkerDay] = useState(DEFAULT_HOURS_PER_WORKER_PER_DAY);
     const [projectTasks, setProjectTasks] = useState<any[]>([]);
     const [taskCategories, setTaskCategories] = useState<string[]>([]);
     const [selectedCategory, setSelectedCategory] = useState<string>("");
@@ -123,8 +124,11 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
     }, [weekStart, existingReports, locale]);
 
     // Daily target hours
+    const theoreticalHoursPerDay = typeof workersCount === 'number' && workersCount > 0
+        ? workersCount * DEFAULT_HOURS_PER_WORKER_PER_DAY
+        : 0;
     const dailyTargetHours = typeof workersCount === 'number' && workersCount > 0
-        ? workersCount * HOURS_PER_WORKER_PER_DAY
+        ? workersCount * hoursPerWorkerDay
         : 0;
 
     useEffect(() => {
@@ -630,36 +634,66 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                 )}
 
                 {/* ═══════════════ WORKFORCE + DAILY TARGET ═══════════════ */}
-                <div className="mechanical-panel p-6 flex flex-col sm:flex-row gap-6 justify-between items-center focus-within:ring-2 focus-within:ring-cyan-500/50 transition-all">
-                    <div className="flex flex-col flex-1 pr-4">
-                        <label htmlFor="workersCount" className="font-bold text-white/90 text-xl mb-1 leading-tight flex items-center gap-2">
-                            <Users size={20} className="text-cyan-400" />
-                            <T k="workforce_count_label" />
-                        </label>
-                        <div className="text-gray-400 text-sm font-medium tracking-wide"><T k="workforce_count_desc" /></div>
-                    </div>
-                    <div className="flex items-center gap-6">
-                        <div className="relative sm:w-[150px]">
-                            <input
-                                id="workersCount"
-                                type="number"
-                                className="w-full bg-[#050810]/50 border border-white/10 text-white text-2xl font-black rounded-md py-4 px-4 outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 transition-all text-center disabled:opacity-50"
-                                placeholder="0"
-                                min="0"
-                                value={workersCount}
-                                disabled={isReportSubmitted}
-                                onChange={(e) => setWorkersCount(e.target.value === '' ? '' : parseInt(e.target.value) || 0)}
-                            />
+                <div className="mechanical-panel p-6 flex flex-col gap-6 focus-within:ring-2 focus-within:ring-cyan-500/50 transition-all">
+                    <div className="flex flex-col sm:flex-row gap-6 justify-between items-center">
+                        <div className="flex flex-col flex-1 pr-4">
+                            <label htmlFor="workersCount" className="font-bold text-white/90 text-xl mb-1 leading-tight flex items-center gap-2">
+                                <Users size={20} className="text-cyan-400" />
+                                <T k="workforce_count_label" />
+                            </label>
+                            <div className="text-gray-400 text-sm font-medium tracking-wide"><T k="workforce_count_desc" /></div>
                         </div>
-                        <div className="text-center">
-                            <div className="text-[10px] font-black uppercase tracking-widest text-orange-400 mb-1">
-                                <T k="daily_target" />
+                        <div className="flex items-center gap-6">
+                            <div className="flex flex-col items-center">
+                                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Ouvriers</label>
+                                <div className="relative sm:w-[120px]">
+                                    <input
+                                        id="workersCount"
+                                        type="number"
+                                        className="w-full bg-[#050810]/50 border border-white/10 text-white text-2xl font-black rounded-md py-4 px-4 outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 transition-all text-center disabled:opacity-50"
+                                        placeholder="0"
+                                        min="0"
+                                        value={workersCount}
+                                        disabled={isReportSubmitted}
+                                        onChange={(e) => setWorkersCount(e.target.value === '' ? '' : parseInt(e.target.value) || 0)}
+                                    />
+                                </div>
                             </div>
-                            <div className="text-3xl font-black text-white">
-                                {dailyTargetHours}<span className="text-sm font-medium text-gray-400">h</span>
+                            <div className="flex flex-col items-center">
+                                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">H/personne</label>
+                                <div className="relative sm:w-[120px]">
+                                    <input
+                                        id="hoursPerWorkerDay"
+                                        type="number"
+                                        className={`w-full bg-[#050810]/50 border text-white text-2xl font-black rounded-md py-4 px-4 outline-none focus:ring-2 transition-all text-center disabled:opacity-50 ${hoursPerWorkerDay !== DEFAULT_HOURS_PER_WORKER_PER_DAY ? 'border-amber-500/40 focus:border-amber-400 focus:ring-amber-400/30' : 'border-white/10 focus:border-cyan-400 focus:ring-cyan-400/30'}`}
+                                        placeholder="8"
+                                        min="1"
+                                        max="12"
+                                        step="0.5"
+                                        value={hoursPerWorkerDay}
+                                        disabled={isReportSubmitted}
+                                        onChange={(e) => setHoursPerWorkerDay(parseFloat(e.target.value) || DEFAULT_HOURS_PER_WORKER_PER_DAY)}
+                                    />
+                                </div>
+                                {hoursPerWorkerDay !== DEFAULT_HOURS_PER_WORKER_PER_DAY && (
+                                    <div className="text-[9px] text-amber-400 mt-1 font-bold">Modifié (défaut: {DEFAULT_HOURS_PER_WORKER_PER_DAY}h)</div>
+                                )}
                             </div>
-                            <div className="text-[10px] text-gray-500">
-                                {typeof workersCount === 'number' ? workersCount : 0} × {HOURS_PER_WORKER_PER_DAY}h
+                            <div className="text-center">
+                                <div className="text-[10px] font-black uppercase tracking-widest text-orange-400 mb-1">
+                                    <T k="daily_target" />
+                                </div>
+                                <div className="text-3xl font-black text-white">
+                                    {dailyTargetHours}<span className="text-sm font-medium text-gray-400">h</span>
+                                </div>
+                                <div className="text-[10px] text-gray-500">
+                                    {typeof workersCount === 'number' ? workersCount : 0} × {hoursPerWorkerDay}h
+                                </div>
+                                {theoreticalHoursPerDay !== dailyTargetHours && theoreticalHoursPerDay > 0 && (
+                                    <div className="text-[9px] text-amber-400 font-bold mt-0.5">
+                                        Théorique: {theoreticalHoursPerDay}h
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
