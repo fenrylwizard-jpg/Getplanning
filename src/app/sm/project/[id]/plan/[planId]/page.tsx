@@ -2,6 +2,9 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle2, ShieldAlert, FileText, Users, Clock, MapPin, ClipboardCheck, Info } from "lucide-react";
 import T from "@/components/T";
+import { getISOWeek, getISOWeekYear } from "date-fns";
+
+export const dynamic = 'force-dynamic';
 
 export default async function SMPlanDetailsPage({ params }: { params: Promise<{ id: string, planId: string }> }) {
     const { id, planId } = await params;
@@ -9,7 +12,16 @@ export default async function SMPlanDetailsPage({ params }: { params: Promise<{ 
     const plan = await prisma.weeklyPlan.findUnique({
         where: { id: planId },
         include: {
-            project: true,
+            project: {
+                include: {
+                    dailyReports: {
+                        orderBy: { date: 'desc' },
+                        include: {
+                            taskProgress: { include: { task: true } }
+                        }
+                    }
+                }
+            },
             tasks: {
                 include: {
                     task: true,
@@ -21,7 +33,23 @@ export default async function SMPlanDetailsPage({ params }: { params: Promise<{ 
     if (!plan) return <div className="p-8 text-center text-white"><T k="plan_not_found" /></div>;
 
     const totalPlannedHours = plan.tasks.reduce((sum, pt) => sum + (pt.plannedQuantity * pt.task.minutesPerUnit) / 60, 0);
-    const totalActualHours = plan.tasks.reduce((sum, pt) => sum + (pt.actualQuantity * pt.task.minutesPerUnit) / 60, 0);
+    
+    // Calculate actual hours from LIVE daily report records (not stale denormalized WeeklyPlanTask.actualQuantity)
+    // This mirrors the approach used on the history list page to ensure consistency
+    const weekReports = plan.project.dailyReports.filter(r => {
+        const d = new Date(r.date);
+        return getISOWeek(d) === plan.weekNumber && getISOWeekYear(d) === plan.year;
+    });
+    const totalActualHours = weekReports.reduce((sum, r) => sum + r.taskProgress.reduce((s, p) => s + (p.hours || 0), 0), 0);
+    
+    // Build a per-task actual quantity map from live reports for the task breakdown
+    const liveActualByTaskId: Record<string, number> = {};
+    for (const report of weekReports) {
+        for (const tp of report.taskProgress) {
+            liveActualByTaskId[tp.taskId] = (liveActualByTaskId[tp.taskId] || 0) + tp.quantity;
+        }
+    }
+    
     const productivity = totalPlannedHours > 0 ? (totalActualHours / totalPlannedHours) * 100 : 0;
 
     return (
@@ -163,13 +191,13 @@ export default async function SMPlanDetailsPage({ params }: { params: Promise<{ 
 
                                         <div className="flex flex-col">
                                             <span className="text-xs font-black text-emerald-500/60 uppercase tracking-widest mb-2"><T k="completed" /></span>
-                                            <div className="text-2xl font-black text-emerald-400">{pt.actualQuantity || 0} <span className="text-xs font-normal opacity-40">{pt.task.unit}</span></div>
-                                            <div className="text-xs text-emerald-400 font-bold tracking-tight mt-1">{(((pt.actualQuantity || 0) * pt.task.minutesPerUnit) / 60).toFixed(1)}H</div>
+                                            <div className="text-2xl font-black text-emerald-400">{liveActualByTaskId[pt.task.id] || 0} <span className="text-xs font-normal opacity-40">{pt.task.unit}</span></div>
+                                            <div className="text-xs text-emerald-400 font-bold tracking-tight mt-1">{(((liveActualByTaskId[pt.task.id] || 0) * pt.task.minutesPerUnit) / 60).toFixed(1)}H</div>
                                         </div>
 
                                         <div className="flex-1 flex justify-end">
-                                            <div className={`w-14 h-14 rounded-full border-[6px] flex items-center justify-center text-xs font-black transition-all ${pt.plannedQuantity > 0 && pt.actualQuantity >= pt.plannedQuantity ? 'border-emerald-500 text-emerald-400 bg-emerald-500/10' : 'border-white/10 text-gray-500 bg-white/5'}`}>
-                                                {pt.plannedQuantity > 0 ? Math.round((pt.actualQuantity / pt.plannedQuantity) * 100) : 0}%
+                                            <div className={`w-14 h-14 rounded-full border-[6px] flex items-center justify-center text-xs font-black transition-all ${pt.plannedQuantity > 0 && (liveActualByTaskId[pt.task.id] || 0) >= pt.plannedQuantity ? 'border-emerald-500 text-emerald-400 bg-emerald-500/10' : 'border-white/10 text-gray-500 bg-white/5'}`}>
+                                                {pt.plannedQuantity > 0 ? Math.round(((liveActualByTaskId[pt.task.id] || 0) / pt.plannedQuantity) * 100) : 0}%
                                             </div>
                                         </div>
                                     </div>
