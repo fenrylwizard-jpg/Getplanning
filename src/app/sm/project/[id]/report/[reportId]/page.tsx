@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { ArrowLeft, Users, Clock, CheckCircle2, AlertTriangle, FileText, TrendingUp } from "lucide-react";
+import { ArrowLeft, Users, Clock, CheckCircle2, AlertTriangle, FileText, TrendingUp, ImageIcon } from "lucide-react";
 
 export const dynamic = 'force-dynamic';
 
@@ -16,6 +16,7 @@ export default async function DailyReportDetail({ params }: { params: Promise<{ 
                 }
             },
             project: true,
+            photos: true,
         }
     });
 
@@ -159,8 +160,27 @@ export default async function DailyReportDetail({ params }: { params: Promise<{ 
                 )}
 
 
+                {/* Photos Gallery */}
+                {report.photos && report.photos.length > 0 && (
+                    <section className="mb-10">
+                        <h3 className="text-xs font-black uppercase tracking-[0.2em] text-purple-400 mb-4 flex items-center gap-2">
+                            <ImageIcon size={14} /> Photos ({report.photos.length})
+                        </h3>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            {report.photos.map((photo: { id: string; url: string; caption?: string | null }) => (
+                                <a key={photo.id} href={photo.url} target="_blank" rel="noopener noreferrer" className="block rounded-md overflow-hidden border border-white/10 hover:border-purple-500/40 transition-all group">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img src={photo.url} alt={photo.caption || 'Photo'} className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300" />
+                                    {photo.caption && (
+                                        <div className="p-2 bg-black/60 text-[10px] font-bold text-gray-400 uppercase tracking-widest truncate">{photo.caption}</div>
+                                    )}
+                                </a>
+                            ))}
+                        </div>
+                    </section>
+                )}
 
-                {/* Late/Blockage Info */}
+
                 {report.lateReason && (
                     <section className="mb-10">
                         <h3 className="text-xs font-black uppercase tracking-[0.2em] text-red-400 mb-4 flex items-center gap-2">

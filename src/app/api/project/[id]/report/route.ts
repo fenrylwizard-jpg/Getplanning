@@ -321,7 +321,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
                     }
                 }
             }
-            return { success: true, adHocIdsMapping };
+            return { success: true, adHocIdsMapping, reportId: dailyReport.id };
         });
 
         return NextResponse.json(transactionResult);

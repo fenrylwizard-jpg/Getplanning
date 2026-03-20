@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import fs from 'fs';
 import path from 'path';
 import sharp from 'sharp';
 
-const prisma = new PrismaClient();
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
@@ -12,9 +11,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         const projectId = resolvedParams.id;
         const body = await req.json();
         
-        const { planTaskId, base64Photo, caption } = body;
+        const { planTaskId, dailyReportId, base64Photo, caption } = body;
 
-        if (!planTaskId || !base64Photo) {
+        if (!base64Photo) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
@@ -25,7 +24,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         }
 
         // Generate unique filename as WebP
-        const filename = `${projectId}_${planTaskId}_${Date.now()}.webp`;
+        const filename = `${projectId}_${planTaskId || 'photo'}_${Date.now()}.webp`;
         const filepath = path.join(uploadDir, filename);
         const fileUrl = `/uploads/${filename}`;
 
@@ -41,11 +40,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         fs.writeFileSync(filepath, webpBuffer);
 
         // Save DB Record
-        const proof = await (prisma.photoProof as unknown as { create: (args: unknown) => Promise<unknown> }).create({
+        const proof = await prisma.photoProof.create({
             data: {
                 url: fileUrl,
                 caption: caption || null,
-                weeklyPlanTaskId: planTaskId
+                ...(dailyReportId ? { dailyReportId } : {})
             }
         });
 

@@ -388,6 +388,7 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
         if (res.ok) {
             const data = await res.json();
             const mapping = data.adHocIdsMapping || {};
+            const dailyReportId = data.reportId;
 
             for (const [tId, base64Photo] of Object.entries(taskPhotos)) {
                 if (!base64Photo) continue;
@@ -400,6 +401,7 @@ export default function ReportWeek({ params }: { params: Promise<{ id: string }>
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             planTaskId: realTaskId,
+                            dailyReportId,
                             base64Photo,
                             caption: "Photo proof"
                         })

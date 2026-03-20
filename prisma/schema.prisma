@@ -338,6 +338,7 @@ model DailyReport {
   
   attendance          Attendance[]
   taskProgress        DailyTaskProgress[]
+  photos              PhotoProof[]
 
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
@@ -383,6 +384,9 @@ model PhotoProof {
   id                  String    @id @default(cuid())
   url                 String    
   caption             String?
+  
+  dailyReportId       String?
+  dailyReport         DailyReport? @relation(fields: [dailyReportId], references: [id], onDelete: Cascade)
   
   createdAt           DateTime  @default(now())
 }
