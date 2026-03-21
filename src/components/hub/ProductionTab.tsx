@@ -1,7 +1,7 @@
 import T from "@/components/T";
 import ProjectAnalyticsCharts from "@/components/ProjectAnalyticsCharts";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle2, ShieldAlert, Clock } from "lucide-react";
+import { ArrowLeft, CheckCircle2, ShieldAlert, Clock, History } from "lucide-react";
 import { HOURLY_RATE_EUR } from "@/lib/xp-engine";
 import WeeklyReportGenerator from "./WeeklyReportGenerator";
 
@@ -76,6 +76,16 @@ export default function ProductionTab({ project }: ProductionTabProps) {
 
     return (
         <div className="flex flex-col gap-8">
+            {/* History Link */}
+            <div className="flex justify-end">
+                <Link
+                    href={`/sm/project/${project.id}/plan/history`}
+                    className="flex items-center gap-2 px-4 py-2 rounded-md bg-violet-500/10 border border-violet-500/20 text-violet-400 hover:bg-violet-500/20 hover:border-violet-500/30 transition-all text-sm font-bold"
+                >
+                    <History size={16} /> Historique du Projet
+                </Link>
+            </div>
+
             {/* Global Progress */}
             <div className="bg-[#080d1a]/80 border border-white/5 rounded-md p-6">
                 <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 mb-4">

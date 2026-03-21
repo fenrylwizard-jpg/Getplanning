@@ -1,167 +1,178 @@
 "use client";
 
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { Download, Loader2 } from 'lucide-react';
-import { useTranslation } from '@/lib/LanguageContext';
 
 export default function WeeklyReportGenerator({ project }: { project: any }) {
-    const { t } = useTranslation();
     const [isGenerating, setIsGenerating] = useState(false);
-    const reportRef = useRef<HTMLDivElement>(null);
 
     const handleGeneratePDF = async () => {
-        if (!reportRef.current) return;
         setIsGenerating(true);
 
         try {
-            // Dynamically import html2pdf to avoid Next.js SSR issues
-            const html2pdf = (await import('html2pdf.js')).default;
+            // Build a printable report in a new window
+            const latestPlan = project.weeklyPlans?.sort((a: any, b: any) => {
+                if (a.year !== b.year) return b.year - a.year;
+                return b.weekNumber - a.weekNumber;
+            })[0];
 
-            const element = reportRef.current;
-            
-            // Temporarily make it visible for capture
-            element.classList.remove('hidden');
+            const today = new Date().toLocaleDateString('fr-FR');
+            const HOURLY_RATE = 43.35;
+            const totalBudgetHrs = project.tasks.reduce((s: number, t: any) => s + (t.quantity * t.minutesPerUnit) / 60, 0);
+            const totalEarnedHrs = project.tasks.reduce((s: number, t: any) => s + (t.completedQuantity * t.minutesPerUnit) / 60, 0);
+            const pct = totalBudgetHrs > 0 ? ((totalEarnedHrs / totalBudgetHrs) * 100).toFixed(1) : '0';
 
-            const opt = {
-                margin:       10,
-                filename:     `Rapport_Hebdo_${project.name}_${new Date().toISOString().split('T')[0]}.pdf`,
-                image:        { type: 'jpeg' as const, quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true, logging: false },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
+            // Build task rows for the latest plan
+            let taskRows = '';
+            if (latestPlan?.tasks) {
+                taskRows = latestPlan.tasks.map((pt: any) => {
+                    const percent = pt.plannedQuantity > 0
+                        ? Math.round((pt.actualQuantity / pt.plannedQuantity) * 100)
+                        : 0;
+                    const color = percent >= 90 ? '#059669' : percent >= 70 ? '#d97706' : '#dc2626';
+                    return `<tr>
+                        <td style="padding:8px;border-bottom:1px solid #e2e8f0;">${pt.task?.description || '—'}</td>
+                        <td style="padding:8px;border-bottom:1px solid #e2e8f0;text-align:center;">${pt.task?.unit || ''}</td>
+                        <td style="padding:8px;border-bottom:1px solid #e2e8f0;text-align:center;">${pt.plannedQuantity}</td>
+                        <td style="padding:8px;border-bottom:1px solid #e2e8f0;text-align:center;font-weight:bold;">${pt.actualQuantity}</td>
+                        <td style="padding:8px;border-bottom:1px solid #e2e8f0;text-align:center;font-weight:bold;color:${color};">${percent}%</td>
+                    </tr>`;
+                }).join('');
+            }
 
-            // @ts-expect-error: html2pdf.js lacks proper TypeScript definitions for dynamic import
-            await html2pdf().set(opt).from(element).save();
+            const html = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <title>Rapport Hebdo - ${project.name}</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family: 'Segoe UI', Helvetica, Arial, sans-serif; color:#1a1a2e; padding:40px; }
+        .header { border-bottom:4px solid #0891b2; padding-bottom:16px; margin-bottom:32px; display:flex; justify-content:space-between; align-items:flex-end; }
+        .header h1 { font-size:24px; color:#0f172a; }
+        .header h2 { font-size:16px; color:#0891b2; margin-top:4px; }
+        .header .meta { text-align:right; font-size:12px; color:#64748b; }
+        .header .meta p { margin:2px 0; }
+        .section { margin-bottom:24px; }
+        .section h3 { font-size:14px; font-weight:700; color:#0f172a; border-bottom:2px solid #e2e8f0; padding-bottom:6px; margin-bottom:12px; }
+        .kpi-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:20px; }
+        .kpi { background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:16px; text-align:center; }
+        .kpi .label { font-size:10px; text-transform:uppercase; letter-spacing:1px; color:#64748b; font-weight:700; }
+        .kpi .value { font-size:22px; font-weight:900; color:#0f172a; margin-top:4px; }
+        .kpi .sub { font-size:11px; color:#94a3b8; }
+        table { width:100%; border-collapse:collapse; font-size:13px; }
+        thead tr { background:#f1f5f9; }
+        th { padding:8px; text-align:center; font-weight:700; color:#334155; border-bottom:2px solid #cbd5e1; }
+        th:first-child { text-align:left; }
+        .issues { background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:12px; font-size:13px; margin-top:12px; }
+        .footer { margin-top:48px; padding-top:16px; border-top:1px solid #e2e8f0; display:flex; justify-content:space-between; font-size:12px; }
+        .footer .sig { text-align:center; width:40%; }
+        .footer .sig .line { border-bottom:1px solid #94a3b8; width:120px; margin:40px auto 0; }
+        @media print { body { padding:20px; } }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>RAPPORT HEBDOMADAIRE</h1>
+            <h2>${project.name}</h2>
+        </div>
+        <div class="meta">
+            <p><strong>Date:</strong> ${today}</p>
+            <p><strong>Réf:</strong> PRJ-${project.id.substring(0, 8).toUpperCase()}</p>
+            ${latestPlan ? `<p><strong>Semaine:</strong> ${latestPlan.weekNumber} / ${latestPlan.year}</p>` : ''}
+            ${project.siteManager?.name ? `<p><strong>Chef de chantier:</strong> ${project.siteManager.name}</p>` : ''}
+        </div>
+    </div>
+
+    <div class="section">
+        <h3>Progression Globale</h3>
+        <div class="kpi-grid">
+            <div class="kpi">
+                <div class="label">Budget MO</div>
+                <div class="value">${Math.round(totalBudgetHrs)} h</div>
+                <div class="sub">${Math.round(totalBudgetHrs * HOURLY_RATE).toLocaleString()} €</div>
+            </div>
+            <div class="kpi">
+                <div class="value" style="color:#059669;">${Math.round(totalEarnedHrs)} h</div>
+                <div class="label">Réalisé</div>
+                <div class="sub">${Math.round(totalEarnedHrs * HOURLY_RATE).toLocaleString()} €</div>
+            </div>
+            <div class="kpi">
+                <div class="value" style="color:#6366f1;">${pct}%</div>
+                <div class="label">Avancement</div>
+                <div class="sub">${project.tasks.length} postes suivis</div>
+            </div>
+        </div>
+    </div>
+
+    ${latestPlan ? `
+    <div class="section">
+        <h3>Détail Semaine ${latestPlan.weekNumber} — ${latestPlan.numberOfWorkers} ouvriers — ${latestPlan.targetHoursCapacity}h capacité</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th style="text-align:left;">Tâche</th>
+                    <th>Unité</th>
+                    <th>Prévu</th>
+                    <th>Réalisé</th>
+                    <th>Efficacité</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${taskRows}
+            </tbody>
+        </table>
+        ${latestPlan.issuesReported ? `<div class="issues"><strong>Problèmes signalés:</strong> ${latestPlan.issuesReported}</div>` : ''}
+    </div>
+    ` : ''}
+
+    <div class="section">
+        <h3>Remarques</h3>
+        <p style="font-size:12px;color:#64748b;">
+            Document généré automatiquement par GetPlanning — ${project.name} — ${today}.
+        </p>
+    </div>
+
+    <div class="footer">
+        <div class="sig">
+            <p><strong>Le Chef de Projet</strong></p>
+            <div class="line"></div>
+        </div>
+        <div class="sig">
+            <p><strong>Le Conducteur de Travaux</strong></p>
+            <div class="line"></div>
+        </div>
+    </div>
+</body>
+</html>`;
+
+            // Open in new window and trigger print (Save as PDF)
+            const printWindow = window.open('', '_blank');
+            if (printWindow) {
+                printWindow.document.write(html);
+                printWindow.document.close();
+                // Wait for content to render then trigger print
+                setTimeout(() => {
+                    printWindow.print();
+                }, 300);
+            }
 
         } catch (error) {
             console.error('Error generating PDF:', error);
         } finally {
-            // Hide it again
-            if (reportRef.current) {
-                reportRef.current.classList.add('hidden');
-            }
             setIsGenerating(false);
         }
     };
 
-    // Prepare data for the report
-    const latestPlan = project.weeklyPlans?.sort((a: any, b: any) => {
-        if (a.year !== b.year) return b.year - a.year;
-        return b.weekNumber - a.weekNumber;
-    })[0];
-
-    const today = new Date().toLocaleDateString('fr-FR');
-
     return (
-        <>
-            <button 
-                onClick={handleGeneratePDF}
-                disabled={isGenerating}
-                className="btn btn-primary flex items-center gap-2"
-            >
-                {isGenerating ? <Loader2 className="animate-spin" size={16} /> : <Download size={16} />}
-                Générer Rapport Hebdo PDF
-            </button>
-
-            {/* Hidden container for the PDF content */}
-            <div className="hidden">
-                <div ref={reportRef} className="bg-white text-black p-8 w-[210mm] min-h-[297mm] mx-auto box-border" style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>
-                    
-                    {/* Header */}
-                    <div className="border-b-4 border-cyan-600 pb-4 mb-8 flex justify-between items-end">
-                        <div>
-                            <h1 className="text-3xl font-black text-slate-800 m-0">RAPPORT HEBDOMADAIRE</h1>
-                            <h2 className="text-xl text-cyan-700 font-bold mt-2">{project.name}</h2>
-                        </div>
-                        <div className="text-right text-sm text-slate-500">
-                            <p><strong>Date:</strong> {today}</p>
-                            <p><strong>Référence:</strong> PRJ-{project.id.substring(0,8).toUpperCase()}</p>
-                            {latestPlan && <p><strong>Semaine:</strong> {latestPlan.weekNumber} / {latestPlan.year}</p>}
-                        </div>
-                    </div>
-
-                    {/* Project Status Summary */}
-                    <div className="mb-8">
-                        <h3 className="text-lg font-bold text-slate-800 border-b border-slate-200 pb-2 mb-4">Statut Global</h3>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-slate-50 p-4 rounded-lg border border-slate-100">
-                                <p className="text-xs text-slate-500 uppercase font-bold tracking-wider">Budget Initial</p>
-                                <p className="text-xl font-bold text-slate-800">{project.totalBudgetHours} h</p>
-                            </div>
-                            <div className="bg-slate-50 p-4 rounded-lg border border-slate-100">
-                                <p className="text-xs text-slate-500 uppercase font-bold tracking-wider">Temps Consommé (Global)</p>
-                                <p className="text-xl font-bold text-slate-800">{project.totalEarnedHours?.toLocaleString()} h</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Latest Weekly Plan Details */}
-                    {latestPlan ? (
-                        <div className="mb-8 pl-1"> {/* page-break-inside: avoid logic could be added here */}
-                            <h3 className="text-lg font-bold text-slate-800 border-b border-slate-200 pb-2 mb-4">Dernier Point - Semaine {latestPlan.weekNumber}</h3>
-                            
-                            <table className="w-full text-sm text-left border-collapse">
-                                <thead>
-                                    <tr className="bg-slate-100 text-slate-700">
-                                        <th className="p-2 border border-slate-200">Poste / Tâche</th>
-                                        <th className="p-2 border border-slate-200 text-center">Prévu</th>
-                                        <th className="p-2 border border-slate-200 text-center">Réalisé</th>
-                                        <th className="p-2 border border-slate-200 text-center">Efficacité</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {latestPlan.tasks.map((pt: any, i: number) => {
-                                        const percent = pt.plannedQuantity > 0 
-                                            ? Math.round((pt.actualQuantity / pt.plannedQuantity) * 100) 
-                                            : 0;
-                                        
-                                        const color = percent >= 90 ? 'text-green-600' : percent >= 70 ? 'text-amber-500' : 'text-red-500';
-
-                                        return (
-                                            <tr key={i} className="border-b border-slate-200">
-                                                <td className="p-2 border-r border-slate-200 font-medium">{pt.task.description}</td>
-                                                <td className="p-2 border-r border-slate-200 text-center text-slate-600">{pt.plannedQuantity}</td>
-                                                <td className="p-2 border-r border-slate-200 text-center font-bold">{pt.actualQuantity}</td>
-                                                <td className={`p-2 text-center font-bold ${color}`}>{percent}%</td>
-                                            </tr>
-                                        )
-                                    })}
-                                </tbody>
-                            </table>
-                            
-                            {latestPlan.notes && (
-                                <div className="mt-4 p-4 bg-amber-50 rounded-lg text-sm border border-amber-100">
-                                    <strong>Commentaires du Chef de Chantier :</strong><br />
-                                    <p className="mt-1 whitespace-pre-wrap">{latestPlan.notes}</p>
-                                </div>
-                            )}
-                        </div>
-                    ) : (
-                        <p className="text-slate-500 italic mb-8">Aucun historique hebdomadaire disponible pour ce chantier.</p>
-                    )}
-
-                    {/* Finances Issues / Remarques */}
-                    <div className="mb-8">
-                        <h3 className="text-lg font-bold text-slate-800 border-b border-slate-200 pb-2 mb-4">Problèmes & Remarques (Administration)</h3>
-                        <p className="text-sm text-slate-600">
-                            Ce document est généré de manière automatique et certifie de l&apos;état d&apos;avancement du projet {project.name} à la date du {today}. Pour toute anomalie constatée sur les quantitatifs, merci de vous rapprocher de la direction de projet ou de laisser un commentaire directement dans la plateforme Worksite Tracker.
-                        </p>
-                    </div>
-
-                    {/* Signatures */}
-                    <div className="mt-16 pt-8 border-t border-slate-200 flex justify-between">
-                        <div className="text-center w-1/2">
-                            <p className="font-bold text-slate-800 mb-16">Le Chef de Projet</p>
-                            <div className="border-b border-slate-300 w-32 mx-auto"></div>
-                        </div>
-                        <div className="text-center w-1/2">
-                            <p className="font-bold text-slate-800 mb-16">Le Conducteur de Travaux / Client</p>
-                            <div className="border-b border-slate-300 w-32 mx-auto"></div>
-                        </div>
-                    </div>
-                    
-                </div>
-            </div>
-        </>
+        <button
+            onClick={handleGeneratePDF}
+            disabled={isGenerating}
+            className="btn btn-primary flex items-center gap-2"
+        >
+            {isGenerating ? <Loader2 className="animate-spin" size={16} /> : <Download size={16} />}
+            Générer Rapport Hebdo PDF
+        </button>
     );
 }
