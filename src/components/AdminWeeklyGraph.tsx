@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Brush } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Brush, ReferenceLine } from 'recharts';
 import T from '@/components/T';
 
 interface GraphData {
     timeLabel: string;
-    [projectName: string]: string | number;
+    [key: string]: string | number;
 }
 
 const PROJECT_THEMES = [
@@ -22,11 +22,14 @@ const PROJECT_THEMES = [
     { hex: '#14b8a6', border: 'border-teal-500', bg: 'bg-teal-500/15', activeDot: 'bg-teal-500' }
 ];
 
+type ViewMode = 'hours' | 'pct';
+
 export default function AdminWeeklyGraph() {
     const [data, setData] = useState<GraphData[]>([]);
     const [projects, setProjects] = useState<string[]>([]);
     const [visibleProjects, setVisibleProjects] = useState<Set<string>>(new Set());
     const [loading, setLoading] = useState(true);
+    const [viewMode, setViewMode] = useState<ViewMode>('hours');
 
     useEffect(() => {
         const fetchData = async () => {
@@ -36,7 +39,6 @@ export default function AdminWeeklyGraph() {
                     const result = await res.json();
                     setData(result.data || []);
                     setProjects(result.projects || []);
-                    // Initially show all projects
                     setVisibleProjects(new Set(result.projects || []));
                 }
             } catch (err) {
@@ -86,6 +88,36 @@ export default function AdminWeeklyGraph() {
         );
     }
 
+    // Custom tooltip
+    const CustomTooltip = ({ active, payload, label }: any) => {
+        if (!active || !payload) return null;
+        return (
+            <div className="bg-[#0a1428] border border-white/10 rounded-lg p-3 shadow-xl min-w-[180px]">
+                <p className="text-xs text-gray-400 mb-2 font-bold">{label}</p>
+                {payload.map((entry: any, i: number) => {
+                    const name = entry.name as string;
+                    const isPlanned = name.includes('(Planifié)');
+                    return (
+                        <div key={i} className="flex justify-between items-center gap-4 py-0.5">
+                            <span className="flex items-center gap-1.5 text-xs text-gray-300">
+                                <span className="w-2.5 h-0.5 rounded-full" style={{
+                                    backgroundColor: entry.color,
+                                    opacity: isPlanned ? 0.5 : 1,
+                                }} />
+                                {name}
+                            </span>
+                            <span className="text-xs font-bold text-white">
+                                {typeof entry.value === 'number' 
+                                    ? viewMode === 'hours' ? `${entry.value.toFixed(1)}h` : `${entry.value}%`
+                                    : entry.value}
+                            </span>
+                        </div>
+                    );
+                })}
+            </div>
+        );
+    };
+
     return (
         <div className="glass-panel rounded-md p-6 w-full mt-6 border border-white/5">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
@@ -94,13 +126,28 @@ export default function AdminWeeklyGraph() {
                         <T k="weekly_performance_graph" />
                     </h2>
                     <p className="text-sm text-gray-400">
-                        <T k="weekly_performance_desc" />
+                        Planifié vs Réalisé — par projet et par semaine
                     </p>
                 </div>
 
-                <div className="mt-4 md:mt-0 flex gap-2">
-                     <button onClick={() => toggleAll(true)} className="text-xs px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/80 transition-colors border border-white/10">Tout cocher</button>
-                     <button onClick={() => toggleAll(false)} className="text-xs px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/80 transition-colors border border-white/10">Tout décocher</button>
+                <div className="mt-4 md:mt-0 flex gap-2 items-center">
+                    {/* View Mode Toggle */}
+                    <div className="flex rounded-md overflow-hidden border border-white/10 mr-2">
+                        <button
+                            onClick={() => setViewMode('hours')}
+                            className={`text-xs px-3 py-1.5 font-bold transition-all ${viewMode === 'hours' ? 'bg-purple-500/30 text-purple-300 border-r border-purple-500/30' : 'bg-white/3 text-gray-500 border-r border-white/10 hover:text-white/80'}`}
+                        >
+                            ⏱ Heures
+                        </button>
+                        <button
+                            onClick={() => setViewMode('pct')}
+                            className={`text-xs px-3 py-1.5 font-bold transition-all ${viewMode === 'pct' ? 'bg-purple-500/30 text-purple-300' : 'bg-white/3 text-gray-500 hover:text-white/80'}`}
+                        >
+                            % Productivité
+                        </button>
+                    </div>
+                    <button onClick={() => toggleAll(true)} className="text-xs px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/80 transition-colors border border-white/10">Tout cocher</button>
+                    <button onClick={() => toggleAll(false)} className="text-xs px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/80 transition-colors border border-white/10">Tout décocher</button>
                 </div>
             </div>
 
@@ -125,8 +172,18 @@ export default function AdminWeeklyGraph() {
                 })}
             </div>
 
+            {/* Legend hint */}
+            <div className="flex items-center gap-4 mb-3 text-[10px] text-gray-600 uppercase tracking-wider font-bold">
+                <span className="flex items-center gap-1.5">
+                    <span className="w-6 h-0.5 bg-gray-500 rounded" /> Planifié (trait continu)
+                </span>
+                <span className="flex items-center gap-1.5">
+                    <span className="w-6 h-0.5 border-t-2 border-dashed border-gray-500" /> Réalisé (trait pointillé épais)
+                </span>
+            </div>
+
             {/* Chart Area */}
-            <div className="h-[400px] w-full mt-4">
+            <div className="h-[420px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                         <defs>
@@ -150,36 +207,68 @@ export default function AdminWeeklyGraph() {
                         <YAxis 
                             stroke="#64748b" 
                             fontSize={12}
-                            tickFormatter={(val) => `${val}h`}
+                            tickFormatter={(val) => viewMode === 'hours' ? `${val}h` : `${val}%`}
                             width={50}
+                            domain={viewMode === 'pct' ? [0, 'auto'] : [0, 'auto']}
                         />
-                        <Tooltip 
-                            contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', borderRadius: '12px' }}
-                            itemStyle={{ color: '#e2e8f0', fontSize: '13px' }}
-                            labelStyle={{ color: '#94a3b8', marginBottom: '8px', fontSize: '12px' }}
-                            formatter={(value: any, name: any) => {
-                                if (typeof value === 'number') {
-                                    return [`${value.toFixed(1)}h`, undefined];
-                                }
-                                return [String(value), undefined];
+                        {viewMode === 'pct' && (
+                            <ReferenceLine y={100} stroke="#22c55e" strokeDasharray="6 4" strokeWidth={1} label={{ value: '100%', position: 'right', fill: '#22c55e', fontSize: 10 }} />
+                        )}
+                        <Tooltip content={<CustomTooltip />} />
+                        <Legend 
+                            wrapperStyle={{ paddingTop: '12px', fontSize: '11px' }} 
+                            formatter={(value: string) => {
+                                return <span className="text-gray-400 text-[11px]">{value}</span>;
                             }}
                         />
-                        <Legend wrapperStyle={{ paddingTop: '20px' }} />
                         
                         {projects.map((proj, idx) => {
                             const theme = PROJECT_THEMES[idx % PROJECT_THEMES.length];
                             if (!visibleProjects.has(proj)) return null;
+
+                            if (viewMode === 'pct') {
+                                // In % mode: just show productivity % per project
+                                return (
+                                    <Line
+                                        key={`${proj}_pct`}
+                                        type="monotone"
+                                        dataKey={`${proj}_pct`}
+                                        name={`${proj}`}
+                                        stroke={theme.hex}
+                                        strokeWidth={3}
+                                        dot={{ fill: '#0f172a', strokeWidth: 2, r: 4, stroke: theme.hex }}
+                                        activeDot={{ r: 6, strokeWidth: 0, fill: theme.hex }}
+                                        connectNulls
+                                    />
+                                );
+                            }
+
+                            // Hours mode: show planned (solid) + achieved (dashed) per-project
                             return (
-                                <Line
-                                    key={proj}
-                                    type="monotone"
-                                    dataKey={proj}
-                                    stroke={theme.hex}
-                                    strokeWidth={3}
-                                    dot={{ fill: '#0f172a', strokeWidth: 2, r: 4 }}
-                                    activeDot={{ r: 6, strokeWidth: 0 }}
-                                    connectNulls
-                                />
+                                <React.Fragment key={proj}>
+                                    <Line
+                                        type="monotone"
+                                        dataKey={`${proj}_planned`}
+                                        name={`${proj} (Planifié)`}
+                                        stroke={theme.hex}
+                                        strokeWidth={2}
+                                        strokeOpacity={0.5}
+                                        dot={{ fill: '#0f172a', strokeWidth: 2, r: 3, stroke: theme.hex }}
+                                        activeDot={{ r: 5, strokeWidth: 0, fill: theme.hex }}
+                                        connectNulls
+                                    />
+                                    <Line
+                                        type="monotone"
+                                        dataKey={`${proj}_achieved`}
+                                        name={`${proj} (Réalisé)`}
+                                        stroke={theme.hex}
+                                        strokeWidth={3}
+                                        strokeDasharray="8 4"
+                                        dot={{ fill: theme.hex, strokeWidth: 0, r: 4 }}
+                                        activeDot={{ r: 7, strokeWidth: 2, stroke: '#fff', fill: theme.hex }}
+                                        connectNulls
+                                    />
+                                </React.Fragment>
                             );
                         })}
 
@@ -189,7 +278,7 @@ export default function AdminWeeklyGraph() {
                             stroke="#8b5cf6"
                             fill="#0f172a"
                             travellerWidth={10}
-                            tickFormatter={() => ''} /* hide ticks */
+                            tickFormatter={() => ''}
                         />
                     </LineChart>
                 </ResponsiveContainer>
