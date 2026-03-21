@@ -23,13 +23,17 @@ export async function GET(req: Request) {
     const currentWeek = getISOWeek(now);
     const currentYear = getISOYear(now);
 
-    // Find open plans: past weeks always, current week only if force=true (admin clicked)
+    // Find plans to process.
+    // When force=true (admin manual), also re-process already-closed plans for current week
+    // to fix any stale cached data.
     const openPlans = await prisma.weeklyPlan.findMany({
         where: {
-            isClosed: false,
             OR: [
-                { year: { lt: currentYear } },
-                { year: currentYear, weekNumber: { [force ? 'lte' : 'lt']: currentWeek } },
+                // Always: unclosed plans from past weeks
+                { isClosed: false, year: { lt: currentYear } },
+                { isClosed: false, year: currentYear, weekNumber: { [force ? 'lte' : 'lt']: currentWeek } },
+                // Force mode: re-process current week plans even if already closed (recalculate)
+                ...(force ? [{ year: currentYear, weekNumber: currentWeek }] : []),
             ]
         },
         include: {
@@ -53,18 +57,34 @@ export async function GET(req: Request) {
     const closedSummaries = [];
 
     for (const plan of openPlans) {
-        // Calculate actual performance
+        // ──── RECALCULATE actualQuantity from daily reports (source of truth) ────
+        // The cached actualQuantity can be stale when reports are deleted/resubmitted.
+        const weekReports = plan.project.dailyReports.filter(r => {
+            const d = new Date(r.date);
+            return getISOWeek(d) === plan.weekNumber && getISOYear(d) === plan.year;
+        });
+
+        for (const wpt of plan.tasks) {
+            let trueActual = 0;
+            for (const report of weekReports) {
+                const prog = report.taskProgress.find(p => p.taskId === wpt.taskId);
+                if (prog) trueActual += prog.quantity;
+            }
+            if (wpt.actualQuantity !== trueActual) {
+                await prisma.weeklyPlanTask.update({
+                    where: { id: wpt.id },
+                    data: { actualQuantity: trueActual }
+                });
+                wpt.actualQuantity = trueActual; // update in-memory too
+            }
+        }
+
+        // ──── Calculate performance from corrected values ────
         const plannedMins = plan.tasks.reduce((sum, pt) => sum + (pt.plannedQuantity * pt.task.minutesPerUnit), 0);
         const achievedMins = plan.tasks.reduce((sum, pt) => sum + (pt.actualQuantity * pt.task.minutesPerUnit), 0);
         const plannedHours = plannedMins / 60;
         const achievedHours = achievedMins / 60;
         const targetReached = achievedHours >= plan.targetHoursCapacity * 0.9; // 90% threshold
-
-        // Get daily reports for this plan's week
-        const weekReports = plan.project.dailyReports.filter(r => {
-            const d = new Date(r.date);
-            return getISOWeek(d) === plan.weekNumber && getISOYear(d) === plan.year;
-        });
 
         const totalWorkers = weekReports.reduce((sum, r) => sum + (r.workersCount || 0), 0);
         const avgWorkers = weekReports.length > 0 ? totalWorkers / weekReports.length : plan.numberOfWorkers;
