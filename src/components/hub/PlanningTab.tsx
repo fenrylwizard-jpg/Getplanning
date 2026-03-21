@@ -386,35 +386,67 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
                     </div>
                 </div>
 
-                {/* Timeline header with months */}
-                <div className="relative min-w-[800px]">
-                    {/* Month markers dynamically based on min/max */}
-                    <div className="flex mb-4 ml-[320px] sticky top-0 z-10 bg-[#080d1a] py-2 border-b border-white/10">
-                        {Array.from({ length: Math.ceil(totalSpan / (30*24*60*60*1000)) + 1 }, (_, i) => {
-                            const d = new Date(minDate + i * 30 * 24 * 60 * 60 * 1000);
-                            return (
-                                <div key={i} className="flex-1 text-center">
-                                    <span className="text-xs uppercase tracking-widest text-gray-400 font-bold">
-                                        {d.toLocaleString("fr", { month: "short" })}
-                                    </span>
-                                    <span className="text-[10px] text-gray-500 ml-1">{d.getFullYear().toString().slice(2)}</span>
+                {/* Timeline header with year + month rows */}
+                <div className="relative min-w-[900px]">
+                    {(() => {
+                        // Build proper monthly columns from minDate to maxDate
+                        const startD = new Date(minDate);
+                        const endD = new Date(maxDate);
+                        const months: { year: number; month: number; label: string }[] = [];
+                        const cur = new Date(startD.getFullYear(), startD.getMonth(), 1);
+                        while (cur <= endD) {
+                            months.push({
+                                year: cur.getFullYear(),
+                                month: cur.getMonth(),
+                                label: cur.toLocaleString('fr', { month: 'short' }).toUpperCase()
+                            });
+                            cur.setMonth(cur.getMonth() + 1);
+                        }
+                        // Group months by year
+                        const years: { year: number; colCount: number }[] = [];
+                        for (const m of months) {
+                            const last = years[years.length - 1];
+                            if (last && last.year === m.year) { last.colCount++; }
+                            else { years.push({ year: m.year, colCount: 1 }); }
+                        }
+                        const LABEL_W = 380;
+                        return (
+                            <div className="sticky top-0 z-10 bg-[#080d1a] pb-1 border-b border-white/15">
+                                {/* Year row */}
+                                <div className="flex" style={{ marginLeft: LABEL_W }}>
+                                    {years.map((y, i) => (
+                                        <div key={i} className="text-center border-l border-white/10 first:border-l-0" style={{ flex: y.colCount }}>
+                                            <span className="text-sm font-black text-white tracking-widest">{y.year}</span>
+                                        </div>
+                                    ))}
                                 </div>
-                            );
-                        })}
-                    </div>
+                                {/* Month row */}
+                                <div className="flex" style={{ marginLeft: LABEL_W }}>
+                                    {months.map((m, i) => (
+                                        <div key={i} className="flex-1 text-center border-l border-white/5 first:border-l-0 py-0.5">
+                                            <span className="text-[11px] font-bold text-gray-300 tracking-wider">{m.label}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        );
+                    })()}
 
-                    {/* Today marker */}
-                    <div
-                        className="absolute top-0 bottom-0 w-0.5 bg-red-500/60 z-20"
-                        style={{ left: `calc(220px + ${todayPct}% * (100% - 220px) / 100)` }}
-                    >
-                        <div className="absolute -top-1 -left-3 px-1.5 py-0.5 rounded bg-red-500 text-[8px] font-black text-white uppercase tracking-wider whitespace-nowrap">
-                            Aujourd&apos;hui
+                    {/* Today marker — properly positioned */}
+                    {todayPct >= 0 && todayPct <= 100 && (
+                        <div
+                            className="absolute top-0 bottom-0 z-20 pointer-events-none"
+                            style={{ left: `calc(380px + (100% - 380px) * ${todayPct / 100})` }}
+                        >
+                            <div className="w-0.5 h-full bg-red-500/70" />
+                            <div className="absolute top-1 -left-[22px] px-2 py-0.5 rounded bg-red-500 text-[9px] font-black text-white uppercase tracking-wider whitespace-nowrap">
+                                Aujourd&apos;hui
+                            </div>
                         </div>
-                    </div>
+                    )}
 
                     {/* Gantt bars */}
-                    <div className="flex flex-col gap-0.5">
+                    <div className="flex flex-col gap-0.5 mt-1">
                         {activeMilestones.map((milestone, idx) => {
                             const startNum = new Date(milestone.startDate).getTime();
                             const endNum = new Date(milestone.endDate).getTime();
@@ -425,30 +457,26 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
                             const startPct = Math.max(0, Math.min(100, ((safeStart - minDate) / totalSpan) * 100));
                             const widthPct = Math.max(1, Math.min(100, ((safeEnd - safeStart) / totalSpan) * 100));
                             
-                            const c = colorClasses[milestone.color || "blue"] || colorClasses.blue;
+                            const c = colorClasses[milestone.color || 'blue'] || colorClasses.blue;
                             const pctValue = Math.round(milestone.progress * 100);
-                            // Section/title line: any non-trade milestone without a lot, OR a parent WBS prefix
                             const isSection = !milestone.isUserTrade && !!milestone.wbs && (!milestone.lot || parentPrefixes.has(milestone.wbs));
                             const indent = Math.min(3, (milestone.wbsLevel || 1) - 1);
 
-                            // Section headers: bold, no progress input, different style
+                            // Section headers
                             if (isSection) {
                                 return (
-                                    <div key={idx} className="flex items-center gap-3 rounded-md px-2 py-2 mt-2 border-b border-white/10 bg-white/[0.02]">
+                                    <div key={idx} className="flex items-center gap-2 rounded-md px-2 py-2 mt-1.5 border-b border-white/10 bg-white/[0.03]">
                                         <div className="w-[320px] flex-shrink-0" style={{ paddingLeft: `${indent * 14}px` }}>
                                             <div className="text-sm font-black uppercase tracking-wide text-white">
                                                 <span className="text-gray-500 mr-1.5">{milestone.wbs}</span>
                                                 {milestone.name}
                                             </div>
-                                            <div className="flex items-center gap-2">
-                                                <span className={`text-[11px] uppercase tracking-widest ${c.text} font-bold`}>{milestone.category}</span>
-                                                <span className="text-[10px] text-gray-500">{milestone.startDate} → {milestone.endDate}</span>
-                                            </div>
+                                            <span className={`text-[11px] uppercase tracking-widest ${c.text} font-bold`}>{milestone.category}</span>
                                         </div>
-                                        <div className="w-[52px] flex-shrink-0" />
-                                        <div className="flex-1 relative h-5">
+                                        <div className="w-[56px] flex-shrink-0" />
+                                        <div className="flex-1 relative h-6">
                                             <div
-                                                className="absolute top-1 h-3 rounded bg-white/5 border border-white/10"
+                                                className={`absolute top-1 h-4 rounded ${c.bg} border ${c.border}`}
                                                 style={{ left: `${startPct}%`, width: `${widthPct}%` }}
                                             />
                                         </div>
@@ -456,32 +484,34 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
                                 );
                             }
 
+                            // Regular task rows
                             return (
-                                <div key={idx} className="flex items-center gap-3 group hover:bg-white/5 rounded-md px-2 py-1.5 transition-colors">
+                                <div key={idx} className="flex items-center gap-2 group hover:bg-white/5 rounded-md px-2 py-1.5 transition-colors">
                                     <div className="w-[320px] flex-shrink-0" style={{ paddingLeft: `${indent * 14}px` }}>
                                         <div className={`text-sm font-bold leading-tight ${milestone.isUserTrade ? 'text-yellow-300' : 'text-gray-100'}`}>
                                             {milestone.isUserTrade && <span className="mr-1">⭐</span>}
                                             <span className="text-gray-500 mr-1">{milestone.wbs}</span>
                                             {milestone.name}
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                            <span className={`text-[11px] uppercase tracking-widest ${c.text} font-bold`}>{milestone.category}</span>
-                                            <span className="text-[10px] text-gray-500">{milestone.startDate} → {milestone.endDate}</span>
-                                        </div>
+                                        <span className={`text-[11px] uppercase tracking-widest ${c.text} font-bold`}>{milestone.category}</span>
                                     </div>
                                     <div className="w-[56px] flex-shrink-0">
-                                        <input
-                                            type="number"
-                                            min={0}
-                                            max={100}
-                                            value={pctValue}
-                                            onChange={(e) => {
-                                                const val = Math.min(100, Math.max(0, parseInt(e.target.value) || 0));
-                                                handleProgressChange(idx, val / 100);
-                                            }}
-                                            className="w-full text-center text-sm font-black bg-white/5 border border-white/10 rounded px-1 py-1 text-white outline-none focus:border-purple-500/50 focus:bg-purple-500/10 transition-colors"
-                                            title="% avancement"
-                                        />
+                                        {!readonlyMode ? (
+                                            <input
+                                                type="number"
+                                                min={0}
+                                                max={100}
+                                                value={pctValue}
+                                                onChange={(e) => {
+                                                    const val = Math.min(100, Math.max(0, parseInt(e.target.value) || 0));
+                                                    handleProgressChange(idx, val / 100);
+                                                }}
+                                                className="w-full text-center text-sm font-black bg-white/10 border border-white/20 rounded px-1 py-1 text-white outline-none focus:border-purple-500/50 focus:bg-purple-500/10 transition-colors"
+                                                title="% avancement"
+                                            />
+                                        ) : (
+                                            <span className="text-sm font-black text-white text-center block">{pctValue}%</span>
+                                        )}
                                     </div>
                                     <div className="flex-1 relative h-8">
                                         <div
