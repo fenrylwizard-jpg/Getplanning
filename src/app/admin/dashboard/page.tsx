@@ -170,9 +170,16 @@ export default function AdminDashboard() {
         setCronRunning(true);
         setCronResult(null);
         try {
-            const res = await fetch('/api/cron/weekly-close?secret=gp-internal');
+            const res = await fetch('/api/cron/weekly-close?secret=gp-internal&force=1');
             const data = await res.json();
             setCronResult(data.message || t('week_closed'));
+            
+            // Store the report data and navigate to the report page
+            if (data.success && data.projects && data.projects.length > 0) {
+                localStorage.setItem('weeklyReport', JSON.stringify(data));
+                window.open(`/admin/weekly-report?week=${data.weekNumber}&year=${data.year}`, '_blank');
+            }
+            
             fetchData();
         } catch {
             setCronResult(t('auto_close_error'));
