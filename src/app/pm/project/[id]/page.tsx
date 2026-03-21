@@ -40,6 +40,9 @@ export default async function ProjectHub({ params, searchParams }: { params: Pro
             },
             revisions: {
                 orderBy: { uploadedAt: 'desc' }
+            },
+            planningMilestones: {
+                orderBy: { sortOrder: 'asc' }
             }
         }
     });

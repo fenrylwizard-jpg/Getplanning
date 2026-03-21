@@ -84,6 +84,10 @@ model PlanningMilestone {
   progress    Float    @default(0)
   isComplete  Boolean  @default(false)
   sortOrder   Int      @default(0)
+  wbs         String?
+  wbsLevel    Int      @default(0)
+  isUserTrade Boolean  @default(false)
+  lot         String?
   createdAt   DateTime @default(now())
 }
 

@@ -57,7 +57,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
                         endDate,
                         progress: typeof m.progress === 'number' ? Math.min(1, Math.max(0, m.progress)) : 0,
                         isComplete: (m.progress || 0) >= 1,
-                        sortOrder: i
+                        sortOrder: i,
+                        wbs: m.wbs || null,
+                        wbsLevel: typeof m.wbsLevel === 'number' ? m.wbsLevel : 0,
+                        isUserTrade: !!m.isUserTrade,
+                        lot: m.lot || null,
                     }
                 });
             }

@@ -16,6 +16,7 @@ interface PlanningMilestone {
     isUserTrade?: boolean;
     wbs?: string;
     wbsLevel?: number;
+    lot?: string;
 }
 
 const TRADE_OPTIONS = [
@@ -48,6 +49,10 @@ interface PlanningTabProps {
             endDate: Date;
             progress: number;
             isComplete: boolean;
+            wbs: string | null;
+            wbsLevel: number;
+            isUserTrade: boolean;
+            lot: string | null;
         }[];
     };
     readonlyMode?: boolean;
@@ -93,7 +98,11 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
             startDate: new Date(m.startDate).toISOString().split('T')[0],
             endDate: new Date(m.endDate).toISOString().split('T')[0],
             progress: m.progress,
-            color: assignColor(m.category || "Général")
+            color: assignColor(m.category || "Général"),
+            wbs: m.wbs || undefined,
+            wbsLevel: m.wbsLevel || 0,
+            isUserTrade: m.isUserTrade || false,
+            lot: m.lot || undefined,
           }))
         : null;
 
@@ -122,10 +131,12 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
     const activeMilestones = (() => {
         if (showAll || allMilestones.length <= 50 || tradeCount === 0) return allMilestones;
         
-        // Include: trade lines + parent section headers (in original order)
+        // Include: trade lines + parent section headers + title lines (no lot = structural header)
         return allMilestones.filter(m => {
             if (m.isUserTrade) return true;
             if (m.wbs && parentPrefixes.has(m.wbs)) return true;
+            // Title lines: non-trade lines without a lot are structural headers — always include
+            if (!m.isUserTrade && !m.lot && m.wbs) return true;
             return false;
         });
     })();
@@ -338,7 +349,7 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
             </div>
 
             {/* Gantt Timeline */}
-            <div className={`bg-[#080d1a]/80 border ${isParsed ? 'border-purple-500/50 shadow-[0_0_30px_rgba(168,85,247,0.15)]' : 'border-white/5'} rounded-md p-6 overflow-x-auto transition-all`}>
+            <div className={`bg-[#080d1a]/80 border ${isParsed ? 'border-purple-500/50 shadow-[0_0_30px_rgba(168,85,247,0.15)]' : 'border-white/5'} rounded-md p-6 overflow-x-auto overflow-y-auto max-h-[80vh] transition-all relative`}>
                 <div className="flex items-center justify-between mb-6">
                     <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 flex items-center gap-2">
                         <CalendarRange size={16} className={isParsed ? "text-purple-400" : "text-blue-400"} />
@@ -360,7 +371,7 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
                 {/* Timeline header with months */}
                 <div className="relative min-w-[800px]">
                     {/* Month markers dynamically based on min/max */}
-                    <div className="flex mb-4 ml-[220px]">
+                    <div className="flex mb-4 ml-[220px] sticky top-0 z-10 bg-[#080d1a] py-2 border-b border-white/10">
                         {Array.from({ length: Math.ceil(totalSpan / (30*24*60*60*1000)) + 1 }, (_, i) => {
                             const d = new Date(minDate + i * 30 * 24 * 60 * 60 * 1000);
                             return (
@@ -398,7 +409,8 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
                             
                             const c = colorClasses[milestone.color || "blue"] || colorClasses.blue;
                             const pctValue = Math.round(milestone.progress * 100);
-                            const isSection = !milestone.isUserTrade && !!milestone.wbs && parentPrefixes.has(milestone.wbs);
+                            // Section/title line: any non-trade milestone without a lot, OR a parent WBS prefix
+                            const isSection = !milestone.isUserTrade && !!milestone.wbs && (!milestone.lot || parentPrefixes.has(milestone.wbs));
                             const indent = Math.min(3, (milestone.wbsLevel || 1) - 1);
 
                             // Section headers: bold, no progress input, different style

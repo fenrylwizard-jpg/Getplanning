@@ -1,0 +1,29 @@
+﻿Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "worksite", schema "public" at "getplanning-worksite-7zz4ui:5432"
+
+node.exe : Error: P1001: 
+Can't reach database server 
+at `getplanning-worksite-7zz4u
+i:5432`
+Au caractère Ligne:1 : 1
++ & "C:\Program 
+Files\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~
+    + CategoryInfo          : 
+    NotSpecified: (Error: P1  
+  001: C...te-7zz4ui:5432`:   
+ String) [], RemoteExcepti    
+on
+    + FullyQualifiedErrorId : 
+    NativeCommandError
+ 
+
+Please make sure your 
+database server is running at 
+`getplanning-worksite-7zz4ui:5
+432`.
