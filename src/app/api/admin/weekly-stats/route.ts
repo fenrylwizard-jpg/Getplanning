@@ -14,17 +14,12 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
-        // Fetch all weekly plans (both open and closed) with their tasks & project names
         const weeklyPlans = await prisma.weeklyPlan.findMany({
             include: {
                 project: { select: { id: true, name: true } },
                 tasks: {
                     include: {
-                        task: {
-                            select: {
-                                minutesPerUnit: true
-                            }
-                        }
+                        task: { select: { minutesPerUnit: true } }
                     }
                 }
             },
@@ -34,59 +29,62 @@ export async function GET(req: Request) {
             ]
         });
 
-        const timeline: Record<string, any> = {};
+        // Group by timeLabel, tracking per-week planned/achieved per project
+        const weeklyData: Record<string, Record<string, { planned: number; achieved: number }>> = {};
         const allProjects = new Set<string>();
+        const allWeeks: string[] = [];
 
         for (const plan of weeklyPlans) {
             const timeLabel = `${plan.year}-W${plan.weekNumber.toString().padStart(2, '0')}`;
-            if (!timeline[timeLabel]) {
-                timeline[timeLabel] = { timeLabel };
-            }
-            
             const projectName = plan.project.name;
             allProjects.add(projectName);
 
-            // Calculate planned and achieved hours for this week
-            let plannedHours = 0;
-            let achievedHours = 0;
-            for (const wpt of plan.tasks) {
-                plannedHours += (wpt.plannedQuantity * wpt.task.minutesPerUnit) / 60;
-                achievedHours += (wpt.actualQuantity * wpt.task.minutesPerUnit) / 60;
+            if (!weeklyData[timeLabel]) {
+                weeklyData[timeLabel] = {};
+                allWeeks.push(timeLabel);
+            }
+            if (!weeklyData[timeLabel][projectName]) {
+                weeklyData[timeLabel][projectName] = { planned: 0, achieved: 0 };
             }
 
-            // Keys: "ProjectName_planned", "ProjectName_achieved"
-            const plannedKey = `${projectName}_planned`;
-            const achievedKey = `${projectName}_achieved`;
-
-            if (!timeline[timeLabel][plannedKey]) timeline[timeLabel][plannedKey] = 0;
-            if (!timeline[timeLabel][achievedKey]) timeline[timeLabel][achievedKey] = 0;
-
-            timeline[timeLabel][plannedKey] += Math.round(plannedHours * 100) / 100;
-            timeline[timeLabel][achievedKey] += Math.round(achievedHours * 100) / 100;
-
-            // Also compute productivity % 
-            const pctKey = `${projectName}_pct`;
-            timeline[timeLabel][pctKey] = plannedHours > 0 
-                ? Math.round((achievedHours / plannedHours) * 100) 
-                : 0;
+            for (const wpt of plan.tasks) {
+                weeklyData[timeLabel][projectName].planned += (wpt.plannedQuantity * wpt.task.minutesPerUnit) / 60;
+                weeklyData[timeLabel][projectName].achieved += (wpt.actualQuantity * wpt.task.minutesPerUnit) / 60;
+            }
         }
 
-        const data = Object.values(timeline).sort((a, b) => a.timeLabel.localeCompare(b.timeLabel));
+        // Sort weeks chronologically
+        const sortedWeeks = [...new Set(allWeeks)].sort();
         const projectsList = Array.from(allProjects).sort();
 
-        // Ensure every time step has 0 for projects that had no plan that week
-        for (const d of data) {
-            for (const proj of projectsList) {
-                if (d[`${proj}_planned`] === undefined) d[`${proj}_planned`] = 0;
-                if (d[`${proj}_achieved`] === undefined) d[`${proj}_achieved`] = 0;
-                if (d[`${proj}_pct`] === undefined) d[`${proj}_pct`] = 0;
-            }
+        // Build CUMULATIVE data: each week = sum of all previous weeks + current week
+        const cumulativeTotals: Record<string, { planned: number; achieved: number }> = {};
+        for (const proj of projectsList) {
+            cumulativeTotals[proj] = { planned: 0, achieved: 0 };
         }
 
-        return NextResponse.json({
-            data,
-            projects: projectsList
+        const data = sortedWeeks.map(week => {
+            const point: Record<string, any> = { timeLabel: week };
+
+            for (const proj of projectsList) {
+                const weekVal = weeklyData[week]?.[proj] || { planned: 0, achieved: 0 };
+                cumulativeTotals[proj].planned += weekVal.planned;
+                cumulativeTotals[proj].achieved += weekVal.achieved;
+
+                // Cumulative values (always >= 0)
+                point[`${proj}_planned`] = Math.round(cumulativeTotals[proj].planned * 10) / 10;
+                point[`${proj}_achieved`] = Math.round(cumulativeTotals[proj].achieved * 10) / 10;
+
+                // Productivity % for this specific week
+                point[`${proj}_pct`] = weekVal.planned > 0
+                    ? Math.round((weekVal.achieved / weekVal.planned) * 100)
+                    : 0;
+            }
+
+            return point;
         });
+
+        return NextResponse.json({ data, projects: projectsList });
 
     } catch (error) {
         console.error("Weekly Stats API Error:", error);

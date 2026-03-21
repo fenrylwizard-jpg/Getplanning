@@ -111,6 +111,7 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
     const [submitting, setSubmitting] = useState(false);
     const [selectedTrade, setSelectedTrade] = useState<string>("");
     const [showAll, setShowAll] = useState(false);
+    const [hideFinished, setHideFinished] = useState(true);
 
     // If no existing milestones and no parsed ones, show demo. Or show real ones.
     const allMilestones = milestones || DEMO_MILESTONES;
@@ -129,17 +130,23 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
         }
     }
     const activeMilestones = (() => {
-        if (showAll || allMilestones.length <= 50 || tradeCount === 0) return allMilestones;
-        
-        // Include: trade lines + parent section headers + title lines (no lot = structural header)
-        return allMilestones.filter(m => {
-            if (m.isUserTrade) return true;
-            if (m.wbs && parentPrefixes.has(m.wbs)) return true;
-            // Title lines: non-trade lines without a lot are structural headers — always include
-            if (!m.isUserTrade && !m.lot && m.wbs) return true;
-            return false;
-        });
+        let base = allMilestones;
+        if (!showAll && allMilestones.length > 50 && tradeCount > 0) {
+            // Include: trade lines + parent section headers + title lines (no lot = structural header)
+            base = allMilestones.filter(m => {
+                if (m.isUserTrade) return true;
+                if (m.wbs && parentPrefixes.has(m.wbs)) return true;
+                if (!m.isUserTrade && !m.lot && m.wbs) return true;
+                return false;
+            });
+        }
+        // Hide finished tasks (100%) if enabled
+        if (hideFinished) {
+            base = base.filter(m => m.progress < 1);
+        }
+        return base;
     })();
+    const finishedCount = allMilestones.filter(m => m.progress >= 1).length;
 
     // Calculate timeline bounds safely (no spread to avoid stack overflow with 1000+ items)
     let minDate = Infinity;
@@ -351,35 +358,46 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
             {/* Gantt Timeline */}
             <div className={`bg-[#080d1a]/80 border ${isParsed ? 'border-purple-500/50 shadow-[0_0_30px_rgba(168,85,247,0.15)]' : 'border-white/5'} rounded-md p-6 overflow-x-auto overflow-y-auto max-h-[80vh] transition-all relative`}>
                 <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 flex items-center gap-2">
-                        <CalendarRange size={16} className={isParsed ? "text-purple-400" : "text-blue-400"} />
+                    <h3 className="text-base font-black uppercase tracking-widest text-gray-300 flex items-center gap-2">
+                        <CalendarRange size={18} className={isParsed ? "text-purple-400" : "text-blue-400"} />
                         <T k="hub_project_timeline" />
-                        {isParsed && <span className="ml-2 px-2 py-0.5 rounded-sm bg-purple-500/20 text-purple-300 text-[10px] border border-purple-500/30">PREVIEW IA</span>}
-                        <span className="text-[10px] text-gray-500 font-normal ml-2">({activeMilestones.length}{!showAll && tradeCount > 0 && allMilestones.length > 50 ? ` ⭐ / ${allMilestones.length} total` : ''})</span>
+                        {isParsed && <span className="ml-2 px-2 py-0.5 rounded-sm bg-purple-500/20 text-purple-300 text-xs border border-purple-500/30">PREVIEW IA</span>}
+                        <span className="text-xs text-gray-400 font-normal ml-2">({activeMilestones.length}{!showAll && tradeCount > 0 && allMilestones.length > 50 ? ` ⭐ / ${allMilestones.length} total` : ''})</span>
                     </h3>
-                    {allMilestones.length > 50 && tradeCount > 0 && (
-                        <button
-                            onClick={() => setShowAll(!showAll)}
-                            className="text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-sm transition-all border"
-                            style={showAll ? {background: 'rgba(168,85,247,0.2)', borderColor: 'rgba(168,85,247,0.4)', color: '#c084fc'} : {background: 'rgba(255,255,255,0.05)', borderColor: 'rgba(255,255,255,0.1)', color: '#9ca3af'}}
-                        >
-                            {showAll ? `⭐ Mon métier (${tradeCount})` : `Tout afficher (${allMilestones.length})`}
-                        </button>
-                    )}
+                    <div className="flex gap-2">
+                        {finishedCount > 0 && (
+                            <button
+                                onClick={() => setHideFinished(!hideFinished)}
+                                className={`text-xs font-bold px-3 py-1.5 rounded-sm transition-all border flex items-center gap-1.5 ${hideFinished ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20' : 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300'}`}
+                            >
+                                <CheckCircle size={14} />
+                                {hideFinished ? `Afficher terminés (${finishedCount})` : `Masquer terminés`}
+                            </button>
+                        )}
+                        {allMilestones.length > 50 && tradeCount > 0 && (
+                            <button
+                                onClick={() => setShowAll(!showAll)}
+                                className="text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-sm transition-all border"
+                                style={showAll ? {background: 'rgba(168,85,247,0.2)', borderColor: 'rgba(168,85,247,0.4)', color: '#c084fc'} : {background: 'rgba(255,255,255,0.05)', borderColor: 'rgba(255,255,255,0.1)', color: '#9ca3af'}}
+                            >
+                                {showAll ? `⭐ Mon métier (${tradeCount})` : `Tout afficher (${allMilestones.length})`}
+                            </button>
+                        )}
+                    </div>
                 </div>
 
                 {/* Timeline header with months */}
                 <div className="relative min-w-[800px]">
                     {/* Month markers dynamically based on min/max */}
-                    <div className="flex mb-4 ml-[220px] sticky top-0 z-10 bg-[#080d1a] py-2 border-b border-white/10">
+                    <div className="flex mb-4 ml-[320px] sticky top-0 z-10 bg-[#080d1a] py-2 border-b border-white/10">
                         {Array.from({ length: Math.ceil(totalSpan / (30*24*60*60*1000)) + 1 }, (_, i) => {
                             const d = new Date(minDate + i * 30 * 24 * 60 * 60 * 1000);
                             return (
                                 <div key={i} className="flex-1 text-center">
-                                    <span className="text-[9px] uppercase tracking-widest text-gray-500 font-bold">
+                                    <span className="text-xs uppercase tracking-widest text-gray-400 font-bold">
                                         {d.toLocaleString("fr", { month: "short" })}
                                     </span>
-                                    <span className="text-[8px] text-gray-600 ml-1">{d.getFullYear().toString().slice(2)}</span>
+                                    <span className="text-[10px] text-gray-500 ml-1">{d.getFullYear().toString().slice(2)}</span>
                                 </div>
                             );
                         })}
@@ -416,15 +434,15 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
                             // Section headers: bold, no progress input, different style
                             if (isSection) {
                                 return (
-                                    <div key={idx} className="flex items-center gap-3 rounded-md px-1.5 py-1.5 mt-2 border-b border-white/5">
-                                        <div className="w-[320px] flex-shrink-0" style={{ paddingLeft: `${indent * 12}px` }}>
-                                            <div className="text-[11px] font-black uppercase tracking-wide text-gray-300">
-                                                <span className="text-gray-600 mr-1.5">{milestone.wbs}</span>
+                                    <div key={idx} className="flex items-center gap-3 rounded-md px-2 py-2 mt-2 border-b border-white/10 bg-white/[0.02]">
+                                        <div className="w-[320px] flex-shrink-0" style={{ paddingLeft: `${indent * 14}px` }}>
+                                            <div className="text-sm font-black uppercase tracking-wide text-white">
+                                                <span className="text-gray-500 mr-1.5">{milestone.wbs}</span>
                                                 {milestone.name}
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                <span className={`text-[9px] uppercase tracking-widest ${c.text} font-bold`}>{milestone.category}</span>
-                                                <span className="text-[8px] text-gray-600">{milestone.startDate} → {milestone.endDate}</span>
+                                                <span className={`text-[11px] uppercase tracking-widest ${c.text} font-bold`}>{milestone.category}</span>
+                                                <span className="text-[10px] text-gray-500">{milestone.startDate} → {milestone.endDate}</span>
                                             </div>
                                         </div>
                                         <div className="w-[52px] flex-shrink-0" />
@@ -439,19 +457,19 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
                             }
 
                             return (
-                                <div key={idx} className="flex items-center gap-3 group hover:bg-white/5 rounded-md px-1.5 py-1 transition-colors">
-                                    <div className="w-[320px] flex-shrink-0" style={{ paddingLeft: `${indent * 12}px` }}>
-                                        <div className={`text-[11px] font-bold leading-tight ${milestone.isUserTrade ? 'text-yellow-300' : 'text-gray-200'}`}>
+                                <div key={idx} className="flex items-center gap-3 group hover:bg-white/5 rounded-md px-2 py-1.5 transition-colors">
+                                    <div className="w-[320px] flex-shrink-0" style={{ paddingLeft: `${indent * 14}px` }}>
+                                        <div className={`text-sm font-bold leading-tight ${milestone.isUserTrade ? 'text-yellow-300' : 'text-gray-100'}`}>
                                             {milestone.isUserTrade && <span className="mr-1">⭐</span>}
-                                            <span className="text-gray-600 mr-1">{milestone.wbs}</span>
+                                            <span className="text-gray-500 mr-1">{milestone.wbs}</span>
                                             {milestone.name}
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <span className={`text-[9px] uppercase tracking-widest ${c.text} font-bold`}>{milestone.category}</span>
-                                            <span className="text-[8px] text-gray-600">{milestone.startDate} → {milestone.endDate}</span>
+                                            <span className={`text-[11px] uppercase tracking-widest ${c.text} font-bold`}>{milestone.category}</span>
+                                            <span className="text-[10px] text-gray-500">{milestone.startDate} → {milestone.endDate}</span>
                                         </div>
                                     </div>
-                                    <div className="w-[52px] flex-shrink-0">
+                                    <div className="w-[56px] flex-shrink-0">
                                         <input
                                             type="number"
                                             min={0}
@@ -461,13 +479,13 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
                                                 const val = Math.min(100, Math.max(0, parseInt(e.target.value) || 0));
                                                 handleProgressChange(idx, val / 100);
                                             }}
-                                            className="w-full text-center text-[11px] font-black bg-white/5 border border-white/10 rounded px-1 py-0.5 text-white outline-none focus:border-purple-500/50 focus:bg-purple-500/10 transition-colors"
+                                            className="w-full text-center text-sm font-black bg-white/5 border border-white/10 rounded px-1 py-1 text-white outline-none focus:border-purple-500/50 focus:bg-purple-500/10 transition-colors"
                                             title="% avancement"
                                         />
                                     </div>
-                                    <div className="flex-1 relative h-7">
+                                    <div className="flex-1 relative h-8">
                                         <div
-                                            className={`absolute top-0.5 h-6 rounded-lg ${c.bg} border ${c.border} overflow-hidden transition-all`}
+                                            className={`absolute top-0.5 h-7 rounded-lg ${c.bg} border ${c.border} overflow-hidden transition-all`}
                                             style={{ left: `${startPct}%`, width: `${widthPct}%` }}
                                         >
                                             <div
@@ -475,7 +493,7 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
                                                 style={{ width: `${Math.min(100, pctValue)}%` }}
                                             />
                                             <div className="absolute inset-0 flex items-center justify-center">
-                                                <span className="text-[9px] font-black text-white/80 drop-shadow">
+                                                <span className="text-xs font-black text-white drop-shadow-lg">
                                                     {pctValue}%
                                                 </span>
                                             </div>

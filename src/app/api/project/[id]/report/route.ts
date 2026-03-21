@@ -261,6 +261,19 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
                         data: { xp: newSmXp, level: newLevel }
                     });
 
+                    // ── PM XP Inheritance: PM gets the same XP as their SM ──
+                    if (finalXp > 0 && plan.project.projectManagerId) {
+                        const pm = await tx.user.findUnique({ where: { id: plan.project.projectManagerId } });
+                        if (pm && pm.id !== resolvedSmId) {
+                            const newPmXp = pm.xp + finalXp;
+                            const newPmLevel = getLevelFromXp(newPmXp);
+                            await tx.user.update({
+                                where: { id: pm.id },
+                                data: { xp: newPmXp, level: newPmLevel }
+                            });
+                        }
+                    }
+
                     // ── Badge Awarding ──
                     const earnedBadges = await tx.userBadge.findMany({
                         where: { userId: resolvedSmId },
