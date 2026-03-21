@@ -473,7 +473,24 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
                                             </div>
                                             <span className={`text-[11px] uppercase tracking-widest ${c.text} font-bold`}>{milestone.category}</span>
                                         </div>
-                                        <div className="w-[56px] flex-shrink-0" />
+                                        <div className="w-[56px] flex-shrink-0">
+                                            {!readonlyMode ? (
+                                                <input
+                                                    type="number"
+                                                    min={0}
+                                                    max={100}
+                                                    value={pctValue}
+                                                    onChange={(e) => {
+                                                        const val = Math.min(100, Math.max(0, parseInt(e.target.value) || 0));
+                                                        handleProgressChange(idx, val / 100);
+                                                    }}
+                                                    className="w-full text-center text-sm font-black bg-white/10 border border-white/20 rounded px-1 py-1 text-white outline-none focus:border-purple-500/50 focus:bg-purple-500/10 transition-colors"
+                                                    title="% avancement"
+                                                />
+                                            ) : (
+                                                <span className="text-sm font-black text-white text-center block">{pctValue}%</span>
+                                            )}
+                                        </div>
                                         <div className="flex-1 relative h-6">
                                             <div
                                                 className={`absolute top-1 h-4 rounded ${c.bg} border ${c.border}`}
