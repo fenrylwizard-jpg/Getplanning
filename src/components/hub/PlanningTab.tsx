@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { CalendarRange, Target, Flag, Clock, Save, Trash2, CheckCircle, Wrench } from "lucide-react";
 import T from "@/components/T";
 import FileUploadZone from "@/components/hub/FileUploadZone";
-// useRouter removed — no longer needed after handleConfirm fix
 
 interface PlanningMilestone {
     name: string;
@@ -69,23 +68,22 @@ const DEMO_MILESTONES: PlanningMilestone[] = [
     { name: "Réception & Livraison", category: "Livraison", startDate: "2026-11-15", endDate: "2026-12-31", progress: 0, color: "rose", isUserTrade: false },
 ];
 
-const colorClasses: Record<string, { bg: string; bar: string; text: string; border: string }> = {
-    emerald: { bg: "bg-emerald-500/10", bar: "bg-gradient-to-r from-emerald-500 to-green-400", text: "text-emerald-400", border: "border-emerald-500/30" },
-    blue: { bg: "bg-blue-500/10", bar: "bg-gradient-to-r from-blue-500 to-cyan-400", text: "text-blue-400", border: "border-blue-500/30" },
-    amber: { bg: "bg-amber-500/10", bar: "bg-gradient-to-r from-amber-500 to-orange-400", text: "text-amber-400", border: "border-amber-500/30" },
-    purple: { bg: "bg-purple-500/10", bar: "bg-gradient-to-r from-purple-500 to-indigo-400", text: "text-purple-400", border: "border-purple-500/30" },
-    rose: { bg: "bg-rose-500/10", bar: "bg-gradient-to-r from-rose-500 to-pink-400", text: "text-rose-400", border: "border-rose-500/30" },
-    default: { bg: "bg-white/10", bar: "bg-gradient-to-r from-gray-500 to-gray-400", text: "text-gray-400", border: "border-white/20" },
-};
+// Vibrant color palette — 10 colors cycled per row for visual variety
+const VIVID_COLORS = [
+    { bg: "bg-cyan-500/15", bar: "bg-gradient-to-r from-cyan-500 to-teal-400", text: "text-cyan-400", border: "border-cyan-500/40" },
+    { bg: "bg-orange-500/15", bar: "bg-gradient-to-r from-orange-500 to-amber-400", text: "text-orange-400", border: "border-orange-500/40" },
+    { bg: "bg-violet-500/15", bar: "bg-gradient-to-r from-violet-500 to-purple-400", text: "text-violet-400", border: "border-violet-500/40" },
+    { bg: "bg-emerald-500/15", bar: "bg-gradient-to-r from-emerald-500 to-green-400", text: "text-emerald-400", border: "border-emerald-500/40" },
+    { bg: "bg-rose-500/15", bar: "bg-gradient-to-r from-rose-500 to-pink-400", text: "text-rose-400", border: "border-rose-500/40" },
+    { bg: "bg-blue-500/15", bar: "bg-gradient-to-r from-blue-500 to-indigo-400", text: "text-blue-400", border: "border-blue-500/40" },
+    { bg: "bg-yellow-500/15", bar: "bg-gradient-to-r from-yellow-500 to-lime-400", text: "text-yellow-400", border: "border-yellow-500/40" },
+    { bg: "bg-fuchsia-500/15", bar: "bg-gradient-to-r from-fuchsia-500 to-pink-400", text: "text-fuchsia-400", border: "border-fuchsia-500/40" },
+    { bg: "bg-sky-500/15", bar: "bg-gradient-to-r from-sky-500 to-blue-400", text: "text-sky-400", border: "border-sky-500/40" },
+    { bg: "bg-red-500/15", bar: "bg-gradient-to-r from-red-500 to-orange-400", text: "text-red-400", border: "border-red-500/40" },
+];
 
-function assignColor(category: string) {
-    const c = category.toLowerCase();
-    if (c.includes("gros") || c.includes("fondation")) return "emerald";
-    if (c.includes("charpente") || c.includes("toiture")) return "blue";
-    if (c.includes("menuiserie") || c.includes("second") || c.includes("hvac") || c.includes("elec")) return "amber";
-    if (c.includes("finition")) return "purple";
-    if (c.includes("reception") || c.includes("livraison")) return "rose";
-    return "blue";
+function getVividColor(idx: number) {
+    return VIVID_COLORS[idx % VIVID_COLORS.length];
 }
 
 export default function PlanningTab({ project, readonlyMode }: PlanningTabProps) {
@@ -98,7 +96,7 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
             startDate: new Date(m.startDate).toISOString().split('T')[0],
             endDate: new Date(m.endDate).toISOString().split('T')[0],
             progress: m.progress,
-            color: assignColor(m.category || "Général"),
+            color: undefined,
             wbs: m.wbs || undefined,
             wbsLevel: m.wbsLevel || 0,
             isUserTrade: m.isUserTrade || false,
@@ -179,7 +177,7 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
                 startDate: (m.startDate as string) || new Date().toISOString().split('T')[0],
                 endDate: (m.endDate as string) || new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0],
                 progress: (m.progress as number) || 0,
-                color: assignColor((m.category as string) || ""),
+                color: undefined,
                 isUserTrade: (m.isUserTrade as boolean) || false,
                 wbs: (m.wbs as string) || "",
                 wbsLevel: (m.wbsLevel as number) || 0,
@@ -224,16 +222,58 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
         setIsParsed(false);
     };
 
+    // Debounced API save for progress changes
+    const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const pendingUpdates = useRef<Map<number, number>>(new Map());
+
+    const flushProgressToApi = useCallback(() => {
+        if (pendingUpdates.current.size === 0) return;
+        const updates = Array.from(pendingUpdates.current.entries()).map(([sortOrder, progress]) => ({ sortOrder, progress }));
+        pendingUpdates.current.clear();
+        fetch(`/api/project/${project.id}/planning`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ updates }),
+        }).catch(err => console.error("Failed to save progress:", err));
+    }, [project.id]);
+
     const handleProgressChange = (idx: number, newProgress: number) => {
         if (!milestones) return;
         const updated = [...milestones];
-        // Find correct index in allMilestones (in case we're in filtered mode)
         const milestone = activeMilestones[idx];
         const realIdx = allMilestones.indexOf(milestone);
         if (realIdx >= 0 && realIdx < updated.length) {
             updated[realIdx] = { ...updated[realIdx], progress: newProgress };
             setMilestones(updated);
+            // Queue for debounced API save
+            pendingUpdates.current.set(realIdx, newProgress);
+            if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+            saveTimerRef.current = setTimeout(flushProgressToApi, 800);
         }
+    };
+
+    // Bulk toggle: set all tasks starting in a given year or month to 100% (or back to 0%)
+    const bulkToggleByDate = (year: number, month?: number) => {
+        if (!milestones || readonlyMode) return;
+        const updated = [...milestones];
+        const targetIndices: number[] = [];
+        for (let i = 0; i < updated.length; i++) {
+            const d = new Date(updated[i].startDate);
+            if (d.getFullYear() === year && (month === undefined || d.getMonth() === month)) {
+                targetIndices.push(i);
+            }
+        }
+        if (targetIndices.length === 0) return;
+        // If all targets are already 100%, toggle them back to 0%. Otherwise set all to 100%.
+        const allDone = targetIndices.every(i => updated[i].progress >= 1);
+        const newVal = allDone ? 0 : 1;
+        for (const i of targetIndices) {
+            updated[i] = { ...updated[i], progress: newVal };
+            pendingUpdates.current.set(i, newVal);
+        }
+        setMilestones(updated);
+        if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+        saveTimerRef.current = setTimeout(flushProgressToApi, 500);
     };
 
     return (
@@ -415,7 +455,13 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
                                 {/* Year row */}
                                 <div className="flex" style={{ marginLeft: LABEL_W }}>
                                     {years.map((y, i) => (
-                                        <div key={i} className="text-center border-l border-white/10 first:border-l-0" style={{ flex: y.colCount }}>
+                                        <div
+                                            key={i}
+                                            className="text-center border-l border-white/10 first:border-l-0 cursor-pointer hover:bg-white/10 transition-colors rounded-t px-1 py-0.5"
+                                            style={{ flex: y.colCount }}
+                                            onClick={() => bulkToggleByDate(y.year)}
+                                            title={`Cliquer pour marquer toutes les tâches de ${y.year} comme terminées (ou réinitialiser)`}
+                                        >
                                             <span className="text-sm font-black text-white tracking-widest">{y.year}</span>
                                         </div>
                                     ))}
@@ -423,7 +469,12 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
                                 {/* Month row */}
                                 <div className="flex" style={{ marginLeft: LABEL_W }}>
                                     {months.map((m, i) => (
-                                        <div key={i} className="flex-1 text-center border-l border-white/5 first:border-l-0 py-0.5">
+                                        <div
+                                            key={i}
+                                            className="flex-1 text-center border-l border-white/5 first:border-l-0 py-0.5 cursor-pointer hover:bg-white/10 transition-colors"
+                                            onClick={() => bulkToggleByDate(m.year, m.month)}
+                                            title={`Cliquer pour marquer toutes les tâches de ${m.label} ${m.year} comme terminées`}
+                                        >
                                             <span className="text-[11px] font-bold text-gray-300 tracking-wider">{m.label}</span>
                                         </div>
                                     ))}
@@ -457,7 +508,7 @@ export default function PlanningTab({ project, readonlyMode }: PlanningTabProps)
                             const startPct = Math.max(0, Math.min(100, ((safeStart - minDate) / totalSpan) * 100));
                             const widthPct = Math.max(1, Math.min(100, ((safeEnd - safeStart) / totalSpan) * 100));
                             
-                            const c = colorClasses[milestone.color || 'blue'] || colorClasses.blue;
+                            const c = getVividColor(idx);
                             const pctValue = Math.round(milestone.progress * 100);
                             const isSection = !milestone.isUserTrade && !!milestone.wbs && (!milestone.lot || parentPrefixes.has(milestone.wbs));
                             const indent = Math.min(3, (milestone.wbsLevel || 1) - 1);
