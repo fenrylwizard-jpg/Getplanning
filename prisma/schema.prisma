@@ -283,6 +283,7 @@ model WeeklyPlan {
   weekNumber          Int
   year                Int
   numberOfWorkers     Int
+  hoursPerWorker      Float     @default(40)
   targetHoursCapacity Float     
   
   projectId           String

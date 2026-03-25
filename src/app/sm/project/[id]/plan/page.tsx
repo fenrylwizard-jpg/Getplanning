@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, use, useMemo } from "react";
+import React, { useState, useEffect, use, useMemo, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronRight, Folder, ArrowLeft, Trash2, PlusCircle, ShoppingBag, Loader2, List, Clock, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
@@ -59,6 +59,28 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
     const [isSubmitted, setIsSubmitted] = useState(false);
 
     const [hoursPerWorker, setHoursPerWorker] = useState(40);
+
+    // Debounced PATCH for workforce changes on submitted plans
+    const workforcePatchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const patchWorkforce = useCallback((newWorkers: number, newHoursPerWorker: number) => {
+        if (workforcePatchTimer.current) clearTimeout(workforcePatchTimer.current);
+        workforcePatchTimer.current = setTimeout(async () => {
+            try {
+                await fetch(`/api/project/${id}/plan`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        weekNumber: activeWeek.week,
+                        year: activeWeek.year,
+                        workers: newWorkers,
+                        hoursPerWorker: newHoursPerWorker,
+                    })
+                });
+            } catch (err) {
+                console.error('Failed to update workforce:', err);
+            }
+        }, 800);
+    }, [id, activeWeek.week, activeWeek.year]);
     const targetProductivityRatio = 1.0; 
 
     const totalCapacityHours = workers * hoursPerWorker;
@@ -88,6 +110,7 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
             .then(data => {
                 if (data && data.id) {
                     setWorkers(data.numberOfWorkers || 5);
+                    setHoursPerWorker(data.hoursPerWorker || 40);
                     setIsSubmitted(data.isSubmitted || false);
                     setChecks({
                         drawings: data.hasDrawings || false,
@@ -217,6 +240,7 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     workers,
+                    hoursPerWorker,
                     targetHoursCapacity: totalCapacityHours,
                     tasks: cartItems, 
                     checks,
@@ -342,12 +366,15 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
                                                 id="workersAmount" 
                                                 type="number" 
                                                 title={t("available_workers_count")}
-                                                className="w-full bg-black/40 border border-white/10 rounded-md py-4 px-6 text-2xl font-black text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all group-hover:border-white/20 disabled:opacity-50" 
+                                                className="w-full bg-black/40 border border-white/10 rounded-md py-4 px-6 text-2xl font-black text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all group-hover:border-white/20" 
                                                 min="1" 
                                                 max="100" 
                                                 value={workers} 
-                                                onChange={e => setWorkers(parseInt(e.target.value) || 0)} 
-                                                disabled={isSubmitted}
+                                                onChange={e => {
+                                                    const val = parseInt(e.target.value) || 0;
+                                                    setWorkers(val);
+                                                    if (isSubmitted) patchWorkforce(val, hoursPerWorker);
+                                                }}
                                             />
                                             <span className="absolute right-6 top-1/2 -translate-y-1/2 text-sm font-bold text-cyan-500/40 uppercase"><T k="persons" /></span>
                                         </div>
@@ -359,12 +386,15 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
                                                 id="hoursPerWorker" 
                                                 type="number" 
                                                 title="Heures par personne par semaine"
-                                                className="w-full bg-black/40 border border-white/10 rounded-md py-4 px-6 text-2xl font-black text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all group-hover:border-white/20 disabled:opacity-50" 
+                                                className="w-full bg-black/40 border border-white/10 rounded-md py-4 px-6 text-2xl font-black text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all group-hover:border-white/20" 
                                                 min="1" 
                                                 max="80" 
                                                 value={hoursPerWorker} 
-                                                onChange={e => setHoursPerWorker(parseInt(e.target.value) || 0)} 
-                                                disabled={isSubmitted}
+                                                onChange={e => {
+                                                    const val = parseInt(e.target.value) || 0;
+                                                    setHoursPerWorker(val);
+                                                    if (isSubmitted) patchWorkforce(workers, val);
+                                                }}
                                             />
                                             <span className="absolute right-6 top-1/2 -translate-y-1/2 text-sm font-bold text-cyan-500/40 uppercase">h</span>
                                         </div>
