@@ -16,6 +16,15 @@ export interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
     {
+        version: '0.1.6',
+        date: '25 mars 2026',
+        changes: [
+            'Correction: heures/personne modifiables même après soumission du plan',
+            'Persistance du champ heures/personne en base de données',
+            'Nouveau endpoint PATCH pour mise à jour effectif sans recréer le plan',
+        ],
+    },
+    {
         version: '0.1.5',
         date: '21 mars 2026',
         changes: [
