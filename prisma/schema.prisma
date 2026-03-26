@@ -27,6 +27,7 @@ model User {
   projectsAsSM     Project[] @relation("ProjectSM")
   planTemplates    PlanTemplate[] @relation("templatesCreatedBy")
   userBadges       UserBadge[]
+  xpLogs           XpLog[]
   
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
@@ -314,4 +315,16 @@ model UserBadge {
   earnedAt            DateTime  @default(now())
 
   @@unique([userId, badgeId])
+}
+
+model XpLog {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount      Int
+  source      String   // "daily_report" | "weekly_close" | "manual_adjust"
+  breakdown   String?  // JSON string of the XP breakdown details
+  projectId   String?
+  projectName String?
+  createdAt   DateTime @default(now())
 }

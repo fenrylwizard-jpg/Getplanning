@@ -4,7 +4,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
     ShieldCheck, CheckCircle, XCircle, Clock, UserIcon, LogOut,
-    TrendingUp, Euro, Activity, Folder, Target, RefreshCw, Globe, ListOrdered, ArrowRight, Trash2
+    TrendingUp, Euro, Activity, Folder, Target, RefreshCw, Globe, ListOrdered, ArrowRight, Trash2,
+    X, Sparkles, History, ChevronRight
 } from 'lucide-react';
 import { toast } from 'sonner';
 import AvatarDisplay from '@/components/AvatarDisplay';
@@ -38,6 +39,24 @@ interface AdminStats {
     }[];
 }
 
+interface XpLogEntry {
+    id: string;
+    amount: number;
+    source: string;
+    breakdown: string | null;
+    projectId: string | null;
+    projectName: string | null;
+    createdAt: string;
+}
+
+interface XpModalUser {
+    id: string;
+    name: string;
+    xp: number;
+    level: number;
+    characterId: number;
+}
+
 export default function AdminDashboard() {
     const router = useRouter();
     const { t } = useTranslation();
@@ -46,6 +65,33 @@ export default function AdminDashboard() {
     const [loading, setLoading] = useState(true);
     const [cronRunning, setCronRunning] = useState(false);
     const [cronResult, setCronResult] = useState<string | null>(null);
+
+    // XP Log Modal state
+    const [xpModalOpen, setXpModalOpen] = useState(false);
+    const [xpModalUser, setXpModalUser] = useState<XpModalUser | null>(null);
+    const [xpLogs, setXpLogs] = useState<XpLogEntry[]>([]);
+    const [xpLogsLoading, setXpLogsLoading] = useState(false);
+
+    const openXpModal = async (userId: string) => {
+        setXpModalOpen(true);
+        setXpLogsLoading(true);
+        setXpLogs([]);
+        setXpModalUser(null);
+        try {
+            const res = await fetch(`/api/admin/users/${userId}/xp-logs`);
+            if (res.ok) {
+                const data = await res.json();
+                setXpModalUser(data.user);
+                setXpLogs(data.logs || []);
+            } else {
+                toast.error('Failed to load XP logs');
+            }
+        } catch {
+            toast.error('Failed to load XP logs');
+        } finally {
+            setXpLogsLoading(false);
+        }
+    };
 
     const fetchData = useCallback(async () => {
         try {
@@ -347,7 +393,12 @@ export default function AdminDashboard() {
                                 </thead>
                                 <tbody>
                                     {processedUsers.map((user, index) => (
-                                        <tr key={user.id} className="border-b border-white/5 hover:bg-white/3 transition-colors group">
+                                        <tr
+                                            key={user.id}
+                                            className="border-b border-white/5 hover:bg-white/[0.06] transition-colors group cursor-pointer"
+                                            onClick={() => openXpModal(user.id)}
+                                            title={`View XP history for ${user.name}`}
+                                        >
                                             <td className="py-3 pr-4 pl-2 text-center text-xl font-black text-white/50 group-hover:text-white transition-colors">#{index + 1}</td>
                                             <td className="py-3 pr-4 pl-4 pt-4">
                                                 <AvatarDisplay characterId={user.characterId || 1} level={user.level || 1} size={100} />
@@ -376,6 +427,9 @@ export default function AdminDashboard() {
                                                 {user.status === 'APPROVED' ? t('approved') : user.status === 'REJECTED' ? t('rejected') : user.status}
                                             </span>
                                         </td>
+                                        <td className="py-4 pr-2 text-right">
+                                            <ChevronRight size={16} className="text-gray-600 group-hover:text-purple-400 transition-colors inline-block" />
+                                        </td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -384,6 +438,136 @@ export default function AdminDashboard() {
                     )}
                 </div>
         </div>
+
+            {/* XP Log Modal */}
+            {xpModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center">
+                    {/* Backdrop */}
+                    <div
+                        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+                        onClick={() => setXpModalOpen(false)}
+                    />
+                    {/* Modal */}
+                    <div className="relative w-full max-w-2xl max-h-[85vh] bg-[#0a0f1e] border border-white/10 rounded-2xl shadow-2xl shadow-purple-500/10 flex flex-col overflow-hidden mx-4 animate-in fade-in zoom-in-95 duration-200">
+                        {/* Header */}
+                        <div className="flex items-center justify-between px-6 py-5 border-b border-white/5">
+                            <div className="flex items-center gap-3">
+                                {xpModalUser && (
+                                    <AvatarDisplay characterId={xpModalUser.characterId || 1} level={xpModalUser.level || 1} size={60} />
+                                )}
+                                <div>
+                                    <h2 className="text-lg font-black text-white m-0">
+                                        {xpModalUser?.name || '...'}
+                                    </h2>
+                                    <div className="flex items-center gap-3 mt-1">
+                                        <span className="text-xs text-purple-400 font-bold flex items-center gap-1">
+                                            <Sparkles size={12} /> Lvl {xpModalUser?.level || 1}
+                                        </span>
+                                        <span className="text-xs text-gray-500 font-bold">
+                                            {xpModalUser?.xp?.toLocaleString() || 0} XP total
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setXpModalOpen(false)}
+                                className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-all"
+                                aria-label="Close"
+                            >
+                                <X size={16} />
+                            </button>
+                        </div>
+
+                        {/* Content */}
+                        <div className="flex-1 overflow-y-auto px-6 py-4">
+                            {xpLogsLoading ? (
+                                <div className="flex flex-col items-center justify-center py-12">
+                                    <div className="w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full animate-spin mb-3" />
+                                    <span className="text-gray-500 text-sm">Loading XP history...</span>
+                                </div>
+                            ) : xpLogs.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center py-12">
+                                    <History size={32} className="text-gray-600 mb-3" />
+                                    <span className="text-gray-500 text-sm font-bold">No XP history yet</span>
+                                    <span className="text-gray-600 text-xs mt-1">XP awards will appear here after the next report submission</span>
+                                </div>
+                            ) : (
+                                <div className="flex flex-col gap-2">
+                                    {xpLogs.map(log => {
+                                        const date = new Date(log.createdAt);
+                                        const dateStr = date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+                                        const timeStr = date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                                        let breakdownItems: string[] = [];
+                                        try { breakdownItems = log.breakdown ? JSON.parse(log.breakdown) : []; } catch { /* ignore */ }
+
+                                        const sourceConfig: Record<string, { label: string; color: string; bg: string; border: string }> = {
+                                            'daily_report': { label: 'Rapport Journalier', color: 'text-blue-400', bg: 'bg-blue-500/15', border: 'border-blue-500/30' },
+                                            'weekly_close': { label: 'Clôture Hebdo', color: 'text-emerald-400', bg: 'bg-emerald-500/15', border: 'border-emerald-500/30' },
+                                            'manual_adjust': { label: 'Ajustement', color: 'text-amber-400', bg: 'bg-amber-500/15', border: 'border-amber-500/30' },
+                                        };
+                                        const src = sourceConfig[log.source] || { label: log.source, color: 'text-gray-400', bg: 'bg-gray-500/15', border: 'border-gray-500/30' };
+
+                                        return (
+                                            <div key={log.id} className="flex items-start gap-4 p-4 rounded-xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.05] transition-colors">
+                                                {/* XP Amount */}
+                                                <div className="flex flex-col items-center justify-center min-w-[60px]">
+                                                    <span className={`text-xl font-black ${log.amount > 0 ? 'text-emerald-400' : 'text-gray-500'}`}>
+                                                        {log.amount > 0 ? '+' : ''}{log.amount}
+                                                    </span>
+                                                    <span className="text-[10px] text-gray-500 font-bold">XP</span>
+                                                </div>
+
+                                                {/* Details */}
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                                        <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${src.color} ${src.bg} border ${src.border}`}>
+                                                            {src.label}
+                                                        </span>
+                                                        {log.projectName && (
+                                                            <span className="text-[11px] text-gray-500 font-bold truncate max-w-[200px]">
+                                                                📁 {log.projectName}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    {breakdownItems.length > 0 && (
+                                                        <div className="flex flex-wrap gap-1 mt-1.5">
+                                                            {breakdownItems.map((item: string, i: number) => (
+                                                                <span key={i} className="text-[10px] text-gray-500 bg-white/5 px-2 py-0.5 rounded-md font-mono">
+                                                                    {item}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {/* Date */}
+                                                <div className="flex flex-col items-end text-right min-w-[80px]">
+                                                    <span className="text-xs text-gray-400 font-bold">{dateStr}</span>
+                                                    <span className="text-[10px] text-gray-600">{timeStr}</span>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Footer */}
+                        <div className="px-6 py-3 border-t border-white/5 flex justify-between items-center">
+                            <span className="text-xs text-gray-600">
+                                {xpLogs.length} {xpLogs.length === 1 ? 'entry' : 'entries'}
+                            </span>
+                            <button
+                                onClick={() => setXpModalOpen(false)}
+                                className="px-4 py-1.5 rounded-lg bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 text-xs font-bold transition-all"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             </main>
         </div>
     );

@@ -168,6 +168,18 @@ export async function POST(req: Request) {
                         where: { id: siteManagerId },
                         data: { xp: newSmXp, level: getLevelFromXp(newSmXp) }
                     });
+
+                    // Log the XP award for history tracking
+                    await tx.xpLog.create({
+                        data: {
+                            userId: siteManagerId,
+                            amount: finalXp,
+                            source: 'daily_report',
+                            breakdown: JSON.stringify(xpResult.breakdown),
+                            projectId: plan.projectId,
+                            projectName: plan.project.name,
+                        }
+                    });
                 }
             }
             return { success: true, adHocIdsMapping };
