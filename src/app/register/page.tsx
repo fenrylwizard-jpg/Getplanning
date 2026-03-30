@@ -6,11 +6,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 const CHARACTERS = [
-    { id: 1, name: "Maçon", role: "mason", color: "from-amber-500 to-orange-600", border: "border-amber-500", shadow: "shadow-amber-500/40" },
+    { id: 1, name: "PM", role: "pm", color: "from-amber-500 to-orange-600", border: "border-amber-500", shadow: "shadow-amber-500/40" },
     { id: 2, name: "Électricien", role: "electrician", color: "from-cyan-400 to-blue-600", border: "border-cyan-500", shadow: "shadow-cyan-500/40" },
-    { id: 3, name: "Menuisier", role: "carpenter", color: "from-emerald-400 to-green-600", border: "border-emerald-500", shadow: "shadow-emerald-500/40" },
+    { id: 3, name: "Chauffagiste", role: "heater", color: "from-red-400 to-orange-600", border: "border-red-500", shadow: "shadow-red-500/40" },
     { id: 4, name: "Plombier", role: "plumber", color: "from-indigo-400 to-violet-600", border: "border-violet-500", shadow: "shadow-violet-500/40" },
-    { id: 5, name: "Contremaître", role: "foreman", color: "from-rose-400 to-red-600", border: "border-rose-500", shadow: "shadow-rose-500/40" },
+    { id: 5, name: "Gainiste", role: "ductwork", color: "from-teal-400 to-cyan-600", border: "border-teal-500", shadow: "shadow-teal-500/40" },
 ];
 
 export default function RegisterPage() {
@@ -75,8 +75,8 @@ export default function RegisterPage() {
                     
                     {/* Show selected character */}
                     <div className="flex justify-center mb-8">
-                        <div className={`w-24 h-24 rounded-2xl border-2 ${selectedChar.border} overflow-hidden relative`}>
-                            <Image src={`/characters/${selectedChar.role}_t0.png`} alt={selectedChar.name} fill unoptimized className="object-contain p-2" />
+                        <div className="relative w-24 h-24">
+                            <Image src={`/characters/${selectedChar.role}_t0.png`} alt={selectedChar.name} fill unoptimized className="object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]" style={{ background: 'transparent' }} />
                         </div>
                     </div>
                     
@@ -103,7 +103,7 @@ export default function RegisterPage() {
                 </div>
 
                 {errorMsg && (
-                    <div className="bg-red-500/10 text-red-400 p-4 rounded-xl mb-6 text-sm text-center border border-red-500/30 flex items-center gap-2 shadow-[0_0_15px_rgba(239,68,68,0.2)]">
+                    <div className="bg-red-500/10 text-red-400 p-4 rounded-md mb-6 text-sm text-center border border-red-500/30 flex items-center gap-2 shadow-[0_0_15px_rgba(239,68,68,0.2)]">
                         <span className="shrink-0 w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
                         {errorMsg}
                     </div>
@@ -118,7 +118,7 @@ export default function RegisterPage() {
                         <input
                             id="registerName"
                             type="text"
-                            className="w-full bg-[#050810]/50 border border-white/10 text-white rounded-2xl py-3 pl-4 pr-4 outline-none transition-all duration-300 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50 shadow-inner"
+                            className="w-full bg-[#050810]/50 border border-white/10 text-white rounded-md py-3 pl-4 pr-4 outline-none transition-all duration-300 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50 shadow-inner"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             required
@@ -134,7 +134,7 @@ export default function RegisterPage() {
                         <input
                             id="registerCompany"
                             type="text"
-                            className="w-full bg-[#050810]/50 border border-white/10 text-white rounded-2xl py-3 pl-4 pr-4 outline-none transition-all duration-300 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50 shadow-inner"
+                            className="w-full bg-[#050810]/50 border border-white/10 text-white rounded-md py-3 pl-4 pr-4 outline-none transition-all duration-300 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50 shadow-inner"
                             value={company}
                             onChange={(e) => setCompany(e.target.value)}
                             placeholder="ex: Mon Entreprise SA"
@@ -149,7 +149,7 @@ export default function RegisterPage() {
                         <input
                             id="registerEmail"
                             type="email"
-                            className="w-full bg-[#050810]/50 border border-white/10 text-white rounded-2xl py-3 pl-4 pr-4 outline-none transition-all duration-300 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50 shadow-inner"
+                            className="w-full bg-[#050810]/50 border border-white/10 text-white rounded-md py-3 pl-4 pr-4 outline-none transition-all duration-300 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50 shadow-inner"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
@@ -166,7 +166,7 @@ export default function RegisterPage() {
                             <input
                                 id="registerPassword"
                                 type="password"
-                                className="w-full bg-[#050810]/50 border border-white/10 text-white rounded-2xl py-3 pl-4 pr-4 outline-none transition-all duration-300 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50 shadow-inner"
+                                className="w-full bg-[#050810]/50 border border-white/10 text-white rounded-md py-3 pl-4 pr-4 outline-none transition-all duration-300 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50 shadow-inner"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
@@ -181,7 +181,7 @@ export default function RegisterPage() {
                             </label>
                             <select 
                                 id="registerRole"
-                                className="w-full bg-[#050810]/50 border border-white/10 text-white rounded-2xl py-3 pl-4 pr-4 outline-none transition-all duration-300 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50 shadow-inner appearance-none"
+                                className="w-full bg-[#050810]/50 border border-white/10 text-white rounded-md py-3 pl-4 pr-4 outline-none transition-all duration-300 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50 shadow-inner appearance-none"
                                 value={role}
                                 onChange={(e) => setRole(e.target.value)}
                                 aria-label="Rôle Souhaité"
@@ -205,10 +205,10 @@ export default function RegisterPage() {
                                         key={char.id}
                                         type="button"
                                         onClick={() => setCharacterId(char.id)}
-                                        className={`relative rounded-2xl p-1 transition-all duration-300 border-2 aspect-square flex flex-col items-center justify-center gap-1 group ${
+                                        className={`relative rounded-md p-1 transition-all duration-300 border-2 aspect-square flex flex-col items-center justify-center gap-1 group ${
                                             isSelected
-                                                ? `${char.border} bg-white/5 scale-105 shadow-lg ${char.shadow}`
-                                                : 'border-white/5 hover:border-white/20 hover:bg-white/5'
+                                                ? `${char.border} bg-transparent scale-110 ${char.shadow}`
+                                                : 'border-transparent bg-transparent hover:border-white/20 hover:scale-105'
                                         }`}
                                         aria-label={`Sélectionner ${char.name}`}
                                     >
@@ -218,7 +218,7 @@ export default function RegisterPage() {
                                                 alt={char.name} 
                                                 fill 
                                                 unoptimized 
-                                                className="object-contain" 
+                                                className="object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]" 
                                             />
                                         </div>
                                         <span className={`text-[9px] sm:text-[10px] font-bold leading-tight text-center transition-colors ${
@@ -227,7 +227,7 @@ export default function RegisterPage() {
                                             {char.name}
                                         </span>
                                         {isSelected && (
-                                            <div className={`absolute -top-1 -right-1 w-4 h-4 rounded-full bg-gradient-to-br ${char.color} flex items-center justify-center shadow-lg`}>
+                                            <div className={`absolute -top-1 -right-1 w-4 h-4 rounded-sm bg-gradient-to-br ${char.color} flex items-center justify-center shadow-lg`}>
                                                 <span className="text-white text-[8px] font-black">✓</span>
                                             </div>
                                         )}

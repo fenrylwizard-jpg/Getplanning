@@ -91,7 +91,7 @@ export default function BadgeDisplay({ userId, compact = false }: BadgeDisplayPr
 function BadgeCard({ badge, compact }: { badge: BadgeData; compact: boolean }) {
     return (
         <div 
-            className={`relative rounded-2xl border transition-all duration-300 text-center group
+            className={`relative rounded-md border transition-all duration-300 text-center group
                 ${badge.earned 
                     ? 'bg-gradient-to-b from-amber-500/10 to-purple-500/5 border-amber-500/20 hover:border-amber-400/40 hover:shadow-[0_0_15px_rgba(245,158,11,0.15)]' 
                     : 'bg-white/[0.02] border-white/5 opacity-40 grayscale'

@@ -1,0 +1,54 @@
+﻿Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+node.exe : Error: 
+Prisma schema 
+validation - (get-dmmf 
+wasm)
+Au caractère Ligne:1 : 
+1
++ & "C:\Program 
+Files\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo 
+...
++ ~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~
+    + CategoryInfo     
+         : 
+NotSpecified: (Err    
+or: Prisma s...(get-dm 
+   mf wasm):String) 
+[], R    emoteException
+    + 
+FullyQualifiedErrorI   
+ d : NativeCommandError
+ 
+Error code: P1012
+[1;91merror[0m: 
+[1mType 
+"EtudeDocument" is 
+neither a built-in 
+type, nor refers to 
+another model, 
+composite type, or 
+enum.[0m
+  [1;94m-->[0m  [4mp
+risma\schema.prisma:65
+[0m
+[1;94m   | [0m
+[1;94m64 | [0m  
+financeSnapshots   
+FinanceSnapshot[]
+[1;94m65 | [0m  
+etudeDocuments     [1;
+91mEtudeDocument[0m[]
+[1;94m   | [0m
+
+Validation Error 
+Count: 1
+[Context: getDmmf]
+
+Prisma CLI Version : 
+5.22.0

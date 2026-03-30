@@ -1,0 +1,124 @@
+﻿
+> worksite-tracker@0.1.0 build
+> npx prisma generate && next build
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+
+Ô£ö Generated Prisma Client (v5.22.0) to .\node_modules\@prisma\client in 213ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Want to react to database changes in your app as they happen? Discover how with Pulse: https://pris.ly/tip-1-pulse
+
+Ôû▓ Next.js 16.1.6 (Turbopack)
+- Environments: .env
+
+node.exe : ÔÜá The 
+"middleware" file 
+convention is 
+deprecated. Please use 
+"proxy" instead. Learn 
+more: https://nextjs.or
+g/docs/messages/middlew
+are-to-proxy
+Au caractère Ligne:1 : 
+1
++ & "C:\Program 
+Files\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo 
+...
++ ~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~
+    + CategoryInfo     
+         : NotSpecifi  
+  ed: (ÔÜá The "midd   
+ le...leware-to-pro    
+xy:String) [], Rem    
+oteException
+    + FullyQualifiedEr 
+   rorId : NativeComm  
+  andError
+ 
+  Creating an optimized production build ...
+
+> Build error occurred
+Error: Turbopack build 
+failed with 1 errors:
+./src/components/hub/Ov
+erviewTab.tsx:4:10
+Ecmascript file had an 
+error
+[0m [90m 2 |[39m 
+[36mimport[39m { [33
+mCalendar[39m[33m,[3
+9m [33mFileText[39m[
+33m,[39m [33mTrending
+Up[39m[33m,[39m [33
+mActivity[39m[33m,[3
+9m [33mClipboardList[
+39m } [36mfrom[39m [
+32m"lucide-react"[39m
+[33m;[39m
+ [90m 3 |[39m 
+[36mimport[39m { [33
+mHOURLY_RATE_EUR[39m 
+} [36mfrom[39m [32m"
+@/lib/xp-engine"[39m[
+33m;[39m
+[31m[1m>[22m[39m[9
+0m 4 |[39m 
+[36mimport[39m { 
+useRouter } 
+[36mfrom[39m [32m"ne
+xt/navigation"[39m[33
+m;[39m
+ [90m   |[39m        
+  [31m[1m^[22m[39m
+[31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m[
+1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[2
+2m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[39
+m[31m[1m^[22m[39m
+ [90m 5 |[39m
+ [90m 6 |[39m 
+[36minterface[39m [3
+3mOverviewTabProps[39m
+ {
+ [90m 7 |[39m     
+project[33m:[39m 
+{[0m
+
+You're importing a 
+component that needs 
+`useRouter`. This 
+React Hook only works 
+in a Client Component. 
+To fix, mark the file 
+(or its parent) with 
+the `"use client"` 
+directive.
+
+ Learn more: https://ne
+xtjs.org/docs/app/api-r
+eference/directives/use
+-client
+
+
+
+Import trace:
+  Server Component:
+    ./src/components/hu
+b/OverviewTab.tsx
+    ./src/app/pm/projec
+t/[id]/page.tsx
+
+
+    at <unknown> (./src
+/components/hub/Overvie
+wTab.tsx:4:10)

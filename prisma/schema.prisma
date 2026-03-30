@@ -29,8 +29,16 @@ model User {
   userBadges       UserBadge[]
   xpLogs           XpLog[]
   
+  // Cooking App Relations
+  cookingProtocols CookingProtocol[] @relation("UserProtocols")
+  pantryItems      PantryItem[]      @relation("UserPantry")
+  mealPreps        MealPrep[]        @relation("UserMealPreps")
+  
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
+  lastActiveAt     DateTime  @default(now())
+  
+  activityLogs     ActivityLog[]
 }
 
 model Project {
@@ -55,9 +63,11 @@ model Project {
   
   // Hub module data
   planningMilestones PlanningMilestone[]
-  purchases          Purchase[]
-  technicalDocuments TechnicalDocument[]
-  financeData        FinanceData[]
+  monthlyUploads     MonthlyUpload[]
+  purchaseCategories PurchaseCategory[]
+  financeSnapshots   FinanceSnapshot[]
+  etudeTasks         EtudeTask[]
+  etudeDocuments     EtudeDocument[]
   
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
@@ -75,54 +85,158 @@ model PlanningMilestone {
   progress    Float    @default(0)
   isComplete  Boolean  @default(false)
   sortOrder   Int      @default(0)
+  wbs         String?
+  wbsLevel    Int      @default(0)
+  isUserTrade Boolean  @default(false)
+  lot         String?
   createdAt   DateTime @default(now())
 }
 
-// ── Hub Module: Purchases / Achats ──
-model Purchase {
-  id            String    @id @default(cuid())
-  projectId     String
-  project       Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  category      String
-  description   String?
-  supplier      String
-  amount        Float?
-  currency      String    @default("EUR")
-  status        String    @default("pending")
-  orderDate     DateTime?
-  deliveryDate  DateTime?
-  createdAt     DateTime  @default(now())
+// ── Hub Module: Monthly Upload Tracking ──
+model MonthlyUpload {
+  id             String    @id @default(cuid())
+  projectId      String
+  project        Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  month          DateTime  // The month this upload represents
+  purchasesFile  String?   // Original filename
+  financesFile   String?
+  etudesFile     String?
+  uploadedById   String?
+  uploadedAt     DateTime  @default(now())
+
+  purchaseCategories PurchaseCategory[]
+  financeSnapshots   FinanceSnapshot[]
+  etudeTasks         EtudeTask[]
+  etudeDocuments     EtudeDocument[]
 }
 
-// ── Hub Module: Dossier Technique ──
-model TechnicalDocument {
-  id            String    @id @default(cuid())
-  projectId     String
-  project       Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  docType       String
-  reference     String
-  title         String
-  submittedDate DateTime?
-  status        String
-  remarks       String?
-  lot           String?
-  revision      Int       @default(0)
-  createdAt     DateTime  @default(now())
+// ── Hub Module: Purchases / Achats (from Synthèse sheet) ──
+model PurchaseCategory {
+  id                  String    @id @default(cuid())
+  projectId           String
+  project             Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  uploadId            String?
+  upload              MonthlyUpload? @relation(fields: [uploadId], references: [id], onDelete: Cascade)
+  
+  category            String    // "Tableaux électriques", "Éclairage", etc.
+  peInitials          String?   // Initiales PE
+  status              String?   // V, x, etc.
+  isInterco           Boolean   @default(false)
+  inProgress          Boolean   @default(false)
+  
+  offerPriceSoum      Float?    // Prix offre soumission
+  commercialDiscount  Float?    // Remise commerciale
+  hypothesisInjected  Float?    // Hypothèse injectée ODOO
+  costPrice           Float?    // Prix de revient/achat
+  supplierSoum        String?   // Fournisseur soumission
+  supplierExe         String?   // Fournisseur exécution
+  negotiatedPrice     Float?    // Prix achat Négocié
+  returnAmount        Float?    // RETURN (margin gained)
+  comments            String?   // Commentaires VRI/DCO
+  
+  createdAt           DateTime  @default(now())
 }
 
-// ── Hub Module: Finances ──
-model FinanceData {
+// ── Hub Module: Finances / EoC (monthly snapshots) ──
+model FinanceSnapshot {
+  id                  String    @id @default(cuid())
+  projectId           String
+  project             Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  uploadId            String?
+  upload              MonthlyUpload? @relation(fields: [uploadId], references: [id], onDelete: Cascade)
+  
+  month               DateTime  // Which month this snapshot represents
+  sheetName           String?   // Original sheet name for reference
+  
+  // Revenue
+  totalRevenue        Float?    // Revenu total (actual billed so far)
+  finalRevenue        Float?    // Revenu total including revisions (FIN PRÉVUE)
+  approvedSettlements Float?    // Règlements approuvés
+  
+  // Labor
+  laborHours          Float?    // # heures des ouvriers
+  laborHourlyRate     Float?    // taux horaire
+  laborCost           Float?    // Total des charges salariales propres
+  
+  // External labor
+  externalLaborCost   Float?    // Performance externe en régie
+  
+  // Subcontractors
+  subcontractorCost   Float?    // Sous-traitance total
+  
+  // Materials
+  materialCost        Float?    // Total achats matériel
+  
+  // Engineering / internal costs
+  engineeringCost     Float?    // CA + IP + Dessinateurs total
+  
+  // Site costs / Frais généraux
+  siteCost            Float?    // Frais généraux sur le chiffre d'affaires
+  
+  // Provisions
+  provisionsCost      Float?    // Garantie, impayés, litiges
+  
+  // Bottom line
+  totalCost           Float?    
+  result              Float?    // Résultat y compris révision
+  marginPercent       Float?    // % margin
+  
+  // Workforce planning
+  plannedWorkers      Int?
+  plannedDays         Int?
+  
+  // RAF - Reste À Faire (remaining costs)
+  rafLabor            Float?    // Main d'oeuvre restante
+  rafSubcontractor    Float?    // Sous-traitance restante
+  rafMaterial         Float?    // Matériel restant
+  rafEngineering      Float?    // Encadrement restant
+  rafSite             Float?    // Frais généraux restants
+  rafTotal            Float?    // Total RAF
+  
+  createdAt           DateTime  @default(now())
+}
+
+// ── Hub Module: Études / Document Tracking ──
+model EtudeTask {
   id              String   @id @default(cuid())
   projectId       String
   project         Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  category        String
-  label           String
-  budgetAmount    Float?
-  actualAmount    Float?
-  forecastAmount  Float?
-  unit            String?
-  period          String?
+  uploadId        String?
+  upload          MonthlyUpload? @relation(fields: [uploadId], references: [id], onDelete: Cascade)
+
+  // Parsed from 'Simple Gantt'
+  wbs             String?  // The '#' column
+  activity        String
+  assignedTo      String?
+  startDate       DateTime?
+  endDate         DateTime?
+  duration        Int?     // Jours
+  status          String?  // Statut
+  progress        Float?   // % réalisé
+
   createdAt       DateTime @default(now())
+
+  @@index([projectId])
+  @@index([uploadId])
+}
+
+model EtudeDocument {
+  id              String   @id @default(cuid())
+  projectId       String
+  project         Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  uploadId        String?
+  upload          MonthlyUpload? @relation(fields: [uploadId], references: [id], onDelete: Cascade)
+
+  category        String   // 'materiel', 'plans', 'calculs'
+  reference       String
+  title           String
+  revision        String?
+  status          String?  // 'APP', 'BPE', 'ATT', etc
+  
+  createdAt       DateTime @default(now())
+
+  @@index([projectId])
+  @@index([uploadId])
 }
 
 model SubLocation {
@@ -170,6 +284,7 @@ model WeeklyPlan {
   weekNumber          Int
   year                Int
   numberOfWorkers     Int
+  hoursPerWorker      Float     @default(40)
   targetHoursCapacity Float     
   
   projectId           String
@@ -229,6 +344,7 @@ model DailyReport {
   
   attendance          Attendance[]
   taskProgress        DailyTaskProgress[]
+  photos              PhotoProof[]
 
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
@@ -274,6 +390,9 @@ model PhotoProof {
   id                  String    @id @default(cuid())
   url                 String    
   caption             String?
+  
+  dailyReportId       String?
+  dailyReport         DailyReport? @relation(fields: [dailyReportId], references: [id], onDelete: Cascade)
   
   createdAt           DateTime  @default(now())
 }
@@ -327,4 +446,73 @@ model XpLog {
   projectId   String?
   projectName String?
   createdAt   DateTime @default(now())
+}
+
+// ==========================================
+// COOKING APP MODELS
+// ==========================================
+
+model CookingProtocol {
+  id          String   @id @default(cuid())
+  name        String   // "Low-FODMAP", etc.
+  description String?
+  userId      String
+  user        User     @relation("UserProtocols", fields: [userId], references: [id], onDelete: Cascade)
+  startDate   DateTime @default(now())
+  status      String   @default("ACTIVE") // ACTIVE, COMPLETED, PAUSED
+}
+
+model PantryItem {
+  id          String   @id @default(cuid())
+  name        String
+  category    String   // 'Légumes', 'Épicerie', 'Produits Laitiers' etc.
+  quantity    Float?
+  unit        String?  // 'g', 'ml', 'pcs'
+  userId      String
+  user        User     @relation("UserPantry", fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model CookingRecipe {
+  id           String             @id @default(cuid())
+  title        String
+  description  String?
+  imageUrl     String?
+  instructions String?            // JSON string or long text
+  ingredients  RecipeIngredient[]
+  mealPreps    MealPrep[]
+}
+
+model RecipeIngredient {
+  id          String        @id @default(cuid())
+  name        String
+  quantity    Float?
+  unit        String?
+  recipeId    String
+  recipe      CookingRecipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+}
+
+model MealPrep {
+  id          String        @id @default(cuid())
+  date        DateTime
+  recipeId    String
+  recipe      CookingRecipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User          @relation("UserMealPreps", fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ==========================================
+// ADMIN & TRACKING MODELS
+// ==========================================
+
+model ActivityLog {
+  id          String   @id @default(cuid())
+  userId      String
+  action      String   // e.g., "UPLOAD_PLANNING", "LOGIN", "UPDATE_TASK"
+  details     String?  // JSON string or brief description of what was changed
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
 }

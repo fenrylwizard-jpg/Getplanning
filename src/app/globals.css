@@ -64,6 +64,75 @@
   color: #475569 !important;
 }
 
+/* Light mode overrides for common UI colors */
+[data-theme="light"] .text-cyan-200,
+[data-theme="light"] .text-cyan-300,
+[data-theme="light"] .text-cyan-400,
+[data-theme="light"] .text-cyan-500 {
+  color: var(--accent-teal) !important;
+}
+
+[data-theme="light"] .text-blue-300,
+[data-theme="light"] .text-blue-400 {
+  color: #2563eb !important;
+}
+
+[data-theme="light"] .text-emerald-300,
+[data-theme="light"] .text-emerald-400,
+[data-theme="light"] .text-emerald-500 {
+  color: #059669 !important;
+}
+
+[data-theme="light"] .text-rose-300,
+[data-theme="light"] .text-rose-400,
+[data-theme="light"] .text-red-400 {
+  color: #e11d48 !important;
+}
+
+[data-theme="light"] .text-violet-300,
+[data-theme="light"] .text-violet-400 {
+  color: var(--accent-purple) !important;
+}
+
+[data-theme="light"] .text-amber-300,
+[data-theme="light"] .text-amber-400 {
+  color: #d97706 !important;
+}
+
+/* Background Opacity Overrides for Light Mode */
+[data-theme="light"] .bg-black\/20,
+[data-theme="light"] .bg-black\/40 {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-theme="light"] .bg-white\/5,
+[data-theme="light"] .bg-white\/10 {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-theme="light"] .bg-cyan-500\/5,
+[data-theme="light"] .bg-cyan-500\/10,
+[data-theme="light"] .bg-cyan-500\/20,
+[data-theme="light"] .bg-cyan-950\/40 {
+  background-color: rgba(8, 145, 178, 0.08) !important;
+}
+
+[data-theme="light"] .bg-emerald-500\/10,
+[data-theme="light"] .bg-emerald-500\/20 {
+  background-color: rgba(5, 150, 105, 0.08) !important;
+}
+
+/* Borders */
+[data-theme="light"] .border-white\/5,
+[data-theme="light"] .border-white\/10 {
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="light"] .border-cyan-500\/20,
+[data-theme="light"] .border-cyan-500\/30 {
+  border-color: rgba(8, 145, 178, 0.2) !important;
+}
+
 [data-theme="light"] table,
 [data-theme="light"] thead,
 [data-theme="light"] tbody {
@@ -78,6 +147,147 @@
   color: #475569 !important;
 }
 
+/* Generic dark background catch-all using class substring matching */
+[data-theme="light"] [class*="bg-\[#0"],
+[data-theme="light"] [class*="bg-\[#1"] {
+  background-color: rgba(255, 255, 255, 0.85) !important;
+}
+
+/* Navbar & Tab bar */
+[data-theme="light"] .navbar {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border-color: rgba(0, 0, 0, 0.06) !important;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Settings Modal nested dark containers */
+[data-theme="light"] [class*="bg-\[#0"] [class*="bg-\[#0"] {
+  background-color: rgba(245, 247, 250, 0.95) !important;
+}
+
+/* ── Glass Panel in light mode ── */
+[data-theme="light"] .glass-panel {
+  background: rgba(255, 255, 255, 0.75) !important;
+  border-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+/* ── Mechanical Panel ── */
+[data-theme="light"] .mechanical-panel {
+  background: rgba(255, 255, 255, 0.7) !important;
+  border-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+/* ── Feature Card ── */
+[data-theme="light"] .feature-card {
+  background: rgba(255, 255, 255, 0.8) !important;
+  border-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+/* ── Text color in dark containers forced to light ── */
+[data-theme="light"] .text-gray-600 {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .text-gray-700 {
+  color: #374151 !important;
+}
+
+[data-theme="light"] .text-slate-400,
+[data-theme="light"] .text-slate-500 {
+  color: #64748b !important;
+}
+
+/* ── Purple/Colored Border overrides ── */
+[data-theme="light"] .border-purple-500\/20 {
+  border-color: rgba(168, 85, 247, 0.15) !important;
+}
+
+[data-theme="light"] .border-purple-500\/50 {
+  border-color: rgba(168, 85, 247, 0.3) !important;
+}
+
+[data-theme="light"] .border-amber-500\/20,
+[data-theme="light"] .border-amber-500\/40,
+[data-theme="light"] .border-amber-500\/50 {
+  border-color: rgba(217, 119, 6, 0.25) !important;
+}
+
+[data-theme="light"] .border-orange-500\/50 {
+  border-color: rgba(249, 115, 22, 0.25) !important;
+}
+
+[data-theme="light"] .border-gray-700 {
+  border-color: rgba(0, 0, 0, 0.12) !important;
+}
+
+/* ── Additional background opacity overrides ── */
+[data-theme="light"] .bg-blue-500\/10,
+[data-theme="light"] .bg-blue-500\/20 {
+  background-color: rgba(37, 99, 235, 0.08) !important;
+}
+
+[data-theme="light"] .bg-amber-500\/10 {
+  background-color: rgba(217, 119, 6, 0.08) !important;
+}
+
+[data-theme="light"] .bg-red-500\/10 {
+  background-color: rgba(239, 68, 68, 0.08) !important;
+}
+
+[data-theme="light"] .bg-purple-500\/10 {
+  background-color: rgba(168, 85, 247, 0.08) !important;
+}
+
+[data-theme="light"] .bg-orange-500\/10 {
+  background-color: rgba(249, 115, 22, 0.08) !important;
+}
+
+/* ── Scrollbar in light mode ── */
+[data-theme="light"] ::-webkit-scrollbar-track {
+  background: #f1f5f9 !important;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15) !important;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25) !important;
+}
+
+/* ── Dot grid / aurora suppression in light mode ── */
+[data-theme="light"] .dot-grid,
+[data-theme="light"] .aurora-page::after {
+  opacity: 0 !important;
+}
+
+[data-theme="light"] .aurora-page::before {
+  opacity: 0.08 !important;
+}
+
+[data-theme="light"] .aurora-page {
+  color: var(--text-primary) !important;
+}
+
+/* ── Data table borders in light mode ── */
+[data-theme="light"] .data-table td {
+  border-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+/* ── Shadow overrides ── */
+[data-theme="light"] [class*="shadow-[0_0_50px"],
+[data-theme="light"] [class*="shadow-[0_4px_30px"],
+[data-theme="light"] [class*="shadow-[0_20px_50px"],
+[data-theme="light"] [class*="shadow-2xl"] {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ── Recharts / SVG text colors in light mode ── */
+[data-theme="light"] .recharts-cartesian-grid line {
+  stroke: rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ── Form, Input, Select, Textarea ── */
 [data-theme="light"] input,
 [data-theme="light"] select,
 [data-theme="light"] textarea {
@@ -89,6 +299,47 @@
 [data-theme="light"] input::placeholder,
 [data-theme="light"] textarea::placeholder {
   color: #94a3b8 !important;
+}
+
+[data-theme="light"] select option {
+  background: white !important;
+  color: #1e293b !important;
+}
+
+/* ── Badge overrides ── */
+[data-theme="light"] .badge-success {
+  color: #059669 !important;
+}
+
+[data-theme="light"] .badge-warning {
+  color: #d97706 !important;
+}
+
+[data-theme="light"] .badge-danger {
+  color: #dc2626 !important;
+}
+
+/* ── Form specific ── */
+[data-theme="light"] .form-input {
+  background: rgba(245, 247, 250, 0.9) !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+  color: #1e293b !important;
+}
+
+[data-theme="light"] .form-input option {
+  background: white !important;
+  color: #1e293b !important;
+}
+
+/* ── btn-secondary in light ── */
+[data-theme="light"] .btn-secondary {
+  background: rgba(0, 0, 0, 0.04) !important;
+  color: var(--text-primary) !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+[data-theme="light"] .btn-secondary:hover {
+  background: rgba(0, 0, 0, 0.08) !important;
 }
 
 * {
@@ -172,7 +423,7 @@ body {
   background: linear-gradient(135deg, #a855f7, #25d1f4);
   color: white;
   padding: 1rem 2.5rem;
-  border-radius: 9999px;
+  border-radius: 0.375rem;
   font-weight: 700;
   font-size: 1.125rem;
   border: none;
@@ -195,7 +446,7 @@ body {
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   border: 1px solid var(--glass-border);
-  border-radius: 1rem;
+  border-radius: 0.375rem;
   transition: all 0.3s ease;
 }
 
@@ -205,7 +456,7 @@ body {
   -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 9999px;
+  border-radius: 0.375rem;
   max-width: 100%;
 }
 
@@ -223,7 +474,7 @@ body {
   border: 1px solid transparent;
   background-clip: padding-box;
   position: relative;
-  border-radius: 9999px;
+  border-radius: 0.375rem;
   cursor: pointer;
   transition: all 0.3s ease;
 }
@@ -247,7 +498,7 @@ body {
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 1.5rem;
+  border-radius: 0.5rem;
   padding: 2rem;
   display: flex;
   flex-direction: column;
@@ -280,7 +531,7 @@ body {
 .icon-circle {
   width: 3rem;
   height: 3rem;
-  border-radius: 9999px;
+  border-radius: 0.375rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -306,7 +557,7 @@ body {
 .dashboard-preview {
   position: relative;
   overflow: hidden;
-  border-radius: 1rem;
+  border-radius: 0.375rem;
   border-top: 1px solid rgba(255, 255, 255, 0.2);
   border-left: 1px solid rgba(255, 255, 255, 0.15);
   border-right: 1px solid rgba(255, 255, 255, 0.15);
@@ -397,7 +648,7 @@ h2 {
   padding: 0.25rem 0.75rem;
   font-size: 0.875rem;
   font-weight: 700;
-  border-radius: 9999px;
+  border-radius: 0.375rem;
 }
 
 .badge-success {
@@ -486,7 +737,7 @@ h2 {
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 2rem;
+  border-radius: 0.5rem;
   padding: 1.5rem;
   transition: all 0.3s ease;
 }
@@ -501,7 +752,7 @@ h2 {
   -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 2rem;
+  border-radius: 0.5rem;
   padding: 1.5rem;
   position: relative;
 }
@@ -567,7 +818,7 @@ h2 {
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: white;
-  border-radius: 1rem;
+  border-radius: 0.375rem;
   padding: 0.875rem 1.25rem;
   font-size: 1rem;
   outline: none;
@@ -591,7 +842,7 @@ h2 {
   justify-content: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
-  border-radius: 9999px;
+  border-radius: 0.375rem;
   font-weight: 700;
   font-size: 1rem;
   cursor: pointer;
@@ -800,7 +1051,7 @@ a {
 .feature-badge {
   width: 3.5rem;
   height: 3.5rem;
-  border-radius: 1rem;
+  border-radius: 0.375rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1020,3 +1271,289 @@ a {
 .color-indicator-5 {
   background-color: #ec4899;
 } /* pink-500 */
+
+/* ═══════════════════════════════════════════════
+   LANDING HUB — Two-Card Glassmorphism Layout
+   ═══════════════════════════════════════════════ */
+
+.landing-hub {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  background: #050a18;
+}
+
+.landing-aurora {
+  position: absolute;
+  top: -20%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120%;
+  height: 70%;
+  background: radial-gradient(
+    ellipse at top,
+    rgba(168, 85, 247, 0.25),
+    rgba(37, 209, 244, 0.18),
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: 0;
+  animation: auroraPulse 8s ease-in-out infinite alternate;
+}
+
+.landing-dots {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(
+    rgba(255, 255, 255, 0.04) 1px,
+    transparent 1px
+  );
+  background-size: 28px 28px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.landing-content {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 2rem 1.5rem;
+  max-width: 900px;
+  width: 100%;
+}
+
+.landing-logo {
+  font-size: clamp(3rem, 7vw, 5rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: white;
+  margin-bottom: 0.75rem;
+}
+
+.landing-logo-gradient {
+  background: linear-gradient(135deg, #a855f7, #25d1f4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.landing-tagline {
+  font-size: 1.15rem;
+  color: rgba(255, 255, 255, 0.35);
+  margin-bottom: 3.5rem;
+  font-weight: 500;
+}
+
+/* ── Card Grid ── */
+.landing-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  width: 100%;
+  max-width: 750px;
+}
+
+/* ── Individual Card ── */
+.landing-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+  color: white;
+  border-radius: 2.5rem;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.landing-card:hover {
+  transform: translateY(-10px) scale(1.03);
+}
+
+.landing-card-inner {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2.5rem 2rem 2rem;
+  background: rgba(255, 255, 255, 0.04);
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 2.5rem;
+  width: 100%;
+  height: 100%;
+  transition: all 0.5s ease;
+}
+
+.landing-card:hover .landing-card-inner {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* ── Card Glow Effect ── */
+.landing-card-glow {
+  position: absolute;
+  top: -30%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200%;
+  height: 200%;
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.landing-card:hover .landing-card-glow {
+  opacity: 1;
+}
+
+.landing-card-glow-cyan {
+  background: radial-gradient(
+    circle at center,
+    rgba(37, 209, 244, 0.12),
+    rgba(168, 85, 247, 0.06),
+    transparent 60%
+  );
+}
+
+.landing-card-glow-orange {
+  background: radial-gradient(
+    circle at center,
+    rgba(251, 146, 60, 0.12),
+    rgba(74, 222, 128, 0.06),
+    transparent 60%
+  );
+}
+
+/* ── Worksite card hover accent ── */
+.landing-card-worksite:hover .landing-card-inner {
+  border-color: rgba(37, 209, 244, 0.25);
+  box-shadow:
+    0 0 40px rgba(37, 209, 244, 0.12),
+    0 25px 60px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* ── Cooking card hover accent ── */
+.landing-card-cooking:hover .landing-card-inner {
+  border-color: rgba(251, 146, 60, 0.25);
+  box-shadow:
+    0 0 40px rgba(251, 146, 60, 0.12),
+    0 25px 60px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* ── Icon ── */
+.landing-card-icon-wrap {
+  width: 140px;
+  height: 140px;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  margin-bottom: 1.25rem;
+  transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.landing-card:hover .landing-card-icon-wrap {
+  transform: scale(1.08);
+}
+
+.landing-card-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 0.5rem;
+}
+
+/* ── Card Text ── */
+.landing-card-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.5rem;
+}
+
+.landing-card-desc {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.4);
+  line-height: 1.6;
+  max-width: 240px;
+  margin-bottom: 1rem;
+}
+
+/* ── Arrow indicator ── */
+.landing-card-arrow {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  color: rgba(255, 255, 255, 0.5);
+  transition: all 0.4s ease;
+}
+
+.landing-card:hover .landing-card-arrow {
+  transform: translateX(4px);
+  color: white;
+}
+
+.landing-card-worksite:hover .landing-card-arrow {
+  background: rgba(37, 209, 244, 0.15);
+  border-color: rgba(37, 209, 244, 0.3);
+  box-shadow: 0 0 15px rgba(37, 209, 244, 0.2);
+}
+
+.landing-card-cooking:hover .landing-card-arrow {
+  background: rgba(251, 146, 60, 0.15);
+  border-color: rgba(251, 146, 60, 0.3);
+  box-shadow: 0 0 15px rgba(251, 146, 60, 0.2);
+}
+
+/* ── Footer ── */
+.landing-footer {
+  margin-top: 3.5rem;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.12);
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .landing-cards {
+    grid-template-columns: 1fr;
+    max-width: 340px;
+    gap: 1.5rem;
+  }
+
+  .landing-card-icon-wrap {
+    width: 110px;
+    height: 110px;
+  }
+
+  .landing-card-inner {
+    padding: 2rem 1.5rem 1.5rem;
+  }
+
+  .landing-card-title {
+    font-size: 1.5rem;
+  }
+
+  .landing-tagline {
+    margin-bottom: 2.5rem;
+  }
+}

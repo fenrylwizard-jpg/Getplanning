@@ -1,0 +1,15 @@
+next.config.ts(18,83): error TS2345: Argument of type 'import("C:/Users/Imam/.gemini/antigravity/scratch/worksite-tracker/node_modules/next/dist/server/config-shared").NextConfig' is not assignable to parameter of type 'import("C:/Users/Imam/.gemini/antigravity/scratch/worksite-tracker/node_modules/@types/next-pwa/node_modules/next/dist/server/config-shared").NextConfig'.
+  Types of property 'i18n' are incompatible.
+    Type 'import("C:/Users/Imam/.gemini/antigravity/scratch/worksite-tracker/node_modules/next/dist/server/config-shared").I18NConfig | null | undefined' is not assignable to type 'import("C:/Users/Imam/.gemini/antigravity/scratch/worksite-tracker/node_modules/@types/next-pwa/node_modules/next/dist/server/config-shared").I18NConfig | null | undefined'.
+      Type 'import("C:/Users/Imam/.gemini/antigravity/scratch/worksite-tracker/node_modules/next/dist/server/config-shared").I18NConfig' is not assignable to type 'import("C:/Users/Imam/.gemini/antigravity/scratch/worksite-tracker/node_modules/@types/next-pwa/node_modules/next/dist/server/config-shared").I18NConfig'.
+        Types of property 'domains' are incompatible.
+          Type 'I18NDomains | undefined' is not assignable to type 'DomainLocale[] | undefined'.
+            The type 'I18NDomains' is 'readonly' and cannot be assigned to the mutable type 'DomainLocale[]'.
+simulate_herlin.ts(20,7): error TS2322: Type 'string' is not assignable to type 'SubLocationUncheckedCreateNestedManyWithoutProjectInput | SubLocationCreateNestedManyWithoutProjectInput | undefined'.
+simulate_herlin.ts(68,9): error TS2353: Object literal may only specify known properties, and 'emptyDrumsCount' does not exist in type 'Without<WeeklyPlanCreateInput, WeeklyPlanUncheckedCreateInput> & WeeklyPlanUncheckedCreateInput'.
+src/lib/validations.ts(13,13): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(values: readonly ["PM", "SM"], params?: string | { error?: string | $ZodErrorMap<$ZodIssueInvalidValue<unknown>> | undefined; message?: string | undefined; } | undefined): ZodEnum<...>', gave the following error.
+    Object literal may only specify known properties, and 'errorMap' does not exist in type '{ error?: string | $ZodErrorMap<$ZodIssueInvalidValue<unknown>> | undefined; message?: string | undefined; }'.
+  Overload 2 of 2, '(entries: Readonly<Record<string, EnumValue>>, params?: string | { error?: string | $ZodErrorMap<$ZodIssueInvalidValue<unknown>> | undefined; message?: string | undefined; } | undefined): ZodEnum<...>', gave the following error.
+    Argument of type 'readonly ["PM", "SM"]' is not assignable to parameter of type 'Readonly<Record<string, EnumValue>>'.
+      Index signature for type 'string' is missing in type 'readonly ["PM", "SM"]'.

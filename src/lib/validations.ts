@@ -10,7 +10,7 @@ export const registerSchema = z.object({
     name: z.string().min(2, 'Nom trop court (min. 2 caractères)'),
     email: z.string().email('Format d\'email invalide'),
     password: z.string().min(6, 'Mot de passe trop court (min. 6 caractères)'),
-    role: z.enum(['PM', 'SM'], { errorMap: () => ({ message: 'Rôle invalide' }) }),
+    role: z.enum(['PM', 'SM']),
     characterId: z.number().int().min(1).max(5).optional().default(1),
 });
 
@@ -79,6 +79,6 @@ export function validate<T>(schema: z.ZodSchema<T>, data: unknown): { success: t
     }
     return {
         success: false,
-        errors: result.error.errors.map(e => `${e.path.join('.')}: ${e.message}`),
+        errors: result.error.issues.map(e => `${e.path.join('.')}: ${e.message}`),
     };
 }

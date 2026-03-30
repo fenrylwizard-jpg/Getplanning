@@ -149,7 +149,7 @@ export default async function PMAnalytics() {
                         <span className="font-bold text-base tracking-tight"><T k="back_to_project" /></span>
                     </Link>
                     <div className="flex items-center gap-4 mb-2">
-                        <div className="p-3 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 shadow-[0_0_20px_rgba(6,182,212,0.15)]">
+                        <div className="p-3 rounded-md bg-cyan-500/10 border border-cyan-500/20 shadow-[0_0_20px_rgba(6,182,212,0.15)]">
                             <BarChart3 size={28} className="text-cyan-400" />
                         </div>
                         <h1 className="text-4xl font-black tracking-tight text-white"><T k="portfolio_performance" /></h1>
@@ -276,7 +276,7 @@ export default async function PMAnalytics() {
                                 </div>
                                 <div className="flex flex-col gap-2 w-full">
                                     {rcaData.sort((a,b) => b.value - a.value).slice(0, 5).map((item, idx) => (
-                                        <div key={item.name} className="flex items-center justify-between p-2.5 rounded-xl bg-white/5 border border-white/5 transition-all text-xs font-medium">
+                                        <div key={item.name} className="flex items-center justify-between p-2.5 rounded-md bg-white/5 border border-white/5 transition-all text-xs font-medium">
                                             <div className="flex items-center gap-2">
                                                 <div 
                                                     className={`w-2 h-2 rounded-full ${['bg-[#0088FE]', 'bg-[#00C49F]', 'bg-[#FFBB28]', 'bg-[#FF8042]', 'bg-[#8884D8]'][idx % 5]}`}
@@ -303,8 +303,8 @@ export default async function PMAnalytics() {
                         </h4>
                         <div className="space-y-3">
                             {projects.flatMap((p) => p.weeklyPlans.map((wp) => ({ ...wp, projectName: p.name }))).filter((wp) => wp.issuesReported).sort((a, b) => b.weekNumber - a.weekNumber).slice(0, 5).map((wp, i) => (
-                                <div key={i} className="p-4 bg-white/5 rounded-2xl border border-white/5 hover:border-white/10 transition-all flex items-start gap-4">
-                                    <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-[10px] font-black text-purple-400 shrink-0">
+                                <div key={i} className="p-4 bg-white/5 rounded-md border border-white/5 hover:border-white/10 transition-all flex items-start gap-4">
+                                    <div className="w-10 h-10 rounded-md bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-[10px] font-black text-purple-400 shrink-0">
                                         S{wp.weekNumber}
                                     </div>
                                     <div className="flex-1 min-w-0">

@@ -1,0 +1,3 @@
+{
+  "/api/project/[id]/reupload/confirm/route": "app/api/project/[id]/reupload/confirm/route.js"
+}

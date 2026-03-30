@@ -148,7 +148,7 @@ export default function PdfExportButton({ data }: { data: PdfReportData }) {
     return (
         <button
             onClick={() => generateWeeklyPDF(data)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 font-bold text-sm hover:bg-purple-500/20 hover:border-purple-500/40 transition-all group"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-md bg-purple-500/10 border border-purple-500/20 text-purple-400 font-bold text-sm hover:bg-purple-500/20 hover:border-purple-500/40 transition-all group"
         >
             <FileDown size={16} className="group-hover:translate-y-0.5 transition-transform" />
             Exporter PDF

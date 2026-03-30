@@ -4,21 +4,22 @@ import React from "react";
 import Image from "next/image";
 
 interface AvatarDisplayProps {
-    characterId: number; // 1: Mason, 2: Electrician, 3: Carpenter, 4: Plumber, 5: Foreman
+    characterId: number; // 1: PM, 2: Electrician, 3: Heater (Chauffagiste), 4: Plumber, 5: Ductwork (Gainiste)
     level: number;
     size?: number;
     className?: string;
+    showLevel?: boolean;
 }
 
 const ROLE_MAP: Record<number, string> = {
-    1: "mason",
+    1: "pm",
     2: "electrician",
-    3: "carpenter",
+    3: "heater",
     4: "plumber",
-    5: "foreman"
+    5: "ductwork"
 };
 
-export default function AvatarDisplay({ characterId, level, size = 120, className = "" }: AvatarDisplayProps) {
+export default function AvatarDisplay({ characterId, level, size = 120, className = "", showLevel = true }: AvatarDisplayProps) {
     // Determine tier based on level
     let tier = 0; // 0: Apprentice, 1: Skilled, 2: Expert, 3: Master, 4: Grand Master, 5: Legend
     if (level >= 50) tier = 5;
@@ -27,41 +28,32 @@ export default function AvatarDisplay({ characterId, level, size = 120, classNam
     else if (level >= 20) tier = 2;
     else if (level >= 10) tier = 1;
 
-    const role = ROLE_MAP[characterId] || "mason";
-    
-    // We are generating all assets now, so no fallback needed
+    const role = ROLE_MAP[characterId] || "pm";
     const imageUrl = `/characters/${role}_t${tier}.png`;
 
-    const sizeClasses: Record<number, string> = {
-        40: "w-[40px] h-[40px]",
-        60: "w-[60px] h-[60px]",
-        80: "w-[80px] h-[80px]",
-        100: "w-[100px] h-[100px]",
-        120: "w-[120px] h-[120px]"
-    };
-    const sizeClass = sizeClasses[size] || `w-[${size}px] h-[${size}px]`;
-    const isSmall = size <= 60;
-
     return (
-        <div className={`relative flex-shrink-0 ${sizeClass} ${className}`}>
-            <div className="absolute inset-0">
-                <Image 
-                    src={imageUrl} 
-                    alt={`${role} Tier ${tier + 1}`}
-                    fill
-                    unoptimized
-                    className="object-contain"
-                />
-            </div>
+        <div
+            className={`relative ${className}`}
+            style={{ width: size, height: size }}
+        >
+            <Image 
+                src={imageUrl} 
+                alt={`${role} Tier ${tier + 1}`}
+                fill
+                unoptimized
+                className="object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] ck-avatar-transparent"
+            />
             
-            {/* Level Badge */}
-            <div className={`absolute ${isSmall ? '-bottom-1 -right-1 px-1 py-0 text-[7px]' : 'bottom-1 right-1 px-2 py-0.5 text-[10px]'} rounded-md bg-purple-600/80 backdrop-blur-sm font-black text-white border border-purple-400/50`}>
-                LVL {level}
-            </div>
+            {/* Level Badge — only show if showLevel is true and size is large enough */}
+            {showLevel && size >= 60 && (
+                <div className="absolute bottom-0 right-0 px-1.5 py-0.5 rounded-md bg-purple-600/80 backdrop-blur-sm text-[10px] font-black text-white border border-purple-400/50">
+                    LVL {level}
+                </div>
+            )}
 
             {/* Glowing Aura for high tiers */}
-            {tier >= 2 && (
-                <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-purple-500/20 to-transparent animate-pulse" />
+            {tier >= 2 && size >= 60 && (
+                <div className="absolute inset-0 pointer-events-none rounded-full bg-gradient-to-t from-purple-500/15 to-transparent animate-pulse" />
             )}
         </div>
     );

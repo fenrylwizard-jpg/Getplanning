@@ -58,7 +58,7 @@ export default function Home() {
         <header className="container mt-5 mb-8">
           <nav className="glass-nav flex items-center justify-between px-6 py-3">
             <Link href="/" className="flex items-center gap-3 group no-underline">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center text-white font-black text-lg transition-transform duration-300 group-hover:scale-110">G</div>
+              <div className="w-10 h-10 rounded-md bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center text-white font-black text-lg transition-transform duration-300 group-hover:scale-110">G</div>
               <span className="text-white text-xl font-bold tracking-tight">GetPlanning</span>
             </Link>
 
@@ -91,7 +91,7 @@ export default function Home() {
           {/* Dashboard Preview */}
           <div className="hero-preview animate-float">
             <div className="dashboard-preview glass-panel p-2">
-              <div className="rounded-xl overflow-hidden bg-gradient-to-br from-[#1e1b4b] to-[#0f172a] p-6 sm:p-8">
+              <div className="rounded-md overflow-hidden bg-gradient-to-br from-[#1e1b4b] to-[#0f172a] p-6 sm:p-8">
                 <div className="flex items-center gap-2 mb-6">
                   <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
                   <div className="w-3 h-3 rounded-full bg-yellow-500/80"></div>
@@ -159,9 +159,9 @@ export default function Home() {
 
             <div className="feature-visual">
               {/* Mini analytics mockup */}
-              <div className="glass-panel p-6 rounded-2xl">
+              <div className="glass-panel p-6 rounded-md">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-md bg-purple-500/20 flex items-center justify-center">
                     <span className="material-symbols-outlined text-purple-400">trending_up</span>
                   </div>
                   <div>
@@ -180,11 +180,11 @@ export default function Home() {
                   <div className="chart-bar h-[95%]"></div>
                 </div>
                 <div className="grid grid-cols-2 gap-3 mt-6">
-                  <div className="rounded-xl bg-white/5 p-3">
+                  <div className="rounded-md bg-white/5 p-3">
                     <p className="text-green-400 text-xl font-bold">1898h</p>
                     <p className="text-slate-500 text-xs">{t("achieved_labor_value")}</p>
                   </div>
-                  <div className="rounded-xl bg-white/5 p-3">
+                  <div className="rounded-md bg-white/5 p-3">
                     <p className="text-purple-400 text-xl font-bold">3</p>
                     <p className="text-slate-500 text-xs">{t("active_projects")}</p>
                   </div>
@@ -217,10 +217,10 @@ export default function Home() {
 
             <div className="feature-visual">
               {/* Team management mockup */}
-              <div className="glass-panel p-6 rounded-2xl">
+              <div className="glass-panel p-6 rounded-md">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-teal-500/20 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-md bg-teal-500/20 flex items-center justify-center">
                       <span className="material-symbols-outlined text-teal-400">calendar_month</span>
                     </div>
                     <p className="text-white font-bold">{t("plan_next_week_title")}</p>
@@ -233,7 +233,7 @@ export default function Home() {
                   { week: "S+2", pct: "60", w: "w-[60%]" },
                   { week: "S+3", pct: "30", w: "w-[30%]" },
                 ].map(({ week, pct, w }) => (
-                    <div key={week} className="flex items-center gap-4 rounded-xl bg-white/5 p-3">
+                    <div key={week} className="flex items-center gap-4 rounded-md bg-white/5 p-3">
                       <span className="text-teal-400 font-bold text-sm w-10">{week}</span>
                       <div className="flex-1 h-3 rounded-full bg-white/10 overflow-hidden">
                         <div className={`h-full rounded-full bg-gradient-to-r from-teal-500 to-cyan-400 transition-all ${w}`}></div>
@@ -243,15 +243,15 @@ export default function Home() {
                   ))}
                 </div>
                 <div className="grid grid-cols-3 gap-3 mt-6">
-                  <div className="rounded-xl bg-white/5 p-3 text-center">
+                  <div className="rounded-md bg-white/5 p-3 text-center">
                     <p className="text-teal-400 text-lg font-bold">12</p>
                     <p className="text-slate-500 text-[10px] uppercase">{t("persons")}</p>
                   </div>
-                  <div className="rounded-xl bg-white/5 p-3 text-center">
+                  <div className="rounded-md bg-white/5 p-3 text-center">
                     <p className="text-cyan-400 text-lg font-bold">47</p>
                     <p className="text-slate-500 text-[10px] uppercase">{t("scheduled_tasks")}</p>
                   </div>
-                  <div className="rounded-xl bg-white/5 p-3 text-center">
+                  <div className="rounded-md bg-white/5 p-3 text-center">
                     <p className="text-green-400 text-lg font-bold">94%</p>
                     <p className="text-slate-500 text-[10px] uppercase">{t("ready")}</p>
                   </div>
@@ -284,9 +284,9 @@ export default function Home() {
 
             <div className="feature-visual">
               {/* Compliance mockup */}
-              <div className="glass-panel p-6 rounded-2xl">
+              <div className="glass-panel p-6 rounded-md">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-md bg-indigo-500/20 flex items-center justify-center">
                     <span className="material-symbols-outlined text-indigo-400">verified</span>
                   </div>
                   <div>
@@ -303,7 +303,7 @@ export default function Home() {
                     { label: "visual_proof", done: false },
                   ].map(item => (
                     <div key={item.label}
-                      className={`flex items-center gap-3 rounded-xl p-3 transition-all ${
+                      className={`flex items-center gap-3 rounded-md p-3 transition-all ${
                         item.done ? 'bg-green-500/10 border border-green-500/20' : 'bg-white/5 border border-white/10'
                       }`}
                     >
@@ -319,7 +319,7 @@ export default function Home() {
                     </div>
                   ))}
                 </div>
-                <div className="mt-6 rounded-xl bg-green-500/10 border border-green-500/20 p-4 text-center">
+                <div className="mt-6 rounded-md bg-green-500/10 border border-green-500/20 p-4 text-center">
                   <p className="text-green-400 text-2xl font-bold">98%</p>
                   <p className="text-green-300/60 text-xs">{t("stat_compliance")}</p>
                 </div>

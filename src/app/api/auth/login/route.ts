@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { signToken } from '@/lib/auth';
+import { logActivity } from '@/lib/logger';
 
 export async function POST(req: Request) {
     try {
@@ -43,6 +44,9 @@ export async function POST(req: Request) {
 
         const response = NextResponse.json({ success: true, role: user.role });
         
+        // Log the login activity
+        await logActivity(user.id, 'LOGIN', 'Connexion réussie');
+
         // Set the secure HTTP-Only cookie
         response.cookies.set({
             name: 'auth-token',

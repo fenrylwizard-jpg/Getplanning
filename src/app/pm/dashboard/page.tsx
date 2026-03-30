@@ -4,7 +4,6 @@ import { verifyToken } from "@/lib/auth";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { UploadCloud, Folder, Activity, ArrowRight, Building2, HeartPulse, FileText, Calendar } from "lucide-react";
-import DeleteProjectButton from "@/components/DeleteProjectButton";
 import T from "@/components/T";
 import AvatarDisplay from "@/components/AvatarDisplay";
 import { HOURLY_RATE_EUR } from "@/lib/xp-engine";
@@ -26,7 +25,7 @@ function HealthBadge({ status, type }: { status: 'good' | 'average' | 'poor', ty
     };
     const c = colors[status];
     return (
-        <div className={`flex items-center gap-2 px-4 py-2 rounded-xl ${c.bg} border ${c.border}`}>
+        <div className={`flex items-center gap-2 px-4 py-2 rounded-md ${c.bg} border ${c.border}`}>
             <Icon size={20} className={c.icon} />
             <div className="flex flex-col">
                 <span className="text-[10px] uppercase tracking-wider text-white/40 font-bold"><T k={label} /></span>
@@ -94,7 +93,7 @@ export default async function PMDashboard() {
                         <T k="dashboard" />
                     </h1>
                     
-                    <div className="glass-card p-6 sm:p-8 bg-[#080d1a]/80 backdrop-blur-md rounded-3xl border border-white/5 shadow-xl flex items-center gap-6 mt-4">
+                    <div className="glass-card p-6 sm:p-8 bg-[#080d1a]/80 backdrop-blur-md rounded-md border border-white/5 shadow-xl flex items-center gap-6 mt-4">
                         <AvatarDisplay characterId={u.characterId} level={u.level} size={100} />
                         <div className="flex flex-col text-left">
                             <span className="text-2xl font-black text-white">{u.name}</span>
@@ -108,10 +107,10 @@ export default async function PMDashboard() {
 
                     <p className="text-gray-400 text-lg sm:text-xl max-w-2xl leading-relaxed mt-4"><T k="supervision_desc" /></p>
                     <div className="flex flex-wrap justify-center gap-4">
-                        <Link href="/pm/analytics" className="flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 font-bold text-lg text-white transition-all hover:shadow-[0_0_20px_rgba(255,255,255,0.1)]">
+                        <Link href="/pm/analytics" className="flex items-center justify-center gap-2 px-8 py-4 rounded-sm bg-white/5 hover:bg-white/10 border border-white/10 font-bold text-lg text-white transition-all hover:shadow-[0_0_20px_rgba(255,255,255,0.1)]">
                             <Activity size={20} /> <T k="view_analytics" />
                         </Link>
-                        <Link href="/pm/upload" className="flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-gradient-to-r from-purple-600 to-blue-500 font-bold text-lg text-white shadow-[0_0_20px_rgba(147,51,234,0.4)] hover:shadow-[0_0_30px_rgba(59,130,246,0.6)] transition-all hover:scale-[1.02]">
+                        <Link href="/pm/upload" className="flex items-center justify-center gap-2 px-8 py-4 rounded-sm bg-gradient-to-r from-purple-600 to-blue-500 font-bold text-lg text-white shadow-[0_0_20px_rgba(147,51,234,0.4)] hover:shadow-[0_0_30px_rgba(59,130,246,0.6)] transition-all hover:scale-[1.02]">
                             <UploadCloud size={20} /> <T k="upload_xls" />
                         </Link>
                     </div>
@@ -119,7 +118,7 @@ export default async function PMDashboard() {
 
                 {/* KPI Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 w-full">
-                    <div className="w-full glass-card flex items-center gap-8 p-10 bg-[#080d1a]/80 backdrop-blur-md rounded-[32px] border border-white/5 shadow-[0_10px_40px_rgba(0,0,0,0.5)] relative overflow-hidden group hover:border-purple-500/30 transition-all">
+                    <div className="w-full glass-card flex items-center gap-8 p-10 bg-[#080d1a]/80 backdrop-blur-md rounded-md border border-white/5 shadow-[0_10px_40px_rgba(0,0,0,0.5)] relative overflow-hidden group hover:border-purple-500/30 transition-all">
                         <div className="absolute top-0 right-0 w-40 h-40 bg-purple-500/10 rounded-bl-[120px] -z-10 group-hover:scale-110 transition-transform" />
                         <Folder size={48} className="text-purple-400 opacity-80 shrink-0" />
                         <div>
@@ -127,7 +126,7 @@ export default async function PMDashboard() {
                             <div className="text-7xl font-black text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.3)] leading-none">{allProjects.length}</div>
                         </div>
                     </div>
-                    <div className="w-full glass-card flex items-center gap-8 p-10 bg-[#080d1a]/80 backdrop-blur-md rounded-[32px] border border-white/5 shadow-[0_10px_40px_rgba(0,0,0,0.5)] relative overflow-hidden group hover:border-blue-500/30 transition-all">
+                    <div className="w-full glass-card flex items-center gap-8 p-10 bg-[#080d1a]/80 backdrop-blur-md rounded-md border border-white/5 shadow-[0_10px_40px_rgba(0,0,0,0.5)] relative overflow-hidden group hover:border-blue-500/30 transition-all">
                         <div className="absolute top-0 right-0 w-40 h-40 bg-blue-500/10 rounded-bl-[120px] -z-10 group-hover:scale-110 transition-transform" />
                         <Activity size={48} className="text-blue-400 opacity-80 shrink-0" />
                         <div>
@@ -159,20 +158,20 @@ export default async function PMDashboard() {
                             const spentEur = Math.round(earnedHours * HOURLY_RATE_EUR);
 
                             return (
-                            <div key={proj.id} className="relative glass-card bg-[#0a1020]/90 backdrop-blur-xl border border-white/10 rounded-[32px] p-8 sm:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] hover:border-purple-500/30 transition-all duration-300">
+                            <Link href={`/pm/project/${proj.id}`} key={proj.id} className="block relative glass-card bg-[#0a1020]/90 backdrop-blur-xl border border-white/10 rounded-md p-8 sm:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] hover:border-purple-500/30 transition-all duration-300 group cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-500">
                                 
                                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                                     <div className="flex-1">
                                         <h3 className="text-2xl sm:text-3xl font-black text-white mb-4">{proj.name}</h3>
                                         
                                         <div className="flex flex-wrap gap-3 mb-5">
-                                            <span className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm font-bold text-gray-300">
+                                            <span className="px-4 py-2 rounded-sm bg-white/5 border border-white/10 text-sm font-bold text-gray-300">
                                                 <T k="site_manager" />: <span className="text-purple-300">{proj.siteManager?.name || <T k="unassigned" />}</span>
                                             </span>
-                                            <span className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm font-bold text-gray-300">
+                                            <span className="px-4 py-2 rounded-sm bg-white/5 border border-white/10 text-sm font-bold text-gray-300">
                                                 <T k="location" />: {proj.location || 'N/A'}
                                             </span>
-                                            <span className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm font-bold text-gray-300">
+                                            <span className="px-4 py-2 rounded-sm bg-white/5 border border-white/10 text-sm font-bold text-gray-300">
                                                 <T k="tasks_loaded" />: <span className="text-blue-300">{proj.tasks.length}</span>
                                             </span>
                                         </div>
@@ -208,24 +207,23 @@ export default async function PMDashboard() {
 
 
                                         {proj.revisions && proj.revisions.length > 0 && (
-                                            <div className="mt-4 text-sm bg-purple-900/20 px-4 py-3 rounded-xl border border-purple-500/30 inline-block">
+                                            <div className="mt-4 text-sm bg-purple-900/20 px-4 py-3 rounded-md border border-purple-500/30 inline-block">
                                                 <strong className="text-purple-300"><T k="last_revision" />:</strong> {new Date(proj.revisions[0].uploadedAt).toLocaleDateString()} 
                                             </div>
                                         )}
                                     </div>
                                     
-                                    <div className="flex flex-row md:flex-col gap-3 w-full md:w-auto">
-                                        <Link href={`/pm/project/${proj.id}`} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold transition-all shadow-md text-base">
-                                            <T k="view_details" /> <ArrowRight size={18} />
-                                        </Link>
-                                        <DeleteProjectButton projectId={proj.id} projectName={proj.name} />
+                                    <div className="flex flex-row md:flex-col gap-3 w-full md:w-auto mt-4 md:mt-0">
+                                        <div className="flex-1 md:flex-none flex items-center justify-center gap-2 px-8 py-4 rounded-sm bg-white/5 group-hover:bg-white/10 border border-white/10 group-hover:border-purple-500/30 text-white font-bold transition-all shadow-md text-base">
+                                            <T k="view_details" /> <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            </Link>
                         );
                         })}
                         {allProjects.length === 0 && (
-                            <div className="glass-card bg-[#0a1020]/90 border border-white/5 text-center py-20 text-gray-400 text-lg rounded-[32px]">
+                            <div className="glass-card bg-[#0a1020]/90 border border-white/5 text-center py-20 text-gray-400 text-lg rounded-md">
                                 <T k="no_projects" />
                             </div>
                         )}

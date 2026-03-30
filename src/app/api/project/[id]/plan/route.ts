@@ -49,7 +49,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const resolvedParams = await params;
   const id = resolvedParams.id;
     try {
-        const { workers, targetHoursCapacity, tasks, checks, weekNumber: requestedWeek, year: requestedYear } = await req.json();
+        const { workers, targetHoursCapacity, hoursPerWorker, tasks, checks, weekNumber: requestedWeek, year: requestedYear } = await req.json();
 
         // Fallback to next week if not provided
         let weekNumber = requestedWeek;
@@ -83,6 +83,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
                 weekNumber,
                 year,
                 numberOfWorkers: workers,
+                hoursPerWorker: hoursPerWorker || 40,
                 targetHoursCapacity,
                 projectId: id,
                 hasDrawings: checks.drawings,
@@ -100,6 +101,42 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         });
 
         return NextResponse.json({ success: true, planId: plan.id });
+    } catch (err) {
+        if (err instanceof Error) {
+            return NextResponse.json({ error: err.message }, { status: 500 });
+        }
+        return NextResponse.json({ error: 'Unknown error' }, { status: 500 });
+    }
+}
+
+// PATCH: Update workforce parameters (workers, hoursPerWorker) on an existing plan
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+    const resolvedParams = await params;
+    const projectId = resolvedParams.id;
+    try {
+        const { weekNumber, year, workers, hoursPerWorker } = await req.json();
+        if (!weekNumber || !year) {
+            return NextResponse.json({ error: 'weekNumber and year are required' }, { status: 400 });
+        }
+
+        const plan = await prisma.weeklyPlan.findFirst({
+            where: { projectId, weekNumber, year }
+        });
+
+        if (!plan) {
+            return NextResponse.json({ error: 'Plan not found' }, { status: 404 });
+        }
+
+        const updated = await prisma.weeklyPlan.update({
+            where: { id: plan.id },
+            data: {
+                numberOfWorkers: workers ?? plan.numberOfWorkers,
+                hoursPerWorker: hoursPerWorker ?? plan.hoursPerWorker,
+                targetHoursCapacity: (workers ?? plan.numberOfWorkers) * (hoursPerWorker ?? plan.hoursPerWorker),
+            }
+        });
+
+        return NextResponse.json({ success: true, plan: updated });
     } catch (err) {
         if (err instanceof Error) {
             return NextResponse.json({ error: err.message }, { status: 500 });

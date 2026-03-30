@@ -2,74 +2,183 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 /**
- * Cron: Weekly Auto-Close
+ * Weekly Close — Close all open plans from past (and optionally current) weeks.
  * 
- * Should be called every Monday at 07h00.
- * Closes all weekly plans that:
- * 1. Are still open (isSubmitted = false OR isClosed = false)
- * 2. Their weekNumber/year corresponds to a past week
- *
- * Usage: trigger via a cron job, Vercel Cron, or the Admin dashboard.
- * GET /api/cron/weekly-close?secret=YOUR_SECRET
+ * GET  /api/cron/weekly-close?secret=...           → auto-close past weeks only
+ * GET  /api/cron/weekly-close?secret=...&force=1   → also close current week (admin manual trigger)
+ * 
+ * Returns a summary of closed plans with per-project stats for the report.
  */
 export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const secret = searchParams.get('secret');
+    const force = searchParams.get('force') === '1'; // Admin manual close includes current week
 
-    // Basic security — check a shared secret
     if (secret !== process.env.CRON_SECRET && secret !== 'gp-internal') {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Use ISO week calculation (matching date-fns getISOWeek used everywhere else)
     const now = new Date();
-    const currentYear = now.getFullYear();
+    const currentWeek = getISOWeek(now);
+    const currentYear = getISOYear(now);
 
-    // Calculate current week number
-    const startOfYear = new Date(currentYear, 0, 1);
-    const daysSinceStart = Math.floor((now.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24));
-    const currentWeek = Math.ceil((daysSinceStart + startOfYear.getDay() + 1) / 7);
-
-    // Find open plans from previous weeks
-    const openOldPlans = await prisma.weeklyPlan.findMany({
+    // Find plans to process.
+    // When force=true (admin manual), also re-process already-closed plans for current week
+    // to fix any stale cached data.
+    const openPlans = await prisma.weeklyPlan.findMany({
         where: {
-            isClosed: false,
             OR: [
-                { year: { lt: currentYear } },
-                { year: currentYear, weekNumber: { lt: currentWeek } },
+                // Always: unclosed plans from past weeks
+                { isClosed: false, year: { lt: currentYear } },
+                { isClosed: false, year: currentYear, weekNumber: { [force ? 'lte' : 'lt']: currentWeek } },
+                // Force mode: re-process current week plans even if already closed (recalculate)
+                ...(force ? [{ year: currentYear, weekNumber: currentWeek }] : []),
             ]
         },
         include: {
             tasks: { include: { task: true } },
-            project: true,
+            project: {
+                include: {
+                    siteManager: { select: { name: true } },
+                    projectManager: { select: { name: true } },
+                    dailyReports: {
+                        where: { status: 'SUBMITTED' },
+                        include: {
+                            taskProgress: { include: { task: true } },
+                            attendance: true,
+                        }
+                    }
+                }
+            },
         }
     });
 
-    let closedCount = 0;
+    const closedSummaries = [];
 
-    for (const plan of openOldPlans) {
-        // Calculate actual performance from whatever was submitted
-        const achievedMins = plan.tasks.reduce((sum, pt) => {
-            return sum + (pt.actualQuantity * pt.task.minutesPerUnit);
-        }, 0);
+    for (const plan of openPlans) {
+        // ──── RECALCULATE actualQuantity from daily reports (source of truth) ────
+        // The cached actualQuantity can be stale when reports are deleted/resubmitted.
+        const weekReports = plan.project.dailyReports.filter(r => {
+            const d = new Date(r.date);
+            return getISOWeek(d) === plan.weekNumber && getISOYear(d) === plan.year;
+        });
+
+        for (const wpt of plan.tasks) {
+            let trueActual = 0;
+            for (const report of weekReports) {
+                const prog = report.taskProgress.find(p => p.taskId === wpt.taskId);
+                if (prog) trueActual += prog.quantity;
+            }
+            if (wpt.actualQuantity !== trueActual) {
+                await prisma.weeklyPlanTask.update({
+                    where: { id: wpt.id },
+                    data: { actualQuantity: trueActual }
+                });
+                wpt.actualQuantity = trueActual; // update in-memory too
+            }
+        }
+
+        // ──── Calculate performance from corrected values ────
+        const plannedMins = plan.tasks.reduce((sum, pt) => sum + (pt.plannedQuantity * pt.task.minutesPerUnit), 0);
+        const achievedMins = plan.tasks.reduce((sum, pt) => sum + (pt.actualQuantity * pt.task.minutesPerUnit), 0);
+        const plannedHours = plannedMins / 60;
         const achievedHours = achievedMins / 60;
-        const targetReached = achievedHours >= plan.targetHoursCapacity;
+        const targetReached = achievedHours >= plan.targetHoursCapacity * 0.9; // 90% threshold
 
+        const totalWorkers = weekReports.reduce((sum, r) => sum + (r.workersCount || 0), 0);
+        const avgWorkers = weekReports.length > 0 ? totalWorkers / weekReports.length : plan.numberOfWorkers;
+        const totalAttendanceHours = weekReports.reduce((sum, r) => 
+            sum + r.attendance.reduce((s, a) => s + a.hours, 0), 0
+        );
+
+        // Close the plan
         await prisma.weeklyPlan.update({
             where: { id: plan.id },
             data: {
-                isSubmitted: true,
                 isClosed: true,
+                isSubmitted: true,
                 targetReached,
-                issuesReported: plan.issuesReported || 'Clôture automatique (lundi 07h00)',
+                workersCount: avgWorkers,
+                issuesReported: plan.issuesReported || `Clôture ${force ? 'manuelle admin' : 'automatique'}`,
             }
         });
 
-        closedCount++;
+        // Build per-project summary
+        const taskBreakdown = plan.tasks.map(pt => ({
+            description: pt.task.description,
+            category: pt.task.category,
+            unit: pt.task.unit,
+            planned: pt.plannedQuantity,
+            actual: pt.actualQuantity,
+            pct: pt.plannedQuantity > 0 ? Math.round((pt.actualQuantity / pt.plannedQuantity) * 100) : 0,
+        }));
+
+        closedSummaries.push({
+            planId: plan.id,
+            projectId: plan.project.id,
+            projectName: plan.project.name,
+            pmName: plan.project.projectManager?.name || '—',
+            smName: plan.project.siteManager?.name || '—',
+            weekNumber: plan.weekNumber,
+            year: plan.year,
+            workers: plan.numberOfWorkers,
+            avgWorkers: Math.round(avgWorkers * 10) / 10,
+            targetHours: plan.targetHoursCapacity,
+            plannedHours: Math.round(plannedHours * 10) / 10,
+            achievedHours: Math.round(achievedHours * 10) / 10,
+            productivity: plannedHours > 0 ? Math.round((achievedHours / plannedHours) * 100) : 0,
+            targetReached,
+            reportsCount: weekReports.length,
+            attendanceHours: Math.round(totalAttendanceHours * 10) / 10,
+            issues: plan.issuesReported,
+            checks: {
+                drawings: plan.hasDrawings,
+                materials: plan.hasMaterials,
+                tools: plan.hasTools,
+                sub: plan.hasSubcontractors,
+            },
+            taskBreakdown,
+        });
     }
+
+    // Aggregate totals
+    const totalPlannedHours = closedSummaries.reduce((s, p) => s + p.plannedHours, 0);
+    const totalAchievedHours = closedSummaries.reduce((s, p) => s + p.achievedHours, 0);
+    const totalTargetHit = closedSummaries.filter(p => p.targetReached).length;
 
     return NextResponse.json({
         success: true,
-        message: `Clôturé ${closedCount} plan(s) de la semaine passée.`,
-        closedPlanIds: openOldPlans.map(p => p.id),
+        closedCount: closedSummaries.length,
+        weekNumber: currentWeek,
+        year: currentYear,
+        message: `Clôturé ${closedSummaries.length} plan(s).`,
+        totals: {
+            plannedHours: Math.round(totalPlannedHours * 10) / 10,
+            achievedHours: Math.round(totalAchievedHours * 10) / 10,
+            productivity: totalPlannedHours > 0 ? Math.round((totalAchievedHours / totalPlannedHours) * 100) : 0,
+            targetHitCount: totalTargetHit,
+            targetHitRate: closedSummaries.length > 0 ? Math.round((totalTargetHit / closedSummaries.length) * 100) : 0,
+        },
+        projects: closedSummaries,
     });
+}
+
+/**
+ * ISO 8601 week number calculation (matches date-fns getISOWeek)
+ */
+function getISOWeek(date: Date): number {
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+}
+
+/**
+ * ISO 8601 week year (the year the ISO week belongs to)
+ */
+function getISOYear(date: Date): number {
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+    return d.getUTCFullYear();
 }

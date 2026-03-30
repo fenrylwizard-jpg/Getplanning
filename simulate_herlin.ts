@@ -17,7 +17,7 @@ async function generateProject(
     data: {
       name,
       location: 'Site ' + name,
-      subLocations: 'Batiment A, Batiment B, Batiment C',
+      subLocations: { create: [{name: 'Batiment A'}, {name: 'Batiment B'}, {name: 'Batiment C'}] },
       projectManagerId: pmId,
       siteManagerId: smId,
     },
@@ -65,7 +65,6 @@ async function generateProject(
         targetReached: isTargetReached,
         issuesReported: isTargetReached ? "" : "Problème d'approvisionnement ou intempéries",
         missedTargetReason: isTargetReached ? null : (Math.random() > 0.5 ? "MATERIAL_DELAY" : "WEATHER"),
-        emptyDrumsCount: Math.floor(Math.random() * 5),
       }
     })
 

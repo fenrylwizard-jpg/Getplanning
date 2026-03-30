@@ -103,7 +103,7 @@ export default async function PlanDetailsPage({ params }: { params: Promise<{ id
                                 { k: 'hasTools', l: 'tools_ready' },
                                 { k: 'hasSubcontractors', l: 'sub_ready' }
                             ].map(check => (
-                                <div key={check.k} className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
+                                <div key={check.k} className="flex items-center justify-between p-3 rounded-md bg-white/5 border border-white/5">
                                     <span className="text-sm font-bold text-gray-200"><T k={check.l} /></span>
                                     {plan[check.k as keyof typeof plan] ? 
                                         <CheckCircle2 size={20} className="text-emerald-400" /> : 
@@ -119,7 +119,7 @@ export default async function PlanDetailsPage({ params }: { params: Promise<{ id
                             <Info size={16} /> <T k="reported_issues" />
                         </h4>
                         {plan.issuesReported ? (
-                            <div className="bg-orange-500/10 border border-orange-500/20 p-6 rounded-3xl text-orange-200/80 leading-relaxed italic text-base">
+                            <div className="bg-orange-500/10 border border-orange-500/20 p-6 rounded-md text-orange-200/80 leading-relaxed italic text-base">
                                 &quot;{plan.issuesReported}&quot;
                             </div>
                         ) : (
@@ -165,7 +165,7 @@ export default async function PlanDetailsPage({ params }: { params: Promise<{ id
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-8 bg-white/5 p-6 rounded-3xl border border-white/10 min-w-[320px]">
+                                    <div className="flex items-center gap-8 bg-white/5 p-6 rounded-md border border-white/10 min-w-[320px]">
                                         <div className="flex flex-col">
                                             <span className="text-xs font-black text-gray-500 uppercase tracking-widest mb-2"><T k="planned" /></span>
                                             <div className="text-2xl font-black">{pt.plannedQuantity} <span className="text-xs font-normal opacity-40">{pt.task?.unit || '-'}</span></div>

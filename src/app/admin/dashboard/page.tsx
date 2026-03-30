@@ -4,14 +4,28 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
     ShieldCheck, CheckCircle, XCircle, Clock, UserIcon, LogOut,
+<<<<<<< HEAD
     TrendingUp, Euro, Activity, Folder, Target, RefreshCw, Globe, ListOrdered, ArrowRight, Trash2,
     X, Sparkles, History, ChevronRight
+=======
+    TrendingUp, Euro, Activity, Folder, Target, RefreshCw, Globe, ListOrdered, Trash2, AlertTriangle, Eye, Settings, Zap
+>>>>>>> old-local/recovery
 } from 'lucide-react';
 import { toast } from 'sonner';
 import AvatarDisplay from '@/components/AvatarDisplay';
 import T from '@/components/T';
 import { useTranslation } from '@/lib/LanguageContext';
 import AdminWeeklyGraph from '@/components/AdminWeeklyGraph';
+import { formatDistanceToNow } from 'date-fns';
+import { fr } from 'date-fns/locale';
+
+interface ActivityLog {
+    id: string;
+    action: string;
+    details: string | null;
+    createdAt: string;
+    user: { name: string; role: string; };
+}
 
 interface AdminStats {
     totalProjects: number;
@@ -60,11 +74,33 @@ interface XpModalUser {
 export default function AdminDashboard() {
     const router = useRouter();
     const { t } = useTranslation();
-    const [users, setUsers] = useState<{ id: string, name: string, email: string, role: string, status: string, level?: number, characterId?: number }[]>([]);
+    const [users, setUsers] = useState<{ id: string, name: string, email: string, role: string, status: string, level?: number, characterId?: number, lastActiveAt?: string }[]>([]);
     const [stats, setStats] = useState<AdminStats | null>(null);
+    const [logs, setLogs] = useState<ActivityLog[]>([]);
     const [loading, setLoading] = useState(true);
     const [cronRunning, setCronRunning] = useState(false);
     const [cronResult, setCronResult] = useState<string | null>(null);
+    const [deleteConfirm, setDeleteConfirm] = useState<{ type: 'user' | 'project'; id: string; name: string } | null>(null);
+    const [deleting, setDeleting] = useState(false);
+    const [nukeProjectId, setNukeProjectId] = useState('');
+    const [nukeReportId, setNukeReportId] = useState('');
+    const [projectReports, setProjectReports] = useState<{id: string, date: string, status: string}[]>([]);
+    const [nuking, setNuking] = useState(false);
+
+    // Fetch reports when project is selected
+    useEffect(() => {
+        if (!nukeProjectId) {
+            setProjectReports([]);
+            setNukeReportId('');
+            return;
+        }
+        fetch(`/api/admin/nuke-report?projectId=${nukeProjectId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.reports) setProjectReports(data.reports);
+            })
+            .catch(console.error);
+    }, [nukeProjectId]);
 
     // XP Log Modal state
     const [xpModalOpen, setXpModalOpen] = useState(false);
@@ -95,9 +131,10 @@ export default function AdminDashboard() {
 
     const fetchData = useCallback(async () => {
         try {
-            const [usersRes, statsRes] = await Promise.all([
+            const [usersRes, statsRes, logsRes] = await Promise.all([
                 fetch('/api/admin/users'),
                 fetch('/api/admin/stats'),
+                fetch('/api/admin/activity')
             ]);
             if (usersRes.status === 401 || usersRes.status === 403) {
                 router.push('/login');
@@ -109,6 +146,10 @@ export default function AdminDashboard() {
             }
             if (statsRes.ok) {
                 setStats(await statsRes.json());
+            }
+            if (logsRes.ok) {
+                const logsData = await logsRes.json();
+                setLogs(logsData.logs || []);
             }
         } catch (err) {
             console.error(err);
@@ -132,6 +173,44 @@ export default function AdminDashboard() {
         else toast.error(t('action_error'));
     };
 
+    const handleDeleteUser = async (userId: string) => {
+        setDeleting(true);
+        try {
+            const res = await fetch(`/api/admin/users/${userId}`, { method: 'DELETE' });
+            if (res.ok) {
+                toast.success('Utilisateur supprimé ✓');
+                fetchData();
+            } else {
+                const data = await res.json();
+                toast.error(data.error || 'Erreur lors de la suppression');
+            }
+        } catch {
+            toast.error('Erreur serveur');
+        } finally {
+            setDeleting(false);
+            setDeleteConfirm(null);
+        }
+    };
+
+    const handleDeleteProject = async (projectId: string) => {
+        setDeleting(true);
+        try {
+            const res = await fetch(`/api/project/${projectId}`, { method: 'DELETE' });
+            if (res.ok) {
+                toast.success('Projet supprimé ✓');
+                fetchData();
+            } else {
+                const data = await res.json();
+                toast.error(data.error || 'Erreur lors de la suppression');
+            }
+        } catch {
+            toast.error('Erreur serveur');
+        } finally {
+            setDeleting(false);
+            setDeleteConfirm(null);
+        }
+    };
+
     const handleLogout = async () => {
         await fetch('/api/auth/logout', { method: 'POST' });
         router.push('/login');
@@ -141,9 +220,16 @@ export default function AdminDashboard() {
         setCronRunning(true);
         setCronResult(null);
         try {
-            const res = await fetch('/api/cron/weekly-close?secret=gp-internal');
+            const res = await fetch('/api/cron/weekly-close?secret=gp-internal&force=1');
             const data = await res.json();
             setCronResult(data.message || t('week_closed'));
+            
+            // Store the report data and navigate to the report page
+            if (data.success && data.projects && data.projects.length > 0) {
+                localStorage.setItem('weeklyReport', JSON.stringify(data));
+                window.open(`/admin/weekly-report?week=${data.weekNumber}&year=${data.year}`, '_blank');
+            }
+            
             fetchData();
         } catch {
             setCronResult(t('auto_close_error'));
@@ -153,7 +239,7 @@ export default function AdminDashboard() {
     };
 
     if (loading) return (
-        <div className="min-h-screen flex items-center justify-center bg-[#060b18] text-white">
+        <div className="aurora-page min-h-screen flex items-center justify-center text-white">
             <div className="text-center">
                 <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
                 <span className="text-gray-400"><T k="admin_loading" /></span>
@@ -166,12 +252,12 @@ export default function AdminDashboard() {
 
     return (
         <div className="aurora-page flex flex-col items-center w-full">
-            <main className="min-h-screen bg-[#060b18]/80 backdrop-blur-sm text-white px-6 py-10 w-full max-w-7xl flex flex-col">
+            <main className="min-h-screen bg-black/40 backdrop-blur-sm text-white px-6 py-10 w-full max-w-7xl flex flex-col">
 
             {/* Header */}
             <div className="flex justify-between items-center mb-10">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-2xl bg-purple-600 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-md bg-purple-600 flex items-center justify-center">
                         <ShieldCheck size={22} color="#fff" />
                     </div>
                     <div>
@@ -183,14 +269,14 @@ export default function AdminDashboard() {
                     <button
                         onClick={handleCron}
                         disabled={cronRunning}
-                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 hover:bg-amber-500/20 transition-all text-sm font-bold disabled:opacity-50"
+                        className="flex items-center gap-2 px-4 py-2 rounded-md bg-amber-500/10 border border-amber-500/30 text-amber-400 hover:bg-amber-500/20 transition-all text-sm font-bold disabled:opacity-50"
                         title={t('close_week')}
                     >
                         <RefreshCw size={16} className={cronRunning ? 'animate-spin' : ''} />
                         <T k="close_week" />
                     </button>
                     <button
-                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10 transition-all text-sm font-bold"
+                        className="flex items-center gap-2 px-4 py-2 rounded-md bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10 transition-all text-sm font-bold"
                         onClick={handleLogout}
                         title={t('logout')}
                     >
@@ -199,8 +285,81 @@ export default function AdminDashboard() {
                 </div>
             </div>
 
+            {/* Admin Tools */}
+            <div className="glass-card mb-6 p-4">
+                <h3 className="text-xs font-black uppercase tracking-widest text-gray-400 mb-3 flex items-center gap-2">
+                    <Zap size={14} className="text-amber-400" /> Outils Admin
+                </h3>
+                <div className="flex flex-wrap gap-3 items-end">
+                    {/* Seed Badges */}
+                    <button
+                        onClick={async () => {
+                            const res = await fetch('/api/admin/seed-badges', { method: 'POST' });
+                            const data = await res.json();
+                            toast.success(`Badges: ${data.created} créés (${data.total} total)`);
+                        }}
+                        className="px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold hover:bg-emerald-500/20 transition-all"
+                    >
+                        🏆 Seed Badges
+                    </button>
+
+                    {/* Nuke Stuck Report */}
+                    <div className="flex items-end gap-2">
+                        <div>
+                            <span className="text-[10px] text-gray-500 font-bold uppercase block mb-1">Projet</span>
+                            <select value={nukeProjectId} onChange={e => setNukeProjectId(e.target.value)}
+                                className="bg-white/5 border border-white/10 rounded-lg px-2 py-2 text-white text-xs appearance-none min-w-[140px]" title="Sélectionner un projet">
+                                <option value="" className="bg-gray-900">-- Projet --</option>
+                                {stats?.projects.map(p => <option key={p.id} value={p.id} className="bg-gray-900">{p.name}</option>)}
+                            </select>
+                        </div>
+                        <div>
+                            <span className="text-[10px] text-gray-500 font-bold uppercase block mb-1">Rapport Actuel</span>
+                            <select value={nukeReportId} onChange={e => setNukeReportId(e.target.value)}
+                                className="bg-white/5 border border-white/10 rounded-lg px-2 py-2 text-white text-xs appearance-none min-w-[180px]" title="Choisir un rapport" disabled={!nukeProjectId}>
+                                <option value="" className="bg-gray-900">-- Sélectionner --</option>
+                                {projectReports.map(r => (
+                                    <option key={r.id} value={r.id} className="bg-gray-900">
+                                        {new Date(r.date).toLocaleDateString('fr-FR')} {new Date(r.date).toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'})} ({r.status})
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        <button
+                            disabled={!nukeProjectId || !nukeReportId || nuking}
+                            onClick={async () => {
+                                const selectedReport = projectReports.find(r => r.id === nukeReportId);
+                                if (!selectedReport || !confirm(`Supprimer définitivement ce rapport du ${new Date(selectedReport.date).toLocaleString('fr-FR')} ?`)) return;
+                                
+                                setNuking(true);
+                                try {
+                                    const res = await fetch('/api/admin/nuke-report', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ projectId: nukeProjectId, reportId: nukeReportId })
+                                    });
+                                    const data = await res.json();
+                                    if (res.ok) {
+                                        toast.success(data.message);
+                                        // Refresh list
+                                        setProjectReports(prev => prev.filter(r => r.id !== nukeReportId));
+                                        setNukeReportId('');
+                                    } else {
+                                        toast.error(data.error);
+                                    }
+                                } catch { toast.error('Erreur'); }
+                                finally { setNuking(false); }
+                            }}
+                            className="px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-bold hover:bg-red-500/20 transition-all disabled:opacity-30"
+                        >
+                            💣 Nuke Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             {cronResult && (
-                <div className="mb-6 px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm font-bold">
+                <div className="mb-6 px-4 py-3 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm font-bold">
                     ✓ {cronResult}
                 </div>
             )}
@@ -217,7 +376,7 @@ export default function AdminDashboard() {
                         { icon: Target, label: t('target_rate'), value: `${stats.hitRate}%`, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
                         { icon: Globe, label: t('total_tasks'), value: stats.totalTasks.toLocaleString(), color: 'text-cyan-400', bg: 'bg-cyan-500/10' },
                     ].map(({ icon: Icon, label, value, color, bg }) => (
-                        <div key={label} className={`${bg} border border-white/10 rounded-2xl p-5 flex items-center gap-4`}>
+                        <div key={label} className={`${bg} border border-white/10 rounded-md p-5 flex items-center gap-4`}>
                             <Icon size={28} className={color} />
                             <div>
                                 <div className="text-xs text-gray-400 font-bold uppercase tracking-wider">{label}</div>
@@ -231,7 +390,7 @@ export default function AdminDashboard() {
             {/* Budget + Profitability */}
             {stats && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                    <div className="bg-[#080d1a] border border-white/5 rounded-2xl p-6">
+                    <div className="glass-card mb-0">
                         <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 mb-3 flex items-center gap-2">
                             <Activity size={16} /> <T k="global_labor_hours" />
                         </h3>
@@ -246,7 +405,7 @@ export default function AdminDashboard() {
                         <div className="text-xs text-gray-500 mt-1">{stats.globalPct}{t('pct_achieved')}</div>
                     </div>
 
-                    <div className="bg-[#080d1a] border border-white/5 rounded-2xl p-6">
+                    <div className="glass-card mb-0">
                         <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 mb-3 flex items-center gap-2">
                             <Euro size={16} /> <T k="profitability" /> (€43.35/h)
                         </h3>
@@ -267,7 +426,7 @@ export default function AdminDashboard() {
 
             {/* Projects Table */}
             {stats && stats.projects.length > 0 && (
-                <div className="bg-[#080d1a] border border-white/5 rounded-2xl p-6 mb-8">
+                <div className="glass-card mb-8">
                     <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 mb-4 flex items-center gap-2">
                         <Folder size={16} /> <T k="projects" /> ({stats.projects.length})
                     </h3>
@@ -281,17 +440,13 @@ export default function AdminDashboard() {
                                     <th className="pb-3 pr-4"><T k="achieved_value" /></th>
                                     <th className="pb-3 pr-4"><T k="progress" /></th>
                                     <th className="pb-3 pr-4"><T k="targets" /></th>
-                                    <th className="pb-3 text-right">Actions</th>
+                                    <th className="pb-3 text-center">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {stats.projects.map(p => (
-                                    <tr key={p.id} className="border-b border-white/5 hover:bg-white/[0.04] transition-colors group">
-                                        <td className="py-3 pr-4">
-                                            <Link href={`/pm/project/${p.id}`} className="font-bold text-white hover:text-purple-300 transition-colors">
-                                                {p.name}
-                                            </Link>
-                                        </td>
+                                    <tr key={p.id} className="border-b border-white/5 hover:bg-white/3 transition-colors">
+                                        <td className="py-3 pr-4 font-bold text-white"><Link href={`/pm/project/${p.id}`} className="hover:text-purple-400 transition-colors underline decoration-white/20 hover:decoration-purple-400">{p.name}</Link></td>
                                         <td className="py-3 pr-4 text-gray-400">{p.pm}</td>
                                         <td className="py-3 pr-4 text-gray-300">{p.budgetHours.toLocaleString()}h</td>
                                         <td className="py-3 pr-4 text-gray-300">{p.earnedHours.toLocaleString()}h</td>
@@ -309,24 +464,35 @@ export default function AdminDashboard() {
                                         <td className="py-3 pr-4 text-gray-400 text-xs">
                                             {p.weeksHit}/{p.weeksClosed} sem.
                                         </td>
-                                        <td className="py-3 text-right">
-                                            <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <Link href={`/pm/project/${p.id}`} className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-purple-500/10 border border-purple-500/30 text-purple-400 hover:bg-purple-500/20 text-xs font-bold transition-all">
-                                                    <ArrowRight size={12} /> Hub
+                                        <td className="py-3 text-center">
+                                            <div className="flex items-center justify-center gap-1">
+                                                <Link
+                                                    href={`/admin/project/${p.id}`}
+                                                    className="p-1.5 rounded-lg border border-amber-500/20 text-amber-400/60 hover:text-amber-400 hover:bg-amber-500/10 hover:border-amber-500/40 transition-all"
+                                                    title="Configuration du projet"
+                                                >
+                                                    <Settings size={14} />
+                                                </Link>
+                                                <Link
+                                                    href={`/sm/project/${p.id}/plan/history`}
+                                                    className="p-1.5 rounded-lg border border-cyan-500/20 text-cyan-400/60 hover:text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500/40 transition-all"
+                                                    title="Vue SM (Historique)"
+                                                >
+                                                    <Eye size={14} />
+                                                </Link>
+                                                <Link
+                                                    href={`/pm/project/${p.id}`}
+                                                    className="p-1.5 rounded-lg border border-purple-500/20 text-purple-400/60 hover:text-purple-400 hover:bg-purple-500/10 hover:border-purple-500/40 transition-all"
+                                                    title="Vue PM"
+                                                >
+                                                    <Folder size={14} />
                                                 </Link>
                                                 <button
-                                                    onClick={() => {
-                                                        const pin = prompt(`Pour supprimer "${p.name}", entrez le code PIN :`);
-                                                        if (pin !== '645428') { if (pin !== null) toast.error('Code PIN incorrect.'); return; }
-                                                        if (!confirm(`Confirmez la suppression DÉFINITIVE de "${p.name}" ?`)) return;
-                                                        fetch(`/api/project/${p.id}`, { method: 'DELETE' }).then(r => {
-                                                            if (r.ok) { toast.success(`Projet "${p.name}" supprimé.`); fetchData(); }
-                                                            else toast.error('Erreur lors de la suppression.');
-                                                        });
-                                                    }}
-                                                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 text-xs font-bold transition-all"
+                                                    onClick={() => setDeleteConfirm({ type: 'project', id: p.id, name: p.name })}
+                                                    className="p-1.5 rounded-lg border border-red-500/20 text-red-400/60 hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/40 transition-all"
+                                                    title="Supprimer le projet"
                                                 >
-                                                    <Trash2 size={12} /> Supprimer
+                                                    <Trash2 size={14} />
                                                 </button>
                                             </div>
                                         </td>
@@ -340,20 +506,20 @@ export default function AdminDashboard() {
 
             <div className="grid grid-cols-1 gap-6">
                 {/* Pending Approvals */}
-                <div className="bg-[#080d1a] border border-white/5 rounded-2xl p-6">
+                <div className="bg-[#080d1a] border border-white/5 rounded-md p-6">
                     <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 mb-4 flex items-center gap-2">
                         <Clock size={16} className="text-amber-400" /> <T k="pending" /> ({pendingUsers.length})
                     </h3>
                     {pendingUsers.length === 0 ? (
-                        <div className="p-6 text-center text-gray-500 bg-white/3 rounded-xl"><T k="no_pending_requests" /></div>
+                        <div className="p-6 text-center text-gray-500 bg-white/3 rounded-md"><T k="no_pending_requests" /></div>
                     ) : (
                         <div className="flex flex-col gap-3">
                             {pendingUsers.map(user => (
-                                <div key={user.id} className="flex justify-between items-center p-4 bg-white/3 rounded-xl border border-white/5">
+                                <div key={user.id} className="flex justify-between items-center p-4 bg-white/3 rounded-md border border-white/5">
                                     <div className="flex items-center gap-3">
                                         <UserIcon size={20} className="text-gray-500" />
                                         <div>
-                                            <div className="font-bold text-white">{user.name || t('no_name')} <span className="text-xs bg-white/10 px-2 py-0.5 rounded-full ml-2">{user.role}</span></div>
+                                            <div className="font-bold text-white">{user.name || t('no_name')} <span className="text-xs bg-white/10 px-2 py-0.5 rounded-sm ml-2">{user.role}</span></div>
                                             <div className="text-sm text-gray-500">{user.email}</div>
                                         </div>
                                     </div>
@@ -372,7 +538,7 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* Users Ranking Table */}
-                <div className="bg-[#080d1a] border border-white/5 rounded-2xl p-6">
+                <div className="bg-[#080d1a] border border-white/5 rounded-md p-6">
                     <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 mb-4 flex items-center gap-2">
                         <ListOrdered size={16} className="text-purple-400" /> <T k="personnel_ranking" /> ({processedUsers.length})
                     </h3>
@@ -389,6 +555,7 @@ export default function AdminDashboard() {
                                         <th className="pb-3 pr-4 text-center"><T k="role" /></th>
                                         <th className="pb-3 pr-4 pl-4 text-center"><T k="level" /></th>
                                         <th className="pb-3 pr-4 text-center"><T k="admin_status" /></th>
+                                        <th className="pb-3 text-center">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -401,14 +568,24 @@ export default function AdminDashboard() {
                                         >
                                             <td className="py-3 pr-4 pl-2 text-center text-xl font-black text-white/50 group-hover:text-white transition-colors">#{index + 1}</td>
                                             <td className="py-3 pr-4 pl-4 pt-4">
-                                                <AvatarDisplay characterId={user.characterId || 1} level={user.level || 1} size={100} />
+                                                <AvatarDisplay characterId={user.characterId || 1} level={user.level || 1} size={64} showLevel={false} />
                                             </td>
                                             <td className="py-3 pr-4">
-                                                <div className="font-bold text-lg text-white mb-1 group-hover:text-purple-300 transition-colors drop-shadow-sm">{user.name || '—'}</div>
-                                                <div className="text-xs text-gray-500 font-mono bg-black/20 px-2 py-1 rounded inline-block">{user.email}</div>
+                                                <Link href={`/user/${user.id}`} className="block hover:opacity-80 transition-opacity">
+                                                    <div className="font-bold text-lg text-white mb-1 group-hover:text-purple-300 transition-colors drop-shadow-sm flex items-center gap-2">
+                                                        {user.name || '—'}
+                                                        {user.lastActiveAt && (new Date().getTime() - new Date(user.lastActiveAt).getTime()) < 5 * 60 * 1000 && (
+                                                            <span className="flex h-2.5 w-2.5 relative" title="En ligne">
+                                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                                                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <div className="text-xs text-gray-500 font-mono bg-black/20 px-2 py-1 rounded inline-block">{user.email}</div>
+                                                </Link>
                                             </td>
                                             <td className="py-3 pr-4">
-                                                <span className={`text-xs px-3 py-1 rounded-full font-bold shadow-sm ${user.role === 'PM' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'}`}>
+                                                <span className={`text-xs px-3 py-1 rounded-sm font-bold shadow-sm ${user.role === 'PM' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'}`}>
                                                     {user.role}
                                                 </span>
                                             </td>
@@ -423,12 +600,23 @@ export default function AdminDashboard() {
                                                 user.status === 'APPROVED' ? 'text-emerald-400 border border-emerald-500/30 bg-emerald-500/10' :
                                                     user.status === 'REJECTED' ? 'text-red-400 border border-red-500/30 bg-red-500/10' :
                                                         'text-gray-400 border border-gray-500/30 bg-gray-500/10'
-                                            } px-2 py-1 rounded-full`}>
+                                            } px-2 py-1 rounded-sm`}>
                                                 {user.status === 'APPROVED' ? t('approved') : user.status === 'REJECTED' ? t('rejected') : user.status}
                                             </span>
                                         </td>
+<<<<<<< HEAD
                                         <td className="py-4 pr-2 text-right">
                                             <ChevronRight size={16} className="text-gray-600 group-hover:text-purple-400 transition-colors inline-block" />
+=======
+                                        <td className="py-4 text-center">
+                                            <button
+                                                onClick={() => setDeleteConfirm({ type: 'user', id: user.id, name: user.name || user.email })}
+                                                className="p-1.5 rounded-lg border border-red-500/20 text-red-400/60 hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/40 transition-all"
+                                                title="Supprimer l'utilisateur"
+                                            >
+                                                <Trash2 size={14} />
+                                            </button>
+>>>>>>> old-local/recovery
                                         </td>
                                         </tr>
                                     ))}
@@ -437,8 +625,45 @@ export default function AdminDashboard() {
                         </div>
                     )}
                 </div>
+
+                {/* Activity Logs */}
+                <div className="bg-[#080d1a] border border-white/5 rounded-md p-6">
+                    <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 mb-4 flex items-center gap-2">
+                        <Activity size={16} className="text-blue-400" /> Journal d&apos;Activité
+                    </h3>
+                    <div className="flex flex-col gap-3 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
+                        {logs.length === 0 ? (
+                            <div className="p-4 text-center text-gray-500">Aucune activité récente.</div>
+                        ) : (
+                            logs.map(log => (
+                                <div key={log.id} className="flex gap-4 p-3 rounded-md bg-white/5 border border-white/5 hover:bg-white/10 transition-colors items-start">
+                                    <div className="w-8 h-8 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                                        <Activity size={14} className="text-blue-400" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex justify-between items-start mb-1 gap-2">
+                                            <div className="font-bold text-sm text-white truncate">
+                                                {log.user.name} <span className="text-xs font-normal text-gray-400 ml-1">({log.user.role})</span>
+                                            </div>
+                                            <div className="text-xs text-gray-500 shrink-0 capitalize">
+                                                {formatDistanceToNow(new Date(log.createdAt), { addSuffix: true, locale: fr })}
+                                            </div>
+                                        </div>
+                                        <div className="text-xs font-mono text-blue-300/80 mb-1">{log.action}</div>
+                                        {log.details && (
+                                            <div className="text-xs text-gray-400 break-words leading-relaxed">
+                                                {log.details.length > 150 ? log.details.substring(0, 150) + '...' : log.details}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </div>
         </div>
 
+<<<<<<< HEAD
             {/* XP Log Modal */}
             {xpModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -562,12 +787,61 @@ export default function AdminDashboard() {
                                 className="px-4 py-1.5 rounded-lg bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 text-xs font-bold transition-all"
                             >
                                 Close
+=======
+            {/* Delete Confirmation Modal */}
+            {deleteConfirm && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={() => !deleting && setDeleteConfirm(null)}>
+                    <div className="bg-[#0c1225] border border-white/10 rounded-md p-8 max-w-md w-full mx-4 shadow-2xl" onClick={e => e.stopPropagation()}>
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="w-12 h-12 rounded-md bg-red-500/10 border border-red-500/30 flex items-center justify-center">
+                                <AlertTriangle size={24} className="text-red-400" />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-black text-white">Confirmer la suppression</h3>
+                                <p className="text-xs text-gray-500">Cette action est irréversible</p>
+                            </div>
+                        </div>
+                        <p className="text-sm text-gray-300 mb-6">
+                            Voulez-vous vraiment supprimer {deleteConfirm.type === 'user' ? "l'utilisateur" : 'le projet'}{' '}
+                            <strong className="text-white">{deleteConfirm.name}</strong> ?
+                            {deleteConfirm.type === 'user' && (
+                                <span className="block mt-2 text-red-400/80 text-xs">Toutes les données associées (projets PM, badges, données cuisine) seront également supprimées.</span>
+                            )}
+                            {deleteConfirm.type === 'project' && (
+                                <span className="block mt-2 text-red-400/80 text-xs">Tous les rapports, tâches, plans et données associées seront supprimés.</span>
+                            )}
+                        </p>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setDeleteConfirm(null)}
+                                disabled={deleting}
+                                className="flex-1 py-3 rounded-md bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10 transition-all font-bold text-sm disabled:opacity-50"
+                            >
+                                Annuler
+                            </button>
+                            <button
+                                onClick={() => {
+                                    if (deleteConfirm.type === 'user') handleDeleteUser(deleteConfirm.id);
+                                    else handleDeleteProject(deleteConfirm.id);
+                                }}
+                                disabled={deleting}
+                                className="flex-1 py-3 rounded-md bg-red-500/20 border border-red-500/40 text-red-400 hover:bg-red-500/30 transition-all font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+                            >
+                                {deleting ? (
+                                    <div className="w-4 h-4 border-2 border-red-400 border-t-transparent rounded-full animate-spin" />
+                                ) : (
+                                    <><Trash2 size={14} /> Supprimer</>
+                                )}
+>>>>>>> old-local/recovery
                             </button>
                         </div>
                     </div>
                 </div>
             )}
+<<<<<<< HEAD
 
+=======
+>>>>>>> old-local/recovery
             </main>
         </div>
     );

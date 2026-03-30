@@ -81,7 +81,7 @@ export default function PresenceIndicator({
     };
 
     return (
-        <div className="bg-white/5 border border-white/10 flex items-center gap-2 px-3 py-1.5 rounded-full">
+        <div className="bg-white/5 border border-white/10 flex items-center gap-2 px-3 py-1.5 rounded-sm">
             <div className="flex -space-x-2">
                 {viewers.slice(0, 5).map((v) => {
                     const colorClass = roleClasses[v.role] || "border-gray-500 text-gray-500";

@@ -13,6 +13,7 @@ interface FileUploadZoneProps {
     title: string;
     subtitle: string;
     accentColor?: string;
+    extraFormData?: Record<string, string>;
 }
 
 type UploadState = "idle" | "dragging" | "uploading" | "success" | "error";
@@ -26,11 +27,14 @@ export default function FileUploadZone({
     title,
     subtitle,
     accentColor = "purple",
+    extraFormData,
 }: FileUploadZoneProps) {
     const [state, setState] = useState<UploadState>("idle");
     const [errorMessage, setErrorMessage] = useState("");
+    const [successMessage, setSuccessMessage] = useState("");
     const [fileName, setFileName] = useState("");
     const [progress, setProgress] = useState(0);
+    const [progressText, setProgressText] = useState("");
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const colorMap: Record<string, { border: string; bg: string; text: string; glow: string }> = {
@@ -63,40 +67,109 @@ export default function FileUploadZone({
         setFileName(file.name);
         setState("uploading");
         setProgress(0);
-
-        // Simulate progress while uploading
-        const progressInterval = setInterval(() => {
-            setProgress(prev => Math.min(prev + 10, 90));
-        }, 200);
+        setProgressText("");
 
         try {
             const formData = new FormData();
             formData.append("file", file);
+            if (extraFormData) {
+                Object.entries(extraFormData).forEach(([key, value]) => {
+                    formData.append(key, value);
+                });
+            }
 
             const res = await fetch(`/api/project/${projectId}/${module}/upload`, {
                 method: "POST",
                 body: formData,
             });
 
-            clearInterval(progressInterval);
-
             if (!res.ok) {
-                const data = await res.json();
-                throw new Error(data.error || "Upload failed");
+                const text = await res.text();
+                try {
+                    const errData = JSON.parse(text);
+                    throw new Error(errData.error || "Upload failed");
+                } catch {
+                    throw new Error(text || "Upload failed");
+                }
             }
 
-            const data = await res.json();
-            setProgress(100);
-            setState("success");
-            onUploadComplete?.(data);
+            const initialData = await res.json();
 
-            // Reset after 3 seconds
-            setTimeout(() => {
-                setState("idle");
-                setProgress(0);
-            }, 3000);
+            // If the response contains a jobId, use polling
+            if (initialData.jobId) {
+                setProgress(20);
+                setProgressText("Extraction en cours...");
+
+                // Poll for completion
+                const jobId = initialData.jobId;
+                const POLL_INTERVAL = 3000;
+                const MAX_POLLS = 100; // 5 min max
+                let polls = 0;
+
+                while (polls < MAX_POLLS) {
+                    await new Promise(r => setTimeout(r, POLL_INTERVAL));
+                    polls++;
+
+                    const statusRes = await fetch(`/api/project/${projectId}/planning/status?jobId=${jobId}`);
+                    if (!statusRes.ok) {
+                        throw new Error("Erreur lors de la vérification du statut");
+                    }
+
+                    const statusData = await statusRes.json();
+                    
+                    // Update progress text from server
+                    if (statusData.progress) {
+                        setProgressText(statusData.progress);
+                    }
+                    // Animate progress bar
+                    setProgress(Math.min(20 + (polls / MAX_POLLS) * 70, 90));
+
+                    if (statusData.status === 'done') {
+                        setProgress(100);
+                        const result = statusData.result;
+                        const count = result?.count ?? 0;
+                        if (count === 0) {
+                            setState("error");
+                            setErrorMessage("Fichier reçu mais 0 enregistrement extrait. Vérifiez le format.");
+                            setTimeout(() => { setState("idle"); setProgress(0); }, 6000);
+                        } else {
+                            setState("success");
+                            setSuccessMessage(`${count} enregistrement${count > 1 ? 's' : ''} importé${count > 1 ? 's' : ''} avec succès`);
+                            try {
+                                onUploadComplete?.(result);
+                            } catch (cbErr) {
+                                console.error("Error in onUploadComplete:", cbErr);
+                            }
+                            setTimeout(() => { setState("idle"); setProgress(0); setSuccessMessage(""); }, 5000);
+                        }
+                        return;
+                    } else if (statusData.status === 'error') {
+                        throw new Error(statusData.error || "Erreur de traitement");
+                    }
+                    // else 'processing' → continue polling
+                }
+
+                throw new Error("Timeout: le traitement a pris trop de temps.");
+            }
+
+            // Non-polling response (other modules) — direct JSON result
+            const count = (initialData.count as number) ?? 0;
+            setProgress(100);
+            if (count === 0) {
+                setState("error");
+                setErrorMessage("Fichier reçu mais 0 enregistrement extrait. Vérifiez le format.");
+                setTimeout(() => { setState("idle"); setProgress(0); }, 6000);
+            } else {
+                setState("success");
+                setSuccessMessage(`${count} enregistrement${count > 1 ? 's' : ''} importé${count > 1 ? 's' : ''} avec succès`);
+                try {
+                    onUploadComplete?.(initialData);
+                } catch (cbErr) {
+                    console.error("Error in onUploadComplete:", cbErr);
+                }
+                setTimeout(() => { setState("idle"); setProgress(0); setSuccessMessage(""); }, 5000);
+            }
         } catch (err) {
-            clearInterval(progressInterval);
             setState("error");
             setErrorMessage(err instanceof Error ? err.message : "Upload failed");
             setTimeout(() => {
@@ -104,7 +177,7 @@ export default function FileUploadZone({
                 setProgress(0);
             }, 4000);
         }
-    }, [projectId, module, onUploadComplete]);
+    }, [projectId, module, onUploadComplete, extraFormData]);
 
     const handleDrop = useCallback((e: React.DragEvent) => {
         e.preventDefault();
@@ -129,7 +202,7 @@ export default function FileUploadZone({
             onDrop={handleDrop}
             onClick={() => state === "idle" && fileInputRef.current?.click()}
             className={`
-                relative overflow-hidden rounded-2xl border-2 border-dashed p-8 sm:p-12
+                relative overflow-hidden rounded-md border-2 border-dashed p-8 sm:p-12
                 transition-all duration-500 cursor-pointer group
                 ${state === "dragging"
                     ? `${colors.border} ${colors.bg} ${colors.glow} scale-[1.02]`
@@ -152,12 +225,13 @@ export default function FileUploadZone({
                 accept={acceptTypes}
                 onChange={handleFileSelect}
                 className="hidden"
+                title="Upload file"
             />
 
             <div className="relative z-10 flex flex-col items-center text-center gap-4">
                 {state === "idle" || state === "dragging" ? (
                     <>
-                        <div className={`w-20 h-20 rounded-2xl ${colors.bg} border ${colors.border} flex items-center justify-center transition-transform duration-500 group-hover:scale-110`}>
+                        <div className={`w-20 h-20 rounded-md ${colors.bg} border ${colors.border} flex items-center justify-center transition-transform duration-500 group-hover:scale-110`}>
                             {icon || <Upload size={36} className={colors.text} />}
                         </div>
                         <div>
@@ -179,7 +253,7 @@ export default function FileUploadZone({
                         <Loader2 size={36} className={`${colors.text} animate-spin`} />
                         <div>
                             <p className="text-sm font-bold text-white">{fileName}</p>
-                            <p className="text-xs text-gray-400 mt-1"><T k="hub_analyzing" />...</p>
+                            <p className="text-xs text-gray-400 mt-1">{progressText || <><T k="hub_analyzing" />...</>}</p>
                         </div>
                         <div className="w-full max-w-xs bg-white/5 h-2 rounded-full overflow-hidden mt-2">
                             <div
@@ -192,7 +266,7 @@ export default function FileUploadZone({
                     <>
                         <CheckCircle2 size={36} className="text-emerald-400" />
                         <div>
-                            <p className="text-sm font-bold text-emerald-400"><T k="hub_upload_success" /></p>
+                            <p className="text-sm font-bold text-emerald-400">{successMessage || <T k="hub_upload_success" />}</p>
                             <p className="text-xs text-gray-400 mt-1">{fileName}</p>
                         </div>
                     </>

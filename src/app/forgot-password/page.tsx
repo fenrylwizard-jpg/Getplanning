@@ -76,7 +76,7 @@ export default function ForgotPasswordPage() {
                         <input
                             id="resetEmail"
                             type="email"
-                            className="w-full bg-[#050810]/50 border border-white/10 text-white rounded-2xl py-4 pl-4 pr-4 outline-none transition-all duration-300 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/50 shadow-inner text-lg"
+                            className="w-full bg-[#050810]/50 border border-white/10 text-white rounded-md py-4 pl-4 pr-4 outline-none transition-all duration-300 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/50 shadow-inner text-lg"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required

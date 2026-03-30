@@ -14,18 +14,12 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
-        // Fetch all closed weekly plans with their completed tasks & project names
         const weeklyPlans = await prisma.weeklyPlan.findMany({
-            where: { isClosed: true }, // We only graph closed historical weeks
             include: {
                 project: { select: { id: true, name: true } },
                 tasks: {
                     include: {
-                        task: {
-                            select: {
-                                minutesPerUnit: true
-                            }
-                        }
+                        task: { select: { minutesPerUnit: true } }
                     }
                 }
             },
@@ -35,49 +29,62 @@ export async function GET(req: Request) {
             ]
         });
 
-        const timeline: Record<string, any> = {};
+        // Group by timeLabel, tracking per-week planned/achieved per project
+        const weeklyData: Record<string, Record<string, { planned: number; achieved: number }>> = {};
         const allProjects = new Set<string>();
+        const allWeeks: string[] = [];
 
-        // Format: 'YYYY-Wxx'
         for (const plan of weeklyPlans) {
             const timeLabel = `${plan.year}-W${plan.weekNumber.toString().padStart(2, '0')}`;
-            if (!timeline[timeLabel]) {
-                timeline[timeLabel] = { timeLabel };
-            }
-            
             const projectName = plan.project.name;
             allProjects.add(projectName);
 
-            // Calculate hours earned in THIS specific week
-            // Note: `actualQuantity` in WeeklyPlanTask represents the quantity accomplished during this plan.
-            let weekHours = 0;
-            for (const wpt of plan.tasks) {
-                weekHours += (wpt.actualQuantity * wpt.task.minutesPerUnit) / 60;
+            if (!weeklyData[timeLabel]) {
+                weeklyData[timeLabel] = {};
+                allWeeks.push(timeLabel);
+            }
+            if (!weeklyData[timeLabel][projectName]) {
+                weeklyData[timeLabel][projectName] = { planned: 0, achieved: 0 };
             }
 
-            // Sum up if there are multiple plans for same project in same week (shouldn't happen ideally but just in case)
-            if (!timeline[timeLabel][projectName]) {
-                timeline[timeLabel][projectName] = 0;
+            for (const wpt of plan.tasks) {
+                weeklyData[timeLabel][projectName].planned += (wpt.plannedQuantity * wpt.task.minutesPerUnit) / 60;
+                weeklyData[timeLabel][projectName].achieved += (wpt.actualQuantity * wpt.task.minutesPerUnit) / 60;
             }
-            timeline[timeLabel][projectName] += Math.round(weekHours * 100) / 100;
         }
 
-        const data = Object.values(timeline).sort((a, b) => a.timeLabel.localeCompare(b.timeLabel));
+        // Sort weeks chronologically
+        const sortedWeeks = [...new Set(allWeeks)].sort();
         const projectsList = Array.from(allProjects).sort();
 
-        // Ensure every time step has 0 for projects that had no plan that week
-        for (const d of data) {
-            for (const proj of projectsList) {
-                if (d[proj] === undefined) {
-                    d[proj] = 0;
-                }
-            }
+        // Build CUMULATIVE data: each week = sum of all previous weeks + current week
+        const cumulativeTotals: Record<string, { planned: number; achieved: number }> = {};
+        for (const proj of projectsList) {
+            cumulativeTotals[proj] = { planned: 0, achieved: 0 };
         }
 
-        return NextResponse.json({
-            data,
-            projects: projectsList
+        const data = sortedWeeks.map(week => {
+            const point: Record<string, any> = { timeLabel: week };
+
+            for (const proj of projectsList) {
+                const weekVal = weeklyData[week]?.[proj] || { planned: 0, achieved: 0 };
+                cumulativeTotals[proj].planned += weekVal.planned;
+                cumulativeTotals[proj].achieved += weekVal.achieved;
+
+                // Cumulative values (always >= 0)
+                point[`${proj}_planned`] = Math.round(cumulativeTotals[proj].planned * 10) / 10;
+                point[`${proj}_achieved`] = Math.round(cumulativeTotals[proj].achieved * 10) / 10;
+
+                // Productivity % for this specific week
+                point[`${proj}_pct`] = weekVal.planned > 0
+                    ? Math.round((weekVal.achieved / weekVal.planned) * 100)
+                    : 0;
+            }
+
+            return point;
         });
+
+        return NextResponse.json({ data, projects: projectsList });
 
     } catch (error) {
         console.error("Weekly Stats API Error:", error);

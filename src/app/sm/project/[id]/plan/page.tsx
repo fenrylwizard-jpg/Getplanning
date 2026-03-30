@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, use, useMemo } from "react";
+import React, { useState, useEffect, use, useMemo, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronRight, Folder, ArrowLeft, Trash2, PlusCircle, ShoppingBag, Loader2, List, Clock, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
@@ -56,11 +56,34 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
     const [loadingTasks, setLoadingTasks] = useState(true);
     const [loadingPlan, setLoadingPlan] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isSubmitted, setIsSubmitted] = useState(false);
 
-    const HOURS_PER_WORKER = 40;
+    const [hoursPerWorker, setHoursPerWorker] = useState(40);
+
+    // Debounced PATCH for workforce changes on submitted plans
+    const workforcePatchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const patchWorkforce = useCallback((newWorkers: number, newHoursPerWorker: number) => {
+        if (workforcePatchTimer.current) clearTimeout(workforcePatchTimer.current);
+        workforcePatchTimer.current = setTimeout(async () => {
+            try {
+                await fetch(`/api/project/${id}/plan`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        weekNumber: activeWeek.week,
+                        year: activeWeek.year,
+                        workers: newWorkers,
+                        hoursPerWorker: newHoursPerWorker,
+                    })
+                });
+            } catch (err) {
+                console.error('Failed to update workforce:', err);
+            }
+        }, 800);
+    }, [id, activeWeek.week, activeWeek.year]);
     const targetProductivityRatio = 1.0; 
 
-    const totalCapacityHours = workers * HOURS_PER_WORKER;
+    const totalCapacityHours = workers * hoursPerWorker;
     const targetHours = totalCapacityHours * targetProductivityRatio;
 
     // Fetch initial data (tasks & locations)
@@ -87,6 +110,8 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
             .then(data => {
                 if (data && data.id) {
                     setWorkers(data.numberOfWorkers || 5);
+                    setHoursPerWorker(data.hoursPerWorker || 40);
+                    setIsSubmitted(data.isSubmitted || false);
                     setChecks({
                         drawings: data.hasDrawings || false,
                         materials: data.hasMaterials || false,
@@ -103,6 +128,7 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
                 } else {
                     // Reset if no plan exists for this week
                     setCartItems([]);
+                    setIsSubmitted(false);
                 }
                 setLoadingPlan(false);
             })
@@ -214,6 +240,7 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     workers,
+                    hoursPerWorker,
                     targetHoursCapacity: totalCapacityHours,
                     tasks: cartItems, 
                     checks,
@@ -231,6 +258,28 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
         } catch (err) {
             console.error(err);
             toast.error(t("error_saving_plan"));
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const unsubmitPlan = async () => {
+        setIsSubmitting(true);
+        try {
+            const res = await fetch(`/api/project/${id}/plan/unsubmit`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ weekNumber: activeWeek.week, year: activeWeek.year })
+            });
+
+            if (res.ok) {
+                setIsSubmitted(false);
+                toast.success(t("plan_unlocked"));
+            } else {
+                toast.error(t("error_unlocking_plan"));
+            }
+        } catch (err) {
+            toast.error(t("error_unlocking_plan"));
         } finally {
             setIsSubmitting(false);
         }
@@ -279,12 +328,12 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
                     </div>
 
                     {/* Week Selection Hub */}
-                    <div className="flex bg-[#0a1020]/80 backdrop-blur-md rounded-3xl p-1.5 border border-white/5 shadow-2xl overflow-x-auto max-w-full">
+                    <div className="flex bg-[#0a1020]/80 backdrop-blur-md rounded-md p-1.5 border border-white/5 shadow-2xl overflow-x-auto max-w-full">
                         {weekOptions.map(opt => (
                             <button 
                                 key={opt.offset}
                                 onClick={() => setSelectedWeekOffset(opt.offset)}
-                                className={`px-5 py-3 rounded-2xl transition-all flex flex-col items-center gap-0.5 min-w-[100px] ${selectedWeekOffset === opt.offset ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' : 'text-gray-500 hover:text-white border border-transparent hover:bg-white/5'}`}
+                                className={`px-5 py-3 rounded-md transition-all flex flex-col items-center gap-0.5 min-w-[100px] ${selectedWeekOffset === opt.offset ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' : 'text-gray-500 hover:text-white border border-transparent hover:bg-white/5'}`}
                             >
                                 <span className="text-[10px] font-black uppercase tracking-widest"><T k={opt.label} /></span>
                                 <span className="text-xs font-bold whitespace-nowrap">S{opt.week} • {opt.dateRange}</span>
@@ -310,28 +359,54 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
                                     <T k="workforce_availability" />
                                 </h3>
                                 <div className="flex flex-col sm:flex-row items-center gap-10">
-                                    <div className="w-full sm:w-1/2">
+                                    <div className="w-full sm:w-1/3">
                                         <label htmlFor="workersAmount" className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3"><T k="available_workers_count" /></label>
                                         <div className="relative group">
                                             <input 
                                                 id="workersAmount" 
                                                 type="number" 
                                                 title={t("available_workers_count")}
-                                                className="w-full bg-black/40 border border-white/10 rounded-2xl py-4 px-6 text-2xl font-black text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all group-hover:border-white/20" 
+                                                className="w-full bg-black/40 border border-white/10 rounded-md py-4 px-6 text-2xl font-black text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all group-hover:border-white/20" 
                                                 min="1" 
                                                 max="100" 
                                                 value={workers} 
-                                                onChange={e => setWorkers(parseInt(e.target.value) || 0)} 
+                                                onChange={e => {
+                                                    const val = parseInt(e.target.value) || 0;
+                                                    setWorkers(val);
+                                                    if (isSubmitted) patchWorkforce(val, hoursPerWorker);
+                                                }}
                                             />
                                             <span className="absolute right-6 top-1/2 -translate-y-1/2 text-sm font-bold text-cyan-500/40 uppercase"><T k="persons" /></span>
                                         </div>
                                     </div>
-                                    <div className="w-full sm:w-1/2 flex flex-col items-center justify-center p-6 bg-cyan-500/5 rounded-[30px] border border-cyan-500/10 h-full relative overflow-hidden group">
-                                        <div className="absolute top-0 right-0 w-20 h-20 bg-cyan-500/10 blur-3xl rounded-full" />
+                                    <div className="w-full sm:w-1/3">
+                                        <label htmlFor="hoursPerWorker" className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Heures / personne / semaine</label>
+                                        <div className="relative group">
+                                            <input 
+                                                id="hoursPerWorker" 
+                                                type="number" 
+                                                title="Heures par personne par semaine"
+                                                className="w-full bg-black/40 border border-white/10 rounded-md py-4 px-6 text-2xl font-black text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all group-hover:border-white/20" 
+                                                min="1" 
+                                                max="80" 
+                                                value={hoursPerWorker} 
+                                                onChange={e => {
+                                                    const val = parseInt(e.target.value) || 0;
+                                                    setHoursPerWorker(val);
+                                                    if (isSubmitted) patchWorkforce(workers, val);
+                                                }}
+                                            />
+                                            <span className="absolute right-6 top-1/2 -translate-y-1/2 text-sm font-bold text-cyan-500/40 uppercase">h</span>
+                                        </div>
+                                        <div className="text-[9px] text-gray-600 mt-1">Par défaut 40h (5j × 8h). Réduire si absences.</div>
+                                    </div>
+                                    <div className="w-full sm:w-1/3 flex flex-col items-center justify-center p-6 bg-cyan-500/5 rounded-[30px] border border-cyan-500/10 h-full relative overflow-hidden group">
+                                        <div className="absolute top-0 right-0 w-20 h-20 bg-cyan-500/10 blur-3xl rounded-sm" />
                                         <div className="text-[10px] text-cyan-400 font-black uppercase tracking-[0.2em] mb-2"><T k="target_100" /></div>
                                         <div className="text-5xl sm:text-6xl font-black text-white tracking-tighter drop-shadow-[0_0_20px_rgba(6,182,212,0.4)]">
                                             {targetHours} <span className="text-xl font-light text-cyan-400/60 uppercase">h</span>
                                         </div>
+                                        <div className="text-[9px] text-gray-600 mt-1">{workers} × {hoursPerWorker}h</div>
                                     </div>
                                 </div>
                             </section>
@@ -339,7 +414,7 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
                             {/* Catalog Module */}
                             <section className="glass-card bg-[#0a1020]/60 backdrop-blur-xl border border-white/5 rounded-[40px] p-8 shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex flex-col min-h-[600px]">
                                 <h3 className="mb-8 flex items-center gap-3">
-                                    <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-400"><Folder size={20} /></div>
+                                    <div className="p-2 rounded-md bg-cyan-500/10 text-cyan-400"><Folder size={20} /></div>
                                     <span className="text-sm font-black uppercase tracking-widest text-white"><T k="tasks_catalog" /></span>
                                 </h3>
                                 
@@ -349,7 +424,7 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
                                             <div 
                                                 key={c.name} 
                                                 onClick={() => setSelectedCategory(c.name)}
-                                                className="rounded-2xl p-6 flex flex-col justify-between group cursor-pointer relative overflow-hidden bg-white/5 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.8)] hover:-translate-y-2 hover:scale-[1.02] hover:border-cyan-400/50 hover:shadow-[0_0_20px_rgba(37,226,244,0.2),inset_0_0_10px_rgba(37,226,244,0.1)] transition-all duration-300 text-left"
+                                                className="rounded-md p-6 flex flex-col justify-between group cursor-pointer relative overflow-hidden bg-white/5 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.8)] hover:-translate-y-2 hover:scale-[1.02] hover:border-cyan-400/50 hover:shadow-[0_0_20px_rgba(37,226,244,0.2),inset_0_0_10px_rgba(37,226,244,0.1)] transition-all duration-300 text-left"
                                             >
                                                 <div className="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-100 transition-opacity">
                                                     <Folder size={40} className="text-cyan-400" strokeWidth={1} />
@@ -381,7 +456,7 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
                                         <div className="flex items-center gap-4 mb-8">
                                             <button 
                                                 title={t("back_to_categories")}
-                                                className="p-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors group" 
+                                                className="p-3 rounded-md bg-white/5 border border-white/10 hover:bg-white/10 transition-colors group" 
                                                 onClick={() => setSelectedCategory(null)}
                                             >
                                                 <ArrowLeft size={18} className="text-gray-400 group-hover:text-white" />
@@ -391,7 +466,7 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
                                                 <input
                                                     type="text"
                                                     id="task-search"
-                                                    className="w-full bg-black/40 border border-white/10 rounded-2xl py-3 px-6 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                                                    className="w-full bg-black/40 border border-white/10 rounded-md py-3 px-6 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
                                                     placeholder={`${t("search_in")}...`}
                                                     title={t("search_in")}
                                                     value={searchTerm}
@@ -407,7 +482,7 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
                                             {visibleGroups.map(g => {
                                                 const isExpanded = expandedGroups.includes(g.id);
                                                 return (
-                                                    <div key={g.id} className="group/item shrink-0 flex flex-col bg-[#0f172a]/80 border border-white/10 rounded-3xl overflow-hidden hover:border-cyan-500/30 hover:bg-[#1e293b]/90 transition-all">
+                                                    <div key={g.id} className="group/item shrink-0 flex flex-col bg-[#0f172a]/80 border border-white/10 rounded-md overflow-hidden hover:border-cyan-500/30 hover:bg-[#1e293b]/90 transition-all">
                                                         <div className="p-4 sm:p-5 cursor-pointer flex justify-between items-center" onClick={() => toggleGroup(g.id)}>
                                                             <div className="flex items-start gap-4">
                                                                 <div className={`mt-0.5 transition-transform duration-300 ${isExpanded ? 'rotate-90' : ''}`}>
@@ -427,7 +502,7 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
                                                             <div className="px-5 pb-5 pt-3 border-t border-white/10 bg-black/40">
                                                                 <div className="flex flex-col gap-3">
                                                                     {g.originalTasks.map((ot, i) => (
-                                                                        <div key={i} className="flex justify-between items-center bg-white/10 p-4 rounded-2xl border border-white/5 group/row hover:bg-white/20 transition-all">
+                                                                        <div key={i} className="flex justify-between items-center bg-white/10 p-4 rounded-md border border-white/5 group/row hover:bg-white/20 transition-all">
                                                                             <div className="flex flex-col gap-1">
                                                                                 <span className="text-xs font-black text-gray-400 uppercase tracking-widest">LIGNE #{i + 1}</span>
                                                                                 <span className="text-sm font-bold text-white/90">{ot.taskCode ? `[${ot.taskCode}] ` : ''}<T k="available" />: <span className="text-emerald-300">{ot.remaining.toFixed(1)} {ot.unit}</span></span>
@@ -435,7 +510,8 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
                                                                             <button 
                                                                                 title={t("add_to_plan")}
                                                                                 onClick={(e) => { e.stopPropagation(); addToCart(ot); }} 
-                                                                                className="px-4 py-2 rounded-xl bg-cyan-500 text-white font-black text-[10px] uppercase tracking-widest hover:bg-cyan-600 transition-all shadow-lg shadow-cyan-500/20 active:scale-95 flex items-center gap-2"
+                                                                                disabled={isSubmitted}
+                                                                                className="px-4 py-2 rounded-md bg-cyan-500 text-white font-black text-[10px] uppercase tracking-widest hover:bg-cyan-600 transition-all shadow-lg shadow-cyan-500/20 active:scale-95 flex items-center gap-2 disabled:opacity-30 disabled:pointer-events-none"
                                                                             >
                                                                                 <PlusCircle size={14} /> <T k="add_to_cart" />
                                                                             </button>
@@ -470,7 +546,7 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
                                             {currentlyPlannedHours.toFixed(1)} <span className="text-lg font-light opacity-40">/ {targetHours}h</span>
                                         </h3>
                                     </div>
-                                    <div className={`text-xs font-black px-3 py-1 rounded-full uppercase tracking-tighter ${isNearTarget ? 'bg-emerald-500/20 text-emerald-400' : 'bg-cyan-500/10 text-cyan-500'}`}>
+                                    <div className={`text-xs font-black px-3 py-1 rounded-sm uppercase tracking-tighter ${isNearTarget ? 'bg-emerald-500/20 text-emerald-400' : 'bg-cyan-500/10 text-cyan-500'}`}>
                                         {((currentlyPlannedHours / targetHours) * 100).toFixed(0)}% <T k="load" />
                                     </div>
                                 </div>
@@ -506,7 +582,8 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
                                                         <button 
                                                             title={t("remove_item")}
                                                             onClick={() => removeCartItem(item.id)} 
-                                                            className="p-2 rounded-xl text-gray-600 hover:text-red-400 hover:bg-red-400/10 transition-all"
+                                                            disabled={isSubmitted}
+                                                            className="p-2 rounded-md text-gray-600 hover:text-red-400 hover:bg-red-400/10 transition-all disabled:opacity-30 disabled:pointer-events-none"
                                                         >
                                                             <Trash2 size={16} />
                                                         </button>
@@ -516,9 +593,10 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
                                                         <div className="relative flex-1">
                                                             <input 
                                                                 type="number" 
-                                                                className={`w-full rounded-2xl py-3 pl-4 pr-16 text-white text-xl font-black focus:outline-none focus:ring-2 transition-all placeholder:text-white/20 ${isOverflow ? 'bg-red-950/40 border-2 border-red-500/50 hover:border-red-500/70 focus:border-red-400 focus:ring-red-400/20' : 'bg-cyan-950/40 border-2 border-cyan-500/30 hover:border-cyan-500/60 focus:border-cyan-400 focus:ring-cyan-400/20'}`}
+                                                                className={`w-full rounded-md py-3 pl-4 pr-16 text-white text-xl font-black focus:outline-none focus:ring-2 transition-all placeholder:text-white/20 disabled:opacity-50 ${isOverflow ? 'bg-red-950/40 border-2 border-red-500/50 hover:border-red-500/70 focus:border-red-400 focus:ring-red-400/20' : 'bg-cyan-950/40 border-2 border-cyan-500/30 hover:border-cyan-500/60 focus:border-cyan-400 focus:ring-cyan-400/20'}`}
                                                                 value={item.planQty || ''} 
                                                                 onChange={(e) => updateCartItem(item.id, { planQty: parseFloat(e.target.value) || 0 })}
+                                                                disabled={isSubmitted}
                                                                 placeholder="0.0"
                                                             />
                                                             <div className="absolute right-3 top-1/2 -translate-y-1/2 px-2 py-1 bg-black/40 border border-white/5 rounded-lg pointer-events-none">
@@ -545,8 +623,9 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
                                                             <select 
                                                                 key={locIndex}
                                                                 title={locIndex === 0 ? t("location") : t("add_location")}
-                                                                className="bg-black/20 border border-white/5 rounded-xl py-2 px-3 text-[10px] font-bold text-gray-400 focus:outline-none focus:border-cyan-500/40"
+                                                                className={`bg-black/20 border border-white/5 rounded-md py-2 px-3 text-[10px] font-bold text-gray-400 focus:outline-none focus:border-cyan-500/40 disabled:opacity-50`}
                                                                 value={item.locations[locIndex] || ''}
+                                                                disabled={isSubmitted}
                                                                 onChange={(e) => {
                                                                     const newLocs = [...item.locations];
                                                                     newLocs[locIndex] = e.target.value;
@@ -582,7 +661,8 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
                                                 key={item.k}
                                                 title={t(item.label)}
                                                 onClick={() => setChecks(p => ({ ...p, [item.k]: !p[item.k as keyof typeof checks] }))}
-                                                className={`px-4 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest border transition-all flex items-center justify-between group ${ checks[item.k as keyof typeof checks] ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-white/5 border-white/5 text-gray-600 hover:border-white/10' }`}
+                                                disabled={isSubmitted}
+                                                className={`px-4 py-3 rounded-md text-[10px] font-black uppercase tracking-widest border transition-all flex items-center justify-between group disabled:opacity-50 ${ checks[item.k as keyof typeof checks] ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-white/5 border-white/5 text-gray-600 hover:border-white/10' }`}
                                             >
                                                 <span><T k={item.label} /></span>
                                                 <div className={`w-2 h-2 rounded-full ${checks[item.k as keyof typeof checks] ? 'bg-emerald-400 animate-pulse' : 'bg-gray-800'}`} />
@@ -597,22 +677,38 @@ export default function PlanNextWeek({ params }: { params: Promise<{ id: string 
                                         const t2 = tasks.find(tk => tk.id === item.taskId);
                                         return t2 && item.planQty > (t2.quantity - t2.completedQuantity);
                                     }) && (
-                                        <div className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-bold mb-3">
+                                        <div className="flex items-center gap-2 px-4 py-3 rounded-md bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-bold mb-3">
                                             <AlertTriangle size={14} />
                                             <span>Un ou plusieurs postes dépassent le budget restant. Corrigez les quantités avant de soumettre.</span>
                                         </div>
                                     )}
-                                    <button 
-                                        className="w-full py-5 rounded-[25px] bg-gradient-to-r from-cyan-600 via-cyan-500 to-blue-600 text-white font-black uppercase tracking-[0.2em] text-sm shadow-[0_20px_40px_rgba(6,182,212,0.3)] hover:shadow-cyan-500/50 hover:-translate-y-1 transition-all disabled:opacity-30 disabled:translate-y-0 disabled:shadow-none flex items-center justify-center gap-3 relative overflow-hidden" 
-                                        onClick={submitPlan} 
-                                        disabled={cartItems.length === 0 || isSubmitting || cartItems.some(item => {
-                                            const t2 = tasks.find(tk => tk.id === item.taskId);
-                                            return t2 && item.planQty > (t2.quantity - t2.completedQuantity);
-                                        })}
-                                    >
-                                        <div className="absolute inset-0 bg-white/20 opacity-0 hover:opacity-100 transition-opacity" />
-                                        {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <T k="validate_and_save_plan" />}
-                                    </button>
+                                    {isSubmitted ? (
+                                        <div className="flex flex-col gap-3">
+                                            <div className="flex items-center justify-center gap-2 px-4 py-4 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-bold mb-1">
+                                                <AlertTriangle size={16} />
+                                                <span><T k="plan_is_frozen" /></span>
+                                            </div>
+                                            <button 
+                                                className="w-full py-4 rounded-[25px] bg-orange-600/20 border border-orange-500/30 text-orange-400 font-black uppercase tracking-[0.2em] text-[10px] hover:bg-orange-500/30 hover:-translate-y-1 transition-all disabled:opacity-30 disabled:translate-y-0 disabled:shadow-none flex items-center justify-center gap-2 relative overflow-hidden" 
+                                                onClick={unsubmitPlan} 
+                                                disabled={isSubmitting}
+                                            >
+                                                {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <><T k="correction" /> <T k="plan" /></>}
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <button 
+                                            className="w-full py-5 rounded-[25px] bg-gradient-to-r from-cyan-600 via-cyan-500 to-blue-600 text-white font-black uppercase tracking-[0.2em] text-sm shadow-[0_20px_40px_rgba(6,182,212,0.3)] hover:shadow-cyan-500/50 hover:-translate-y-1 transition-all disabled:opacity-30 disabled:translate-y-0 disabled:shadow-none flex items-center justify-center gap-3 relative overflow-hidden" 
+                                            onClick={submitPlan} 
+                                            disabled={cartItems.length === 0 || isSubmitting || cartItems.some(item => {
+                                                const t2 = tasks.find(tk => tk.id === item.taskId);
+                                                return t2 && item.planQty > (t2.quantity - t2.completedQuantity);
+                                            })}
+                                        >
+                                            <div className="absolute inset-0 bg-white/20 opacity-0 hover:opacity-100 transition-opacity" />
+                                            {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <T k="validate_and_save_plan" />}
+                                        </button>
+                                    )}
                                     
                                     {materialsForecast.length > 0 && (
                                         <p className="text-[10px] text-center text-gray-500 font-medium px-4">

@@ -13,9 +13,6 @@ export async function GET(req: Request) {
         }
 
         const users = await prisma.user.findMany({
-            where: {
-                role: { not: 'ADMIN' }
-            },
             orderBy: {
                 createdAt: 'desc'
             },
@@ -27,7 +24,8 @@ export async function GET(req: Request) {
                 status: true,
                 createdAt: true,
                 characterId: true,
-                level: true
+                level: true,
+                lastActiveAt: true
             }
         });
 
