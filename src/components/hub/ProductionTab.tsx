@@ -1,9 +1,11 @@
+import React from 'react';
 import T from "@/components/T";
 import ProjectAnalyticsCharts from "@/components/ProjectAnalyticsCharts";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle2, ShieldAlert, Clock, History } from "lucide-react";
+import { ArrowLeft, CheckCircle2, ShieldAlert, Clock, History, TrendingUp } from "lucide-react";
 import { HOURLY_RATE_EUR } from "@/lib/xp-engine";
 import WeeklyReportGenerator from "./WeeklyReportGenerator";
+import { getISOWeek, getISOWeekYear } from "date-fns";
 
 interface ProductionTabProps {
     project: {
@@ -69,9 +71,37 @@ export default function ProductionTab({ project }: ProductionTabProps) {
         totalLaborMinsAchieved += (t.completedQuantity * t.minutesPerUnit);
     });
 
-    const completionPercentage = totalLaborMinsTotal ? (totalLaborMinsAchieved / totalLaborMinsTotal) * 100 : 0;
+    let totalSpentHours = 0;
+    
+    // Group daily reports by ISO week for weekly efficiency
+    const reportsByWeek = new Map<string, typeof project.dailyReports>();
+    
+    if (project.dailyReports) {
+        for (const report of project.dailyReports) {
+            // Count hours if it's submitted or approved (not draft)
+            if (report.status !== 'DRAFT') {
+                report.taskProgress.forEach(tp => {
+                    totalSpentHours += tp.hours || 0;
+                });
+            }
+            
+            // Group by week
+            const d = new Date(report.date);
+            const wk = getISOWeek(d);
+            const yr = getISOWeekYear(d);
+            const key = `${yr}-${wk}`;
+            if (!reportsByWeek.has(key)) reportsByWeek.set(key, []);
+            reportsByWeek.get(key)!.push(report);
+        }
+    }
+
+    const earnedHours = totalLaborMinsAchieved / 60;
+    const globalEfficiencyPct = totalSpentHours > 0 ? (earnedHours / totalSpentHours) * 100 : 0;
+    const globalEfficiencyHours = earnedHours - totalSpentHours;
+    
+    const completionPercentage = totalLaborMinsTotal ? (earnedHours / (totalLaborMinsTotal / 60)) * 100 : 0;
     const budgetEur = Math.round((totalLaborMinsTotal / 60) * HOURLY_RATE_EUR);
-    const spentEur = Math.round((totalLaborMinsAchieved / 60) * HOURLY_RATE_EUR);
+    const spentEur = Math.round(earnedHours * HOURLY_RATE_EUR);
     const remaining = budgetEur - spentEur;
 
     return (
@@ -111,6 +141,33 @@ export default function ProductionTab({ project }: ProductionTabProps) {
                     <div className="absolute h-full transition-all duration-1000 ease-out bg-gradient-to-r from-blue-500 to-purple-500 production-progress-bar" />
                     <div className="absolute w-full h-full flex items-center justify-center text-[0.8rem] font-bold text-white drop-shadow-md">
                         {completionPercentage.toFixed(1)}% <T k="completed" />
+                    </div>
+                </div>
+
+                {/* Global Efficiency */}
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                    <div className="bg-[#0a1020]/80 border border-white/5 rounded-md p-4 flex items-center gap-4">
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center ${globalEfficiencyPct >= 100 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}`}>
+                            <TrendingUp size={24} />
+                        </div>
+                        <div>
+                            <div className="text-gray-400 text-[10px] uppercase font-bold tracking-widest"><T k="global_efficiency" /></div>
+                            <div className={`text-2xl font-black ${globalEfficiencyPct >= 100 ? 'text-emerald-400' : 'text-amber-400'}`}>
+                                {globalEfficiencyPct > 0 ? `${globalEfficiencyPct.toFixed(1)} %` : 'N/A'}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div className={`border rounded-md p-4 flex items-center gap-4 ${globalEfficiencyHours >= 0 ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-red-500/10 border-red-500/20'}`}>
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center ${globalEfficiencyHours >= 0 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
+                            <Clock size={24} />
+                        </div>
+                        <div>
+                            <div className="text-gray-400 text-[10px] uppercase font-bold tracking-widest">Bilan Heures (Gagnées - Dépensées)</div>
+                            <div className={`text-2xl font-black ${globalEfficiencyHours >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                {globalEfficiencyHours > 0 ? '+' : ''}{globalEfficiencyHours.toFixed(1)} h
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -160,9 +217,11 @@ export default function ProductionTab({ project }: ProductionTabProps) {
                                     <T k="active_planned" />
                                 </h4>
                                 <div className="flex flex-col gap-3">
-                                    {project.weeklyPlans.filter(p => !p.isSubmitted).map((plan) => (
-                                        <PlanCard key={plan.id} plan={plan} projectId={project.id} />
-                                    ))}
+                                    {project.weeklyPlans.filter(p => !p.isSubmitted).map((plan) => {
+                                        const weekKey = `${plan.year}-${plan.weekNumber}`;
+                                        const reports = reportsByWeek.get(weekKey) || [];
+                                        return <PlanCard key={plan.id} plan={plan} projectId={project.id} weekReports={reports} />
+                                    })}
                                 </div>
                             </div>
                         )}
@@ -174,9 +233,11 @@ export default function ProductionTab({ project }: ProductionTabProps) {
                                     <T k="history" />
                                 </h4>
                                 <div className="flex flex-col gap-3">
-                                    {project.weeklyPlans.filter(p => p.isSubmitted).map((plan) => (
-                                        <PlanCard key={plan.id} plan={plan} projectId={project.id} />
-                                    ))}
+                                    {project.weeklyPlans.filter(p => p.isSubmitted).map((plan) => {
+                                        const weekKey = `${plan.year}-${plan.weekNumber}`;
+                                        const reports = reportsByWeek.get(weekKey) || [];
+                                        return <PlanCard key={plan.id} plan={plan} projectId={project.id} weekReports={reports} />
+                                    })}
                                 </div>
                             </div>
                         )}
@@ -188,20 +249,30 @@ export default function ProductionTab({ project }: ProductionTabProps) {
 }
 
 interface PlanCardProps {
-    plan: {
-        id: string;
-        weekNumber: number;
-        year: number;
-        isSubmitted: boolean;
-        numberOfWorkers: number;
-        targetHoursCapacity: number;
-        targetReached: boolean | null;
-        issuesReported: string | null;
-    };
+    plan: any;
     projectId: string;
+    weekReports: any[];
 }
 
-function PlanCard({ plan, projectId }: PlanCardProps) {
+const PlanCard: React.FC<PlanCardProps> = ({ plan, projectId, weekReports }) => {
+    let weeklyEarnedMins = 0;
+    plan.tasks?.forEach((pt: any) => {
+        weeklyEarnedMins += pt.actualQuantity * pt.task.minutesPerUnit;
+    });
+    const weeklyEarnedHours = weeklyEarnedMins / 60;
+    
+    let weeklySpentHours = 0;
+    weekReports?.forEach(r => {
+        if (r.status !== 'DRAFT') {
+            r.taskProgress?.forEach((tp: any) => {
+                weeklySpentHours += tp.hours || 0;
+            });
+        }
+    });
+
+    const weeklyEfficiencyPct = weeklySpentHours > 0 ? (weeklyEarnedHours / weeklySpentHours) * 100 : 0;
+    const weeklyEfficiencyHours = weeklyEarnedHours - weeklySpentHours;
+
     return (
         <div className="flex items-center justify-between p-4 rounded-md bg-white/5 border border-white/5 hover:border-white/10 transition-all group">
             <div>
@@ -212,8 +283,26 @@ function PlanCard({ plan, projectId }: PlanCardProps) {
                 </div>
                 <div className="text-xs text-gray-500 mt-1"><T k="workers_setup" />: {plan.numberOfWorkers} ({plan.targetHoursCapacity} <T k="total_hrs" />)</div>
             </div>
-            <div className="flex items-center gap-3">
-                <div>
+            
+            {plan.isSubmitted && weeklySpentHours > 0 && (
+                <div className="flex gap-4 px-4 border-l border-white/10">
+                    <div>
+                        <div className="text-[9px] uppercase tracking-widest text-gray-500 font-bold mb-0.5">Efficience</div>
+                        <div className={`text-sm font-black ${weeklyEfficiencyPct >= 100 ? 'text-emerald-400' : 'text-amber-400'}`}>
+                            {weeklyEfficiencyPct.toFixed(1)}%
+                        </div>
+                    </div>
+                    <div>
+                        <div className="text-[9px] uppercase tracking-widest text-gray-500 font-bold mb-0.5">Bilan</div>
+                        <div className={`text-sm font-black ${weeklyEfficiencyHours >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                            {weeklyEfficiencyHours > 0 ? '+' : ''}{weeklyEfficiencyHours.toFixed(1)}h
+                        </div>
+                    </div>
+                </div>
+            )}
+            
+            <div className="flex flex-col items-end gap-2">
+                <div className="flex items-center gap-2">
                     {!plan.isSubmitted && <span className="text-xs px-2 py-1 rounded-sm bg-amber-500/10 border border-amber-500/20 text-amber-400 font-bold"><T k="in_progress" /></span>}
                     {plan.isSubmitted && plan.targetReached && <span className="text-xs px-2 py-1 rounded-sm bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold flex items-center gap-1"><CheckCircle2 size={12} /> <T k="target_hit" /></span>}
                     {plan.isSubmitted && !plan.targetReached && <span className="text-xs px-2 py-1 rounded-sm bg-red-500/10 border border-red-500/20 text-red-400 font-bold flex items-center gap-1"><ShieldAlert size={12} /> <T k="target_missed" /></span>}

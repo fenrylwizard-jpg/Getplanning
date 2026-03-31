@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { ArrowLeft, FolderKey } from "lucide-react";
+import { ArrowLeft, FolderKey, TrendingUp, Clock } from "lucide-react";
 import ProjectAnalyticsCharts from "@/components/ProjectAnalyticsCharts";
 
 export default async function SMProjectAnalytics({ params }: { params: Promise<{ id: string }> }) {
@@ -39,7 +39,22 @@ export default async function SMProjectAnalytics({ params }: { params: Promise<{
         totalLaborMinsAchieved += (t.completedQuantity * t.minutesPerUnit);
     });
 
-    const completionPercentage = totalLaborMinsTotal ? (totalLaborMinsAchieved / totalLaborMinsTotal) * 100 : 0;
+    let totalSpentHours = 0;
+    if (project.dailyReports) {
+        for (const report of project.dailyReports) {
+            if (report.status !== 'DRAFT') {
+                report.taskProgress.forEach((tp: any) => {
+                    totalSpentHours += tp.hours || 0;
+                });
+            }
+        }
+    }
+
+    const earnedHours = totalLaborMinsAchieved / 60;
+    const globalEfficiencyPct = totalSpentHours > 0 ? (earnedHours / totalSpentHours) * 100 : 0;
+    const globalEfficiencyHours = earnedHours - totalSpentHours;
+
+    const completionPercentage = totalLaborMinsTotal ? (earnedHours / (totalLaborMinsTotal / 60)) * 100 : 0;
 
     return (
         <>
@@ -85,10 +100,37 @@ export default async function SMProjectAnalytics({ params }: { params: Promise<{
                     <style>{`
                         .progress-bar-sm { width: ${completionPercentage}%; }
                     `}</style>
-                    <div className="w-full h-6 bg-[var(--bg-primary)] rounded-md overflow-hidden relative">
+                    <div className="w-full h-6 bg-[var(--bg-primary)] rounded-md overflow-hidden relative mb-6">
                         <div className="absolute h-full transition-all duration-1000 ease-out bg-gradient-to-r from-[var(--accent-hover)] to-[var(--accent-primary)] progress-bar-sm"></div>
                         <div className="absolute w-full h-full flex items-center justify-center text-[0.8rem] font-bold text-white drop-shadow-md">
                             {completionPercentage.toFixed(1)}% Terminé
+                        </div>
+                    </div>
+                    
+                    {/* Global Efficiency */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-[#0a1020]/80 border border-white/5 rounded-md p-4 flex items-center gap-4">
+                            <div className={`w-12 h-12 rounded-full flex items-center justify-center ${globalEfficiencyPct >= 100 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}`}>
+                                <TrendingUp size={24} />
+                            </div>
+                            <div>
+                                <div className="text-gray-400 text-[10px] uppercase font-bold tracking-widest">Efficience Globale</div>
+                                <div className={`text-2xl font-black ${globalEfficiencyPct >= 100 ? 'text-emerald-400' : 'text-amber-400'}`}>
+                                    {globalEfficiencyPct > 0 ? `${globalEfficiencyPct.toFixed(1)} %` : 'N/A'}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div className={`border rounded-md p-4 flex items-center gap-4 ${globalEfficiencyHours >= 0 ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-red-500/10 border-red-500/20'}`}>
+                            <div className={`w-12 h-12 rounded-full flex items-center justify-center ${globalEfficiencyHours >= 0 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
+                                <Clock size={24} />
+                            </div>
+                            <div>
+                                <div className="text-gray-400 text-[10px] uppercase font-bold tracking-widest">Bilan Heures (Gagnées - Dépensées)</div>
+                                <div className={`text-2xl font-black ${globalEfficiencyHours >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                    {globalEfficiencyHours > 0 ? '+' : ''}{globalEfficiencyHours.toFixed(1)} h
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
