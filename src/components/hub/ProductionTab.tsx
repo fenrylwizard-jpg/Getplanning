@@ -71,33 +71,40 @@ export default function ProductionTab({ project }: ProductionTabProps) {
         totalLaborMinsAchieved += (t.completedQuantity * t.minutesPerUnit);
     });
 
-    let totalSpentHours = 0;
+    let globalUsedHours = 0;
     
     // Group daily reports by ISO week for weekly efficiency
     const reportsByWeek = new Map<string, typeof project.dailyReports>();
     
+    // Lookup hoursPerWorker by week for accurate daily hours
+    const planHoursLookup = new Map<string, number>();
+    project.weeklyPlans.forEach(p => {
+        planHoursLookup.set(`${p.year}-${p.weekNumber}`, (p as any).hoursPerWorker || 40);
+    });
+
     if (project.dailyReports) {
         for (const report of project.dailyReports) {
-            // Count hours if it's submitted or approved (not draft)
-            if (report.status !== 'DRAFT') {
-                report.taskProgress.forEach(tp => {
-                    totalSpentHours += tp.hours || 0;
-                });
-            }
-            
             // Group by week
             const d = new Date(report.date);
             const wk = getISOWeek(d);
             const yr = getISOWeekYear(d);
             const key = `${yr}-${wk}`;
+            
+            // Count used hours if it's submitted or approved (not draft)
+            if (report.status !== 'DRAFT' && report.workersCount) {
+                const weeklyHoursPerWorker = planHoursLookup.get(key) || 40;
+                const dailyHoursPerWorker = weeklyHoursPerWorker / 5;
+                globalUsedHours += report.workersCount * dailyHoursPerWorker;
+            }
+            
             if (!reportsByWeek.has(key)) reportsByWeek.set(key, []);
             reportsByWeek.get(key)!.push(report);
         }
     }
 
     const earnedHours = totalLaborMinsAchieved / 60;
-    const globalEfficiencyPct = totalSpentHours > 0 ? (earnedHours / totalSpentHours) * 100 : 0;
-    const globalEfficiencyHours = earnedHours - totalSpentHours;
+    const globalEfficiencyPct = globalUsedHours > 0 ? (earnedHours / globalUsedHours) * 100 : 0;
+    const globalHoursLost = globalUsedHours - earnedHours;
     
     const completionPercentage = totalLaborMinsTotal ? (earnedHours / (totalLaborMinsTotal / 60)) * 100 : 0;
     const budgetEur = Math.round((totalLaborMinsTotal / 60) * HOURLY_RATE_EUR);
@@ -158,14 +165,14 @@ export default function ProductionTab({ project }: ProductionTabProps) {
                         </div>
                     </div>
                     
-                    <div className={`border rounded-md p-4 flex items-center gap-4 ${globalEfficiencyHours >= 0 ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-red-500/10 border-red-500/20'}`}>
-                        <div className={`w-12 h-12 rounded-full flex items-center justify-center ${globalEfficiencyHours >= 0 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
+                    <div className={`border rounded-md p-4 flex items-center gap-4 ${globalHoursLost <= 0 ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-red-500/10 border-red-500/20'}`}>
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center ${globalHoursLost <= 0 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
                             <Clock size={24} />
                         </div>
                         <div>
-                            <div className="text-gray-400 text-[10px] uppercase font-bold tracking-widest">Bilan Heures (Gagnées - Dépensées)</div>
-                            <div className={`text-2xl font-black ${globalEfficiencyHours >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                {globalEfficiencyHours > 0 ? '+' : ''}{globalEfficiencyHours.toFixed(1)} h
+                            <div className="text-gray-400 text-[10px] uppercase font-bold tracking-widest">Heures Perdues (Dépensées - Gagnées)</div>
+                            <div className={`text-2xl font-black ${globalHoursLost <= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                {globalHoursLost > 0 ? '+' : ''}{globalHoursLost.toFixed(1)} h
                             </div>
                         </div>
                     </div>
@@ -261,17 +268,17 @@ const PlanCard: React.FC<PlanCardProps> = ({ plan, projectId, weekReports }) => 
     });
     const weeklyEarnedHours = weeklyEarnedMins / 60;
     
-    let weeklySpentHours = 0;
+    let weeklyUsedHours = 0;
+    const dailyHoursPerWorker = (plan.hoursPerWorker || 40) / 5;
+    
     weekReports?.forEach(r => {
-        if (r.status !== 'DRAFT') {
-            r.taskProgress?.forEach((tp: any) => {
-                weeklySpentHours += tp.hours || 0;
-            });
+        if (r.status !== 'DRAFT' && r.workersCount) {
+            weeklyUsedHours += r.workersCount * dailyHoursPerWorker;
         }
     });
 
-    const weeklyEfficiencyPct = weeklySpentHours > 0 ? (weeklyEarnedHours / weeklySpentHours) * 100 : 0;
-    const weeklyEfficiencyHours = weeklyEarnedHours - weeklySpentHours;
+    const weeklyEfficiencyPct = weeklyUsedHours > 0 ? (weeklyEarnedHours / weeklyUsedHours) * 100 : 0;
+    const weeklyHoursLost = weeklyUsedHours - weeklyEarnedHours;
 
     return (
         <div className="flex items-center justify-between p-4 rounded-md bg-white/5 border border-white/5 hover:border-white/10 transition-all group">
@@ -284,7 +291,7 @@ const PlanCard: React.FC<PlanCardProps> = ({ plan, projectId, weekReports }) => 
                 <div className="text-xs text-gray-500 mt-1"><T k="workers_setup" />: {plan.numberOfWorkers} ({plan.targetHoursCapacity} <T k="total_hrs" />)</div>
             </div>
             
-            {plan.isSubmitted && weeklySpentHours > 0 && (
+            {plan.isSubmitted && weeklyUsedHours > 0 && (
                 <div className="flex gap-4 px-4 border-l border-white/10">
                     <div>
                         <div className="text-[9px] uppercase tracking-widest text-gray-500 font-bold mb-0.5">Efficience</div>
@@ -293,9 +300,9 @@ const PlanCard: React.FC<PlanCardProps> = ({ plan, projectId, weekReports }) => 
                         </div>
                     </div>
                     <div>
-                        <div className="text-[9px] uppercase tracking-widest text-gray-500 font-bold mb-0.5">Bilan</div>
-                        <div className={`text-sm font-black ${weeklyEfficiencyHours >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                            {weeklyEfficiencyHours > 0 ? '+' : ''}{weeklyEfficiencyHours.toFixed(1)}h
+                        <div className="text-[9px] uppercase tracking-widest text-gray-500 font-bold mb-0.5">Perdues</div>
+                        <div className={`text-sm font-black ${weeklyHoursLost <= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                            {weeklyHoursLost > 0 ? '+' : ''}{weeklyHoursLost.toFixed(1)}h
                         </div>
                     </div>
                 </div>
