@@ -1,9 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import { getAuthUser } from "@/lib/get-auth-user";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle2, ShieldAlert, History, Calendar, Users, Clock } from "lucide-react";
+import { ArrowLeft, ShieldAlert, History } from "lucide-react";
 import T from "@/components/T";
 import { AdminDeletePlanButton, AdminDeleteReportButton } from "./AdminDeleteButtons";
+import WeeklyExpandable from "./WeeklyExpandable";
 import { getISOWeek, getISOWeekYear } from "date-fns";
 
 export const dynamic = 'force-dynamic';
@@ -40,9 +41,63 @@ export default async function SMHistoryPage({ params }: { params: Promise<{ id: 
     if (!project) return <div className="p-8 text-center text-white"><T k="project_not_found" /></div>;
 
     const isAdmin = authUser?.email === ADMIN_EMAIL;
-    const historyPlans = project.weeklyPlans.filter(p => p.isSubmitted);
-    const activePlans = project.weeklyPlans.filter(p => !p.isSubmitted);
-    const historyReports = project.dailyReports || [];
+    const allPlans = project.weeklyPlans;
+    const allReports = project.dailyReports || [];
+
+    // Group daily reports by ISO week for pairing with weekly plans
+    const reportsByWeek = new Map<string, typeof allReports>();
+    for (const report of allReports) {
+        const d = new Date(report.date);
+        const wk = getISOWeek(d);
+        const yr = getISOWeekYear(d);
+        const key = `${yr}-${wk}`;
+        if (!reportsByWeek.has(key)) reportsByWeek.set(key, []);
+        reportsByWeek.get(key)!.push(report);
+    }
+
+    // Serialize data for client components (dates need to be strings)
+    const serializeReports = (reports: typeof allReports) => reports.map(r => ({
+        id: r.id,
+        date: r.date.toISOString(),
+        remarks: r.remarks,
+        status: r.status,
+        lateReason: r.lateReason,
+        lateDescription: r.lateDescription,
+        workersCount: r.workersCount,
+        taskProgress: r.taskProgress.map(tp => ({
+            id: tp.id,
+            quantity: tp.quantity,
+            hours: tp.hours,
+            task: {
+                description: tp.task.description,
+                unit: tp.task.unit,
+                minutesPerUnit: tp.task.minutesPerUnit,
+                category: tp.task.category,
+            }
+        }))
+    }));
+
+    const serializePlan = (plan: typeof allPlans[0]) => ({
+        id: plan.id,
+        weekNumber: plan.weekNumber,
+        year: plan.year,
+        numberOfWorkers: plan.numberOfWorkers,
+        isSubmitted: plan.isSubmitted,
+        targetReached: plan.targetReached,
+        issuesReported: plan.issuesReported,
+        missedTargetReason: plan.missedTargetReason,
+        tasks: plan.tasks.map(t => ({
+            id: t.id,
+            plannedQuantity: t.plannedQuantity,
+            actualQuantity: t.actualQuantity,
+            task: {
+                description: t.task.description,
+                unit: t.task.unit,
+                minutesPerUnit: t.task.minutesPerUnit,
+                category: t.task.category,
+            }
+        }))
+    });
 
     return (
         <div className="aurora-page text-white font-sans">
@@ -65,197 +120,93 @@ export default async function SMHistoryPage({ params }: { params: Promise<{ id: 
                     {isAdmin && (
                         <div className="mt-3 flex items-center gap-2 px-3 py-1.5 rounded-md bg-red-500/10 border border-red-500/20 w-fit">
                             <ShieldAlert size={14} className="text-red-400" />
-                            <span className="text-xs font-bold text-red-400 uppercase tracking-wider">Admin Mode — Suppression activée</span>
+                            <span className="text-xs font-bold text-red-400 uppercase tracking-wider">Admin Mode — Édition activée</span>
                         </div>
                     )}
                 </div>
 
-                {/* Active/Planned Section */}
-                {activePlans.length > 0 && (
-                    <section className="mb-12">
-                        <h3 className="text-xs font-black uppercase tracking-[0.2em] text-cyan-400 mb-6 flex items-center gap-2">
-                             <div className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse" />
-                             <T k="active_planned" />
-                        </h3>
-                        <div className="grid grid-cols-1 gap-4">
-                            {activePlans.map(plan => (
-                                <div key={plan.id} className="relative">
-                                    <PlanHistoryCard plan={plan} projectId={id} reports={historyReports} />
-                                    {isAdmin && <AdminDeletePlanButton planId={plan.id} projectId={id} weekNumber={plan.weekNumber} year={plan.year} />}
-                                </div>
-                            ))}
-                        </div>
-                    </section>
-                )}
-
-                {/* History Section */}
+                {/* Weekly Plans with Inline Daily Reports */}
                 <section>
                     <h3 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 mb-6 flex items-center gap-2">
                          <T k="submitted_reports" />
                     </h3>
-                    {historyPlans.length === 0 ? (
+                    {allPlans.length === 0 ? (
                         <div className="glass-panel p-12 text-center text-gray-600 italic rounded-[40px]">
                             <T k="no_history_yet" />
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 gap-4">
-                            {historyPlans.map(plan => (
-                                <div key={plan.id} className="relative">
-                                    <PlanHistoryCard plan={plan} projectId={id} reports={historyReports} />
-                                    {isAdmin && <AdminDeletePlanButton planId={plan.id} projectId={id} weekNumber={plan.weekNumber} year={plan.year} />}
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </section>
+                            {allPlans.map(plan => {
+                                const weekKey = `${plan.year}-${plan.weekNumber}`;
+                                const weekReports = reportsByWeek.get(weekKey) || [];
 
-                {/* Daily Reports History Section */}
-                <section className="mt-12 pt-12 border-t border-white/5">
-                    <h3 className="text-xs font-black uppercase tracking-[0.2em] text-cyan-400 mb-6 flex items-center gap-2">
-                         <Calendar size={14} />
-                         <T k="submitted_daily_reports" />
-                    </h3>
-                    {historyReports.length === 0 ? (
-                        <div className="glass-panel p-12 text-center text-gray-600 italic rounded-[40px]">
-                            <T k="no_daily_reports_yet" />
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {historyReports.map(report => {
-                                const totalHours = report.taskProgress.reduce((acc, p) => acc + (p.hours || 0), 0);
                                 return (
-                                    <div key={report.id} className="relative">
-                                        <Link href={`/sm/project/${id}/report/${report.id}`} className="block glass-panel p-4 border border-white/5 hover:border-cyan-500/30 bg-[#0a1020]/60 backdrop-blur-xl transition-all rounded-md flex justify-between items-center group overflow-hidden cursor-pointer">
-                                            <div className="absolute top-0 right-0 w-24 h-24 bg-cyan-500/5 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
-                                            <div className="relative z-10 flex items-center gap-4">
-                                                <div className="w-12 h-12 rounded-md bg-white/5 border border-white/10 flex flex-col items-center justify-center group-hover:bg-cyan-500/10 group-hover:border-cyan-500/30 transition-all">
-                                                    <span className="text-lg font-black text-white leading-none">
-                                                        {new Date(report.date).getUTCDate().toString().padStart(2, '0')}
-                                                    </span>
-                                                    <span className="text-[9px] font-bold text-cyan-400 uppercase">
-                                                        {new Date(report.date).toLocaleString('default', { month: 'short' })}
-                                                    </span>
-                                                </div>
-                                                <div>
-                                                    <div className="text-sm font-bold text-white mb-1 capitalize">
-                                                        {new Date(report.date).toLocaleDateString('default', { weekday: 'long' })}
-                                                    </div>
-                                                    <div className="flex gap-3 text-xs text-gray-400 font-medium">
-                                                        <span className="flex items-center gap-1.5"><Users size={12} className="text-gray-600" /> {report.workersCount || 0}</span>
-                                                        <span className="flex items-center gap-1.5"><Clock size={12} className="text-gray-600" /> {totalHours.toFixed(1)}H</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className="relative z-10 flex flex-col items-end gap-2">
-                                                <span className={`badge text-[9px] flex items-center gap-1 ${report.status === 'SUBMITTED' ? 'badge-success border-emerald-500/20' : 'badge-warning border-orange-500/20'}`}>
-                                                    {report.status === 'SUBMITTED' ? <CheckCircle2 size={10} /> : <Clock size={10} />}
-                                                    {report.status}
-                                                </span>
-                                            </div>
-                                        </Link>
-                                        {isAdmin && <AdminDeleteReportButton reportId={report.id} projectId={id} reportDate={report.date.toISOString()} />}
+                                    <div key={plan.id} className="relative">
+                                        <WeeklyExpandable
+                                            plan={serializePlan(plan)}
+                                            projectId={id}
+                                            weekReports={serializeReports(weekReports)}
+                                            isAdmin={isAdmin}
+                                        />
+                                        {isAdmin && <AdminDeletePlanButton planId={plan.id} projectId={id} weekNumber={plan.weekNumber} year={plan.year} />}
                                     </div>
                                 );
                             })}
                         </div>
                     )}
                 </section>
+
+                {/* Orphan Daily Reports (not matched to any weekly plan) */}
+                {(() => {
+                    const planWeeks = new Set(allPlans.map(p => `${p.year}-${p.weekNumber}`));
+                    const orphanReports = allReports.filter(r => {
+                        const d = new Date(r.date);
+                        const key = `${getISOWeekYear(d)}-${getISOWeek(d)}`;
+                        return !planWeeks.has(key);
+                    });
+
+                    if (orphanReports.length === 0) return null;
+
+                    return (
+                        <section className="mt-12 pt-12 border-t border-white/5">
+                            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-cyan-400 mb-6 flex items-center gap-2">
+                                Rapports non associés à un plan
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {orphanReports.map(report => {
+                                    const totalHours = report.taskProgress.reduce((acc, p) => acc + (p.hours || 0), 0);
+                                    return (
+                                        <div key={report.id} className="relative">
+                                            <Link href={`/sm/project/${id}/report/${report.id}`} className="block glass-panel p-4 border border-white/5 hover:border-cyan-500/30 bg-[#0a1020]/60 backdrop-blur-xl transition-all rounded-md flex justify-between items-center group overflow-hidden cursor-pointer">
+                                                <div className="relative z-10 flex items-center gap-4">
+                                                    <div className="w-12 h-12 rounded-md bg-white/5 border border-white/10 flex flex-col items-center justify-center">
+                                                        <span className="text-lg font-black text-white leading-none">
+                                                            {new Date(report.date).getUTCDate().toString().padStart(2, '0')}
+                                                        </span>
+                                                        <span className="text-[9px] font-bold text-cyan-400 uppercase">
+                                                            {new Date(report.date).toLocaleString('default', { month: 'short' })}
+                                                        </span>
+                                                    </div>
+                                                    <div>
+                                                        <div className="text-sm font-bold text-white mb-1 capitalize">
+                                                            {new Date(report.date).toLocaleDateString('default', { weekday: 'long' })}
+                                                        </div>
+                                                        <div className="flex gap-3 text-xs text-gray-400 font-medium">
+                                                            <span>{report.workersCount || 0} travailleurs</span>
+                                                            <span>{totalHours.toFixed(1)}H</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </Link>
+                                            {isAdmin && <AdminDeleteReportButton reportId={report.id} projectId={id} reportDate={report.date.toISOString()} />}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </section>
+                    );
+                })()}
             </main>
         </div>
-    );
-}
-
-interface PlanWithTasks {
-    id: string;
-    weekNumber: number;
-    year: number;
-    numberOfWorkers: number;
-    isSubmitted: boolean;
-    targetReached: boolean | null;
-    tasks: {
-        plannedQuantity: number;
-        actualQuantity: number;
-        task: {
-            minutesPerUnit: number;
-        };
-    }[];
-    project?: {  // Optional relation needed if accessed for reports
-        dailyReports: {
-            taskProgress: {
-                hours: number | null;
-            }[];
-        }[];
-    };
-}
-
-interface ReportWithProgress {
-    date: Date;
-    taskProgress: { hours: number | null }[];
-}
-
-function PlanHistoryCard({ plan, projectId, reports }: { plan: PlanWithTasks, projectId: string, reports: ReportWithProgress[] }) {
-    const totalHours = plan.tasks.reduce((acc, t) => acc + (t.plannedQuantity * t.task.minutesPerUnit) / 60, 0);
-    
-    // Dynamically calculate actual hours from immutable submitted reports to bypass potentially desynced denormalized cache
-    const weekReports = reports.filter(r => {
-        const d = new Date(r.date);
-        return getISOWeek(d) === plan.weekNumber && getISOWeekYear(d) === plan.year;
-    });
-    const actualHours = weekReports.reduce((sum, r) => sum + r.taskProgress.reduce((s, p) => s + (p.hours || 0), 0), 0);
-    
-    const progress = totalHours > 0 ? (actualHours / totalHours) * 100 : 0;
-
-    return (
-        <Link href={`/sm/project/${projectId}/plan/${plan.id}`} className="block group">
-            <div className="glass-panel p-6 border border-white/5 hover:border-cyan-500/30 bg-[#0a1020]/60 backdrop-blur-xl transition-all rounded-md flex flex-col md:flex-row md:items-center justify-between gap-6 overflow-hidden relative">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 blur-3xl rounded-sm opacity-0 group-hover:opacity-100 transition-opacity" />
-                
-                <div className="flex items-center gap-6 relative z-10">
-                    <div className="bg-white/5 p-4 rounded-md flex flex-col items-center justify-center min-w-[70px] border border-white/5 group-hover:bg-cyan-500/10 group-hover:border-cyan-500/20 transition-all">
-                        <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">WK</span>
-                        <span className="text-2xl font-black text-white">{plan.weekNumber}</span>
-                        <span className="text-[10px] font-bold text-cyan-400 group-hover:text-cyan-300 transition-colors uppercase">{plan.year}</span>
-                    </div>
-
-                    <div>
-                        <div className="flex items-center gap-2 mb-2">
-                            {plan.isSubmitted ? (
-                                plan.targetReached ? 
-                                    <span className="badge badge-success text-[10px] flex items-center gap-1 border-emerald-500/20"><CheckCircle2 size={10} /> <T k="target_hit" /></span> :
-                                    <span className="badge badge-danger text-[10px] flex items-center gap-1 border-red-500/20"><ShieldAlert size={10} /> <T k="target_missed" /></span>
-                            ) : (
-                                <span className="badge badge-warning text-[10px] flex items-center gap-1 border-orange-500/20"><Calendar size={10} /> <T k="planned" /></span>
-                            )}
-                        </div>
-                        <div className="flex gap-4 text-xs text-gray-400 font-medium">
-                            <span className="flex items-center gap-1.5"><Users size={12} className="text-gray-600" /> {plan.numberOfWorkers} <T k="workers" /></span>
-                            <span className="flex items-center gap-1.5"><Clock size={12} className="text-gray-600" /> {actualHours.toFixed(1)}H / {totalHours.toFixed(1)}H</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="flex flex-col items-end gap-3 relative z-10">
-                    <div className="text-[10px] font-black uppercase tracking-widest text-gray-500 group-hover:text-cyan-400 transition-colors flex items-center gap-2">
-                        <T k="view_details" /> <ArrowLeft size={10} className="rotate-180" />
-                    </div>
-                    <div className="w-full md:w-40 h-1.5 bg-black/40 rounded-full overflow-hidden border border-white/5">
-                        <div 
-                            className={`h-full transition-all duration-1000 ${plan.isSubmitted && !plan.targetReached ? 'bg-red-500' : 'bg-cyan-500'} ${
-                                progress >= 100 ? 'w-full' :
-                                progress >= 90 ? 'w-[90%]' :
-                                progress >= 80 ? 'w-[80%]' :
-                                progress >= 70 ? 'w-[70%]' :
-                                progress >= 60 ? 'w-[60%]' :
-                                progress >= 50 ? 'w-[50%]' :
-                                progress >= 40 ? 'w-[40%]' :
-                                progress >= 30 ? 'w-[30%]' :
-                                progress >= 20 ? 'w-[20%]' :
-                                progress >= 10 ? 'w-[10%]' : 'w-0'
-                            }`} 
-                        />
-                    </div>
-                </div>
-            </div>
-        </Link>
     );
 }
