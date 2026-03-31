@@ -72,6 +72,7 @@ export default function ProductionTab({ project }: ProductionTabProps) {
     });
 
     let globalUsedHours = 0;
+    let globalEarnedFromReports = 0;
     
     // Group daily reports by ISO week for weekly efficiency
     const reportsByWeek = new Map<string, typeof project.dailyReports>();
@@ -91,10 +92,17 @@ export default function ProductionTab({ project }: ProductionTabProps) {
             const key = `${yr}-${wk}`;
             
             // Count used hours if it's submitted or approved (not draft)
-            if (report.status !== 'DRAFT' && report.workersCount) {
-                const weeklyHoursPerWorker = planHoursLookup.get(key) || 40;
-                const dailyHoursPerWorker = weeklyHoursPerWorker / 5;
-                globalUsedHours += report.workersCount * dailyHoursPerWorker;
+            if (report.status !== 'DRAFT') {
+                if (report.workersCount) {
+                    const weeklyHoursPerWorker = planHoursLookup.get(key) || 40;
+                    const dailyHoursPerWorker = weeklyHoursPerWorker / 5;
+                    globalUsedHours += report.workersCount * dailyHoursPerWorker;
+                }
+                
+                // Keep track of exactly how much was earned during these logs
+                report.taskProgress.forEach(tp => {
+                    globalEarnedFromReports += tp.hours || 0;
+                });
             }
             
             if (!reportsByWeek.has(key)) reportsByWeek.set(key, []);
@@ -102,13 +110,13 @@ export default function ProductionTab({ project }: ProductionTabProps) {
         }
     }
 
-    const earnedHours = totalLaborMinsAchieved / 60;
-    const globalEfficiencyPct = globalUsedHours > 0 ? (earnedHours / globalUsedHours) * 100 : 0;
-    const globalHoursLost = globalUsedHours - earnedHours;
+    const earnedHoursTotal = totalLaborMinsAchieved / 60; // All time
+    const globalEfficiencyPct = globalUsedHours > 0 ? (globalEarnedFromReports / globalUsedHours) * 100 : 0;
+    const globalHoursLost = globalUsedHours - globalEarnedFromReports;
     
-    const completionPercentage = totalLaborMinsTotal ? (earnedHours / (totalLaborMinsTotal / 60)) * 100 : 0;
+    const completionPercentage = totalLaborMinsTotal ? (earnedHoursTotal / (totalLaborMinsTotal / 60)) * 100 : 0;
     const budgetEur = Math.round((totalLaborMinsTotal / 60) * HOURLY_RATE_EUR);
-    const spentEur = Math.round(earnedHours * HOURLY_RATE_EUR);
+    const spentEur = Math.round(earnedHoursTotal * HOURLY_RATE_EUR);
     const remaining = budgetEur - spentEur;
 
     return (

@@ -41,6 +41,7 @@ export default async function SMProjectAnalytics({ params }: { params: Promise<{
     });
 
     let globalUsedHours = 0;
+    let globalEarnedFromReports = 0;
     
     // Lookup hoursPerWorker by week for accurate daily hours
     const planHoursLookup = new Map<string, number>();
@@ -50,24 +51,30 @@ export default async function SMProjectAnalytics({ params }: { params: Promise<{
 
     if (project.dailyReports) {
         for (const report of project.dailyReports) {
-            if (report.status !== 'DRAFT' && report.workersCount) {
-                const d = new Date(report.date);
-                const wk = getISOWeek(d);
-                const yr = getISOWeekYear(d);
-                const key = `${yr}-${wk}`;
+            if (report.status !== 'DRAFT') {
+                if (report.workersCount) {
+                    const d = new Date(report.date);
+                    const wk = getISOWeek(d);
+                    const yr = getISOWeekYear(d);
+                    const key = `${yr}-${wk}`;
+                    
+                    const weeklyHoursPerWorker = planHoursLookup.get(key) || 40;
+                    const dailyHoursPerWorker = weeklyHoursPerWorker / 5;
+                    globalUsedHours += report.workersCount * dailyHoursPerWorker;
+                }
                 
-                const weeklyHoursPerWorker = planHoursLookup.get(key) || 40;
-                const dailyHoursPerWorker = weeklyHoursPerWorker / 5;
-                globalUsedHours += report.workersCount * dailyHoursPerWorker;
+                report.taskProgress.forEach(tp => {
+                    globalEarnedFromReports += tp.hours || 0;
+                });
             }
         }
     }
 
-    const earnedHours = totalLaborMinsAchieved / 60;
-    const globalEfficiencyPct = globalUsedHours > 0 ? (earnedHours / globalUsedHours) * 100 : 0;
-    const globalHoursLost = globalUsedHours - earnedHours;
+    const earnedHoursTotal = totalLaborMinsAchieved / 60;
+    const globalEfficiencyPct = globalUsedHours > 0 ? (globalEarnedFromReports / globalUsedHours) * 100 : 0;
+    const globalHoursLost = globalUsedHours - globalEarnedFromReports;
 
-    const completionPercentage = totalLaborMinsTotal ? (earnedHours / (totalLaborMinsTotal / 60)) * 100 : 0;
+    const completionPercentage = totalLaborMinsTotal ? (earnedHoursTotal / (totalLaborMinsTotal / 60)) * 100 : 0;
 
     return (
         <>
