@@ -82,6 +82,7 @@ export default function AdminDashboard() {
     const [nukeReportId, setNukeReportId] = useState('');
     const [projectReports, setProjectReports] = useState<{id: string, date: string, status: string}[]>([]);
     const [nuking, setNuking] = useState(false);
+    const [repairRunning, setRepairRunning] = useState(false);
 
     // Fetch reports when project is selected
     useEffect(() => {
@@ -297,6 +298,31 @@ export default function AdminDashboard() {
                         className="px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold hover:bg-emerald-500/20 transition-all"
                     >
                         🏆 Seed Badges
+                    </button>
+
+                    {/* Repair DB */}
+                    <button
+                        disabled={repairRunning}
+                        onClick={async () => {
+                            if (!window.confirm("Êtes-vous sûr de vouloir réparer la base de données ? Cela va recalculer les vraies quantités de toutes les semaines.")) return;
+                            setRepairRunning(true);
+                            try {
+                                const res = await fetch('/api/admin/repair-db');
+                                const data = await res.json();
+                                if (res.ok) {
+                                    toast.success(`Base de données réparée. ${data.fixedCount || 0} valeurs corrigées.`);
+                                } else {
+                                    toast.error(data.error || 'Erreur lors de la réparation');
+                                }
+                            } catch (e) {
+                                toast.error('Erreur réseau');
+                            } finally {
+                                setRepairRunning(false);
+                            }
+                        }}
+                        className="px-3 py-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-bold hover:bg-cyan-500/20 transition-all disabled:opacity-50"
+                    >
+                        {repairRunning ? "🔧 Réparation..." : "🔧 Repair DB"}
                     </button>
 
                     {/* Nuke Stuck Report */}
