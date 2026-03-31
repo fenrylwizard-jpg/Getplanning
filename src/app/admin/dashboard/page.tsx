@@ -4,12 +4,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
     ShieldCheck, CheckCircle, XCircle, Clock, UserIcon, LogOut,
-<<<<<<< HEAD
     TrendingUp, Euro, Activity, Folder, Target, RefreshCw, Globe, ListOrdered, ArrowRight, Trash2,
-    X, Sparkles, History, ChevronRight
-=======
-    TrendingUp, Euro, Activity, Folder, Target, RefreshCw, Globe, ListOrdered, Trash2, AlertTriangle, Eye, Settings, Zap
->>>>>>> old-local/recovery
+    X, Sparkles, History, ChevronRight, AlertTriangle, Eye, Settings, Zap
 } from 'lucide-react';
 import { toast } from 'sonner';
 import AvatarDisplay from '@/components/AvatarDisplay';
@@ -604,19 +600,17 @@ export default function AdminDashboard() {
                                                 {user.status === 'APPROVED' ? t('approved') : user.status === 'REJECTED' ? t('rejected') : user.status}
                                             </span>
                                         </td>
-<<<<<<< HEAD
                                         <td className="py-4 pr-2 text-right">
-                                            <ChevronRight size={16} className="text-gray-600 group-hover:text-purple-400 transition-colors inline-block" />
-=======
-                                        <td className="py-4 text-center">
-                                            <button
-                                                onClick={() => setDeleteConfirm({ type: 'user', id: user.id, name: user.name || user.email })}
-                                                className="p-1.5 rounded-lg border border-red-500/20 text-red-400/60 hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/40 transition-all"
-                                                title="Supprimer l'utilisateur"
-                                            >
-                                                <Trash2 size={14} />
-                                            </button>
->>>>>>> old-local/recovery
+                                            <div className="flex items-center justify-end gap-2">
+                                                <ChevronRight size={16} className="text-gray-600 group-hover:text-purple-400 transition-colors inline-block" />
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); setDeleteConfirm({ type: 'user', id: user.id, name: user.name || user.email }); }}
+                                                    className="p-1.5 rounded-lg border border-red-500/20 text-red-400/60 hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/40 transition-all"
+                                                    title="Supprimer l'utilisateur"
+                                                >
+                                                    <Trash2 size={14} />
+                                                </button>
+                                            </div>
                                         </td>
                                         </tr>
                                     ))}
@@ -663,7 +657,6 @@ export default function AdminDashboard() {
                 </div>
         </div>
 
-<<<<<<< HEAD
             {/* XP Log Modal */}
             {xpModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -787,7 +780,12 @@ export default function AdminDashboard() {
                                 className="px-4 py-1.5 rounded-lg bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 text-xs font-bold transition-all"
                             >
                                 Close
-=======
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Delete Confirmation Modal */}
             {deleteConfirm && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={() => !deleting && setDeleteConfirm(null)}>
@@ -832,16 +830,13 @@ export default function AdminDashboard() {
                                 ) : (
                                     <><Trash2 size={14} /> Supprimer</>
                                 )}
->>>>>>> old-local/recovery
+
                             </button>
                         </div>
                     </div>
                 </div>
             )}
-<<<<<<< HEAD
 
-=======
->>>>>>> old-local/recovery
             </main>
         </div>
     );

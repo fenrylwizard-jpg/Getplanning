@@ -261,11 +261,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
                         data: { xp: newSmXp, level: newLevel }
                     });
 
-<<<<<<< HEAD
                     // Log the XP award for history tracking
                     await tx.xpLog.create({
                         data: {
-                            userId: siteManagerId,
+                            userId: resolvedSmId,
                             amount: finalXp,
                             source: 'daily_report',
                             breakdown: JSON.stringify(xpResult.breakdown),
@@ -273,7 +272,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
                             projectName: plan.project.name,
                         }
                     });
-=======
+
                     // ── PM XP Inheritance: PM gets the same XP as their SM ──
                     if (finalXp > 0 && plan.project.projectManagerId) {
                         const pm = await tx.user.findUnique({ where: { id: plan.project.projectManagerId } });
@@ -344,7 +343,6 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
                             }).catch(() => {}); // ignore duplicate
                         }
                     }
->>>>>>> old-local/recovery
                 }
             }
             return { success: true, adHocIdsMapping, reportId: dailyReport.id };
