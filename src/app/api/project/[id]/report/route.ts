@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { Prisma } from '@prisma/client';
 import { calculateXpAward, getLevelFromXp } from '@/lib/xp-engine';
 import { getConsecutiveDaysReported, getConsecutiveWeeksTargetReached } from '@/lib/streak-utils';
+import { getISOWeek, getISOWeekYear } from 'date-fns';
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = await params;
@@ -122,9 +123,19 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
                     }).catch(() => {}); // ignore if task was deleted
 
                     // Prevent corruption by reverting WeeklyPlanTask actuals as well
+                    const reportDate = new Date(existingReport.date);
+                    const weekNumber = getISOWeek(reportDate);
+                    const year = getISOWeekYear(reportDate);
+
                     const wpt = await prisma.weeklyPlanTask.findFirst({
-                        where: { taskId: progress.taskId, weeklyPlan: { projectId: plan.projectId } },
-                        orderBy: { createdAt: 'desc' }
+                        where: { 
+                            taskId: progress.taskId, 
+                            weeklyPlan: { 
+                                projectId: plan.projectId,
+                                weekNumber: weekNumber,
+                                year: year
+                            } 
+                        }
                     });
                     if (wpt) {
                         await prisma.weeklyPlanTask.update({

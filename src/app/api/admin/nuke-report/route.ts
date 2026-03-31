@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getAuthUser } from '@/lib/get-auth-user';
+import { getISOWeek, getISOWeekYear } from 'date-fns';
 
 const ADMIN_EMAIL = 'admin@eeg.be';
 
@@ -40,9 +41,19 @@ export async function POST(req: Request) {
                     }).catch(() => {});
 
                     // Also revert on WeeklyPlanTask if possible
+                    const reportDate = new Date(report.date);
+                    const weekNumber = getISOWeek(reportDate);
+                    const year = getISOWeekYear(reportDate);
+
                     const wpt = await prisma.weeklyPlanTask.findFirst({
-                        where: { taskId: progress.taskId, weeklyPlan: { projectId } },
-                        orderBy: { createdAt: 'desc' }
+                        where: { 
+                            taskId: progress.taskId, 
+                            weeklyPlan: { 
+                                projectId,
+                                weekNumber: weekNumber,
+                                year: year
+                            } 
+                        }
                     });
                     if (wpt) {
                         await prisma.weeklyPlanTask.update({

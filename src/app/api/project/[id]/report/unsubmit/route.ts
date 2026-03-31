@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '../../../../../../lib/prisma';
+import { getISOWeek, getISOWeekYear } from 'date-fns';
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = await params;
@@ -53,9 +54,19 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
                 });
 
                 // Revert the weekly plan task's actualQuantity
+                const reportDate = new Date(report.date);
+                const weekNumber = getISOWeek(reportDate);
+                const year = getISOWeekYear(reportDate);
+
                 const weeklyPlanTask = await prisma.weeklyPlanTask.findFirst({
-                    where: { taskId: progress.taskId },
-                    orderBy: { createdAt: 'desc' }
+                    where: { 
+                        taskId: progress.taskId,
+                        weeklyPlan: {
+                            projectId,
+                            weekNumber: weekNumber,
+                            year: year
+                        }
+                    }
                 });
                 if (weeklyPlanTask) {
                     await prisma.weeklyPlanTask.update({
