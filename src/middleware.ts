@@ -11,6 +11,11 @@ export async function middleware(req: NextRequest) {
         console.log('[MIDDLEWARE-DEBUG] pathname:', pathname, 'host:', hostname);
     }
 
+    // ── COOKING APP: always pass through, no auth needed ──
+    if (pathname.startsWith('/cooking') || pathname.startsWith('/api/cooking')) {
+        return NextResponse.next();
+    }
+
     // Strip port for local dev
     const host = hostname.split(':')[0];
     const parts = host.split('.');
