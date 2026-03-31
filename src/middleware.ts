@@ -6,8 +6,11 @@ export async function middleware(req: NextRequest) {
     const { pathname } = req.nextUrl;
     const hostname = req.headers.get('host') || '';
 
+    // Debug: log cooking routes
+    if (pathname.includes('cooking') || pathname.includes('cook')) {
+        console.log('[MIDDLEWARE-DEBUG] pathname:', pathname, 'host:', hostname);
+    }
 
-    // ── Subdomain routing ──
     // Strip port for local dev
     const host = hostname.split(':')[0];
     const parts = host.split('.');
