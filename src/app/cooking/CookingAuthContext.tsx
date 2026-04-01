@@ -365,17 +365,15 @@ export function CookingAuthProvider({ children }: { children: ReactNode }) {
             if (!prev) return null;
             
             const totalKcal = Math.round(kcalPerPortion * portions);
-            const now = new Date();
-            const todayStr = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().split('T')[0];
             
             const newEntry: SymptomEntry = {
                 id: Date.now(),
-                date: todayStr,
+                date: new Date().toISOString(),
                 mealType,
                 foodsEaten: [{ name: `${recipeName} (x${portions})`, kcal: totalKcal }],
                 symptoms: [],
                 overallFeeling: 3, 
-                notes: 'Ajouté depuis la recette'
+                notes: 'Ajouté via Mange Moi 🍽️'
             };
             
             const updatedProfile = {
