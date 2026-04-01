@@ -97,6 +97,7 @@ function CookingNavbar() {
 }
 
 import FloatingFairy from './components/FloatingFairy';
+import PwaInstallPrompt from './components/PwaInstallPrompt';
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
@@ -133,6 +134,7 @@ export default function CookingLayout({
                 <div className="ck-content">
                     <CookingNavbar />
                     <FloatingFairy />
+                    <PwaInstallPrompt />
                     <main className="ck-main-padded">
                         <AuthGuard>
                             {children}
