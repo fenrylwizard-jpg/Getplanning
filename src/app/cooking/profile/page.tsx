@@ -58,6 +58,9 @@ export default function ProfilePage() {
     // Toast state
     const [showToast, setShowToast] = useState(false);
 
+    // Fairy zoom state
+    const [zoomedFairy, setZoomedFairy] = useState<{ src: string; name: string; tierLabel: string } | null>(null);
+
     // Only seed form state ONCE on initial mount (not on every user change)
     useEffect(() => {
         setTimeout(() => {
@@ -396,12 +399,19 @@ export default function ProfilePage() {
                                     {isSelected && (
                                         <div className="ck-fairy-evolutions">
                                             {[1, 2, 3].map(tier => {
-                                                const currentTier = getFairyTier(getFairyLevel(user.fairyXp || 0));
-                                                const isUnlocked = tier <= currentTier;
+                                                const tierLabel = tier === 1 ? 'Base' : tier === 2 ? 'Évo.' : 'Ultime';
+                                                const imgSrc = `/cooking/fairies/${fairy.id}_fairy_${tier}.png`;
                                                 return (
-                                                    <div key={tier} className={`ck-fairy-evo-slot${isUnlocked ? ' unlocked' : ' locked'}`}>
+                                                    <div 
+                                                        key={tier} 
+                                                        className="ck-fairy-evo-slot unlocked"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setZoomedFairy({ src: imgSrc, name: fairy.name, tierLabel });
+                                                        }}
+                                                    >
                                                         <Image
-                                                            src={`/cooking/fairies/${fairy.id}_fairy_${tier}.png`}
+                                                            src={imgSrc}
                                                             alt={`${fairy.name} Tier ${tier}`}
                                                             width={48}
                                                             height={48}
@@ -409,9 +419,8 @@ export default function ProfilePage() {
                                                             className="ck-fairy-evo-img"
                                                         />
                                                         <span className="ck-fairy-evo-label">
-                                                            {tier === 1 ? 'Base' : tier === 2 ? 'Évo.' : 'Ultime'}
+                                                            {tierLabel}
                                                         </span>
-                                                        {!isUnlocked && <span className="ck-fairy-evo-lock">🔒</span>}
                                                     </div>
                                                 );
                                             })}
@@ -501,6 +510,26 @@ export default function ProfilePage() {
                 <div className="ck-toast">
                     <span className="ck-toast-icon">✅</span>
                     Profil sauvegardé avec succès !
+                </div>
+            )}
+
+            {/* Fairy Zoom Overlay */}
+            {zoomedFairy && (
+                <div 
+                    className="ck-fairy-zoom-overlay"
+                    onClick={() => setZoomedFairy(null)}
+                >
+                    <div className="ck-fairy-zoom-img">
+                        <Image
+                            src={zoomedFairy.src}
+                            alt={zoomedFairy.name}
+                            fill
+                            unoptimized
+                            style={{ objectFit: 'contain' }}
+                        />
+                    </div>
+                    <div className="ck-fairy-zoom-label">{zoomedFairy.name}</div>
+                    <div className="ck-fairy-zoom-tier">{zoomedFairy.tierLabel}</div>
                 </div>
             )}
 
