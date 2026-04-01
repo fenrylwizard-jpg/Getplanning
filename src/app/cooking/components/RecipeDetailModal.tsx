@@ -146,11 +146,103 @@ export default function RecipeDetailModal({ recipe, onClose }: RecipeDetailModal
     const bgClass = BG_CLASSES[recipe.id % BG_CLASSES.length];
 
     return (
-        <div className="ck-modal-overlay ck-stagger-in" onClick={handleClose}>
-            <div 
-                className={`ck-rdm-container ${opening ? 'open' : ''} ${closing ? 'closing' : ''}`}
+        <div
+            onClick={handleClose}
+            className={`ck-rdm-backdrop ${closing ? 'closing' : ''}`}
+        >
+            <div
                 onClick={e => e.stopPropagation()}
+                className={`ck-rdm-panel ${closing ? 'closing' : ''}`}
             >
+                {/* Mange Moi Sub-Modal Overlay */}
+                {showMangeMoi && (
+                    <div style={{
+                        position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                        background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+                        zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        borderRadius: '1.25rem', padding: '1rem',
+                    }}>
+                        <div style={{
+                            background: 'white', padding: '2rem', borderRadius: '1rem',
+                            boxShadow: '0 10px 40px rgba(0,0,0,0.1)', width: '100%', maxWidth: '300px',
+                            textAlign: 'center'
+                        }}>
+                            {mangeMoiSuccess ? (
+                                <div>
+                                    <span style={{ fontSize: '3rem' }}>✅</span>
+                                    <h3 style={{ marginTop: '0.5rem' }}>Ajouté au Journal !</h3>
+                                </div>
+                            ) : (
+                                <>
+                                    <h3 style={{ marginBottom: '0.5rem' }}>Mange Moi 🍽️</h3>
+                                    <p style={{ fontSize: '0.85rem', color: 'var(--ck-text-muted)', marginBottom: '1.5rem' }}>
+                                        {recipe.name}
+                                    </p>
+                                    
+                                    <div style={{ marginBottom: '1rem', textAlign: 'left' }}>
+                                        <label className="ck-field-label">Repas</label>
+                                        <select 
+                                            className="ck-input" 
+                                            value={mangeMoiMeal} 
+                                            onChange={e => setMangeMoiMeal(e.target.value as 'Petit-déj' | 'Déjeuner' | 'Dîner' | 'Collation')}
+                                        >
+                                            <option value="Petit-déj">Petit-déj</option>
+                                            <option value="Déjeuner">Déjeuner</option>
+                                            <option value="Collation">Collation</option>
+                                            <option value="Dîner">Dîner</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div style={{ marginBottom: '1.5rem', textAlign: 'left' }}>
+                                        <label className="ck-field-label">Portions</label>
+                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                            {[0.5, 1, 1.5, 2].map(p => (
+                                                <button
+                                                    key={p}
+                                                    onClick={() => setMangeMoiPortions(p)}
+                                                    style={{
+                                                        flex: 1, padding: '0.5rem 0', borderRadius: '0.5rem', border: 'none', cursor: 'pointer',
+                                                        background: mangeMoiPortions === p ? 'var(--ck-orange, #f58a3d)' : '#f0f0f0',
+                                                        color: mangeMoiPortions === p ? 'white' : '#333',
+                                                        fontWeight: mangeMoiPortions === p ? 700 : 400,
+                                                    }}
+                                                >
+                                                    x{p}
+                                                </button>
+                                            ))}
+                                        </div>
+                                        <div style={{ textAlign: 'center', marginTop: '0.5rem', fontSize: '0.8rem', fontWeight: 800, color: 'var(--ck-orange, #f58a3d)' }}>
+                                            Total: {Math.round(recipe.kcal * mangeMoiPortions)} kcal
+                                        </div>
+                                    </div>
+                                    
+                                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                        <button 
+                                            className="ck-btn ck-btn-secondary" 
+                                            style={{ flex: 1 }}
+                                            onClick={() => setShowMangeMoi(false)}
+                                        >
+                                            Annuler
+                                        </button>
+                                        <button 
+                                            className="ck-btn ck-btn-primary" 
+                                            style={{ flex: 1 }}
+                                            onClick={handleMangeMoiSubmit}
+                                        >
+                                            Valider
+                                        </button>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* Header / Hero */}
+                <div className={`ck-rdm-hero ${bgClass}`}>
+                    <button onClick={handleClose} className="ck-rdm-close-btn">
+                        ✕
+                    </button>
                     <div className="ck-rdm-hero-emoji">{recipe.emoji}</div>
                     <h2 className="ck-rdm-hero-title">{recipe.name}</h2>
                     <div className="ck-rdm-hero-meta">
