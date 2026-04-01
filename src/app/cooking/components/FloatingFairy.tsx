@@ -58,10 +58,12 @@ export default function FloatingFairy() {
     const progressPercent = Math.min(100, Math.max(0, (xpIntoLevel / xpNeeded) * 100));
 
     // Map UI colors based on element
-    const colorMap = {
+    const colorMap: Record<string, { aura: string; border: string; barBg: string; barFill: string }> = {
         fire: { aura: 'from-orange-500/30', border: 'border-orange-400', barBg: 'bg-orange-200', barFill: 'bg-orange-500' },
         water: { aura: 'from-blue-500/40', border: 'border-blue-400', barBg: 'bg-blue-200', barFill: 'bg-blue-500' },
-        nature: { aura: 'from-emerald-500/30', border: 'border-emerald-400', barBg: 'bg-emerald-200', barFill: 'bg-emerald-500' }
+        nature: { aura: 'from-emerald-500/30', border: 'border-emerald-400', barBg: 'bg-emerald-200', barFill: 'bg-emerald-500' },
+        ice: { aura: 'from-cyan-500/30', border: 'border-cyan-400', barBg: 'bg-cyan-200', barFill: 'bg-cyan-500' },
+        shadow: { aura: 'from-purple-500/30', border: 'border-purple-400', barBg: 'bg-purple-200', barFill: 'bg-purple-500' },
     };
     
     const colors = colorMap[type];

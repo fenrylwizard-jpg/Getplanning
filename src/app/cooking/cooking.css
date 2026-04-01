@@ -939,7 +939,161 @@
 .ck-fairy-name  { font-weight: 800; margin: 0 0 0.25rem 0; }
 .ck-fairy-desc  { font-size: 0.75rem; color: var(--ck-text-muted); margin: 0; }
 
-/* ── Kcal Banner ── */
+/* ── Fairy Grid (5 cols) ── */
+.ck-fairy-grid-5 {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 1rem;
+}
+
+/* ── Fairy Evolution Preview ── */
+.ck-fairy-evolutions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  justify-content: center;
+  padding-top: 0.75rem;
+  border-top: 1px dashed rgba(0,0,0,0.1);
+}
+.ck-fairy-evo-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+.ck-fairy-evo-slot.locked .ck-fairy-evo-img {
+  filter: grayscale(100%) brightness(0.7);
+  opacity: 0.4;
+}
+.ck-fairy-evo-slot.unlocked .ck-fairy-evo-img {
+  filter: none;
+  opacity: 1;
+}
+.ck-fairy-evo-img {
+  border-radius: 50%;
+  transition: filter 0.3s ease;
+}
+.ck-fairy-evo-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 0.15rem;
+  color: var(--ck-text-muted);
+}
+.ck-fairy-evo-lock {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1rem;
+}
+
+/* ── Fairy card selected variants ── */
+.ck-fairy-card.selected-fire { border-color: var(--ck-orange); background: rgba(245, 138, 61, 0.05); box-shadow: 0 4px 15px rgba(245, 138, 61, 0.15); }
+.ck-fairy-card.selected-water { border-color: #3b82f6; background: rgba(59, 130, 246, 0.05); box-shadow: 0 4px 15px rgba(59, 130, 246, 0.15); }
+.ck-fairy-card.selected-nature { border-color: #10b981; background: rgba(16, 185, 129, 0.05); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.15); }
+.ck-fairy-card.selected-ice { border-color: #06b6d4; background: rgba(6, 182, 212, 0.05); box-shadow: 0 4px 15px rgba(6, 182, 212, 0.15); }
+.ck-fairy-card.selected-shadow { border-color: #8b5cf6; background: rgba(139, 92, 246, 0.05); box-shadow: 0 4px 15px rgba(139, 92, 246, 0.15); }
+
+/* ── XP Section ── */
+.ck-xp-section {
+  padding: 1.5rem;
+  background: rgba(0,0,0,0.02);
+  border-radius: 1rem;
+  border: 1px solid rgba(0,0,0,0.05);
+  margin-bottom: 2rem;
+}
+.ck-xp-bar-wrap {
+  margin-bottom: 1.5rem;
+}
+.ck-xp-bar-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+.ck-xp-level {
+  font-weight: 900;
+  font-size: 1.1rem;
+  color: var(--ck-orange);
+}
+.ck-xp-tier {
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--ck-text-muted);
+}
+.ck-xp-bar-track {
+  width: 100%;
+  height: 12px;
+  background: rgba(0,0,0,0.08);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.ck-xp-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--ck-orange), var(--ck-peach));
+  border-radius: 6px;
+  transition: width 0.5s ease;
+}
+.ck-xp-bar-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.35rem;
+  font-size: 0.75rem;
+  color: var(--ck-text-muted);
+  font-weight: 600;
+}
+
+/* ── XP Explainer ── */
+.ck-xp-explainer {
+  background: rgba(245, 138, 61, 0.03);
+  border: 1px solid rgba(245, 138, 61, 0.1);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+}
+.ck-xp-explainer h4 {
+  font-size: 0.95rem;
+  font-weight: 800;
+  margin: 0 0 0.75rem 0;
+}
+.ck-xp-explainer ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem 0;
+}
+.ck-xp-explainer li {
+  padding: 0.35rem 0;
+  font-size: 0.85rem;
+  border-bottom: 1px solid rgba(0,0,0,0.04);
+}
+.ck-xp-explainer li:last-child { border-bottom: none; }
+.ck-xp-explainer em {
+  color: var(--ck-orange);
+  font-weight: 700;
+  font-style: normal;
+}
+
+/* ── Tier Badges ── */
+.ck-xp-tiers-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+.ck-xp-tiers-info p {
+  width: 100%;
+  margin: 0 0 0.25rem 0;
+  font-size: 0.85rem;
+}
+.ck-xp-tier-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.3rem 0.75rem;
+  border-radius: 2rem;
+}
+.ck-xp-tier-badge.base { background: #f0f0f0; color: #666; }
+.ck-xp-tier-badge.evolved { background: rgba(59, 130, 246, 0.1); color: #2563eb; }
+.ck-xp-tier-badge.ultimate { background: rgba(245, 138, 61, 0.1); color: var(--ck-orange); }
 .ck-kcal-banner {
   padding: 1.5rem;
   border-radius: 1rem;

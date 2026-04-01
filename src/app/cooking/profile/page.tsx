@@ -5,6 +5,17 @@ import { useCookingAuth } from '../CookingAuthContext';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { getFairyLevel, getFairyTier, getXpForNextLevel } from '../components/FloatingFairy';
+
+type FairyType = 'fire' | 'water' | 'nature' | 'ice' | 'shadow';
+
+const FAIRY_DATA: { id: FairyType; name: string; emoji: string; desc: string; color: string }[] = [
+    { id: 'fire', name: 'Ignis', emoji: '🔥', desc: 'Fée du Feu', color: 'var(--ck-orange)' },
+    { id: 'water', name: 'Aqua', emoji: '💧', desc: "Fée de l'Eau", color: '#3b82f6' },
+    { id: 'nature', name: 'Terra', emoji: '🌿', desc: 'Fée de la Nature', color: '#10b981' },
+    { id: 'ice', name: 'Cristal', emoji: '❄️', desc: 'Fée des Glaces', color: '#06b6d4' },
+    { id: 'shadow', name: 'Umbra', emoji: '🌙', desc: 'Fée de l\'Ombre', color: '#8b5cf6' },
+];
 
 const AVAILABLE_PROTOCOLS = [
     { id: 'low-fodmap', name: 'Low-FODMAP', emoji: '🥦', desc: 'Syndrome de l\'Intestin Irritable (SII)' },
@@ -29,7 +40,7 @@ export default function ProfilePage() {
     const [selectedProtocols, setSelectedProtocols] = useState<string[]>([]);
     
     // Gamification
-    const [selectedFairy, setSelectedFairy] = useState<'fire' | 'water' | 'nature' | undefined>();
+    const [selectedFairy, setSelectedFairy] = useState<FairyType | undefined>();
     
     // Personal Params State
     const [weight, setWeight] = useState<string>('');
@@ -357,20 +368,16 @@ export default function ProfilePage() {
                 <div className="ck-inset-section">
                     <h3 className="ck-subsection-title">✨ Compagnon de Voyage</h3>
                     <p className="ck-section-sub">
-                        Choisissez la fée élémentaire qui vous accompagnera. Elle évoluera au fur et à mesure que vous atteignez vos objectifs !
+                        Choisissez la fée élémentaire qui vous accompagnera. Elle évoluera au fur et à mesure que vous gagnez de l&apos;XP !
                     </p>
                     
-                    <div className="ck-grid-3">
-                        {[
-                            { id: 'fire', name: 'Ignis', emoji: '🔥', desc: 'Fée du Feu', color: 'var(--ck-orange)' },
-                            { id: 'water', name: 'Aqua', emoji: '💧', desc: "Fée de l'Eau", color: '#3b82f6' },
-                            { id: 'nature', name: 'Terra', emoji: '🌿', desc: 'Fée de la Nature', color: '#10b981' }
-                        ].map(fairy => {
+                    <div className="ck-fairy-grid-5">
+                        {FAIRY_DATA.map(fairy => {
                             const isSelected = selectedFairy === fairy.id;
                             return (
                                 <div 
                                     key={fairy.id}
-                                    onClick={() => setSelectedFairy(fairy.id as 'fire'|'water'|'nature')}
+                                    onClick={() => setSelectedFairy(fairy.id)}
                                     className={`ck-fairy-card${isSelected ? ` selected selected-${fairy.id}` : ''}`}
                                 >
                                     <div className="ck-fairy-img">
@@ -384,11 +391,85 @@ export default function ProfilePage() {
                                     </div>
                                     <h4 className="ck-fairy-name">{fairy.name}</h4>
                                     <p className="ck-fairy-desc">{fairy.desc}</p>
+                                    
+                                    {/* Evolution preview - show all 3 tiers */}
+                                    {isSelected && (
+                                        <div className="ck-fairy-evolutions">
+                                            {[1, 2, 3].map(tier => {
+                                                const currentTier = getFairyTier(getFairyLevel(user.fairyXp || 0));
+                                                const isUnlocked = tier <= currentTier;
+                                                return (
+                                                    <div key={tier} className={`ck-fairy-evo-slot${isUnlocked ? ' unlocked' : ' locked'}`}>
+                                                        <Image
+                                                            src={`/cooking/fairies/${fairy.id}_fairy_${tier}.png`}
+                                                            alt={`${fairy.name} Tier ${tier}`}
+                                                            width={48}
+                                                            height={48}
+                                                            unoptimized
+                                                            className="ck-fairy-evo-img"
+                                                        />
+                                                        <span className="ck-fairy-evo-label">
+                                                            {tier === 1 ? 'Base' : tier === 2 ? 'Évo.' : 'Ultime'}
+                                                        </span>
+                                                        {!isUnlocked && <span className="ck-fairy-evo-lock">🔒</span>}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
                                 </div>
                             );
                         })}
                     </div>
                 </div>
+
+                {/* XP Progress Bar */}
+                {(() => {
+                    const xp = user.fairyXp || 0;
+                    const level = getFairyLevel(xp);
+                    const tier = getFairyTier(level);
+                    let currentLevelBaseXp = 0;
+                    for (let i = 1; i < level; i++) { currentLevelBaseXp += getXpForNextLevel(i); }
+                    const xpIntoLevel = xp - currentLevelBaseXp;
+                    const xpNeeded = getXpForNextLevel(level);
+                    const progressPercent = Math.min(100, Math.max(0, (xpIntoLevel / xpNeeded) * 100));
+                    const tierName = tier === 1 ? 'Base' : tier === 2 ? 'Évoluée' : 'Ultime';
+
+                    return (
+                        <div className="ck-xp-section">
+                            <h3 className="ck-subsection-title">⭐ Expérience</h3>
+                            <div className="ck-xp-bar-wrap">
+                                <div className="ck-xp-bar-header">
+                                    <span className="ck-xp-level">Niveau {level}</span>
+                                    <span className="ck-xp-tier">Forme : {tierName}</span>
+                                </div>
+                                <div className="ck-xp-bar-track">
+                                    <div className="ck-xp-bar-fill" style={{ width: `${progressPercent}%` }}></div>
+                                </div>
+                                <div className="ck-xp-bar-footer">
+                                    <span>{xpIntoLevel} / {xpNeeded} XP</span>
+                                    <span>Total : {xp} XP</span>
+                                </div>
+                            </div>
+
+                            <div className="ck-xp-explainer">
+                                <h4>Comment gagner de l&apos;XP ?</h4>
+                                <ul>
+                                    <li>📋 <strong>Journal</strong> — Logguer un repas via &quot;Mange Moi&quot; → <em>+10 XP</em></li>
+                                    <li>🍲 <strong>Découverte</strong> — Consulter une nouvelle recette → <em>+5 XP</em></li>
+                                    <li>🥗 <strong>Régime</strong> — Compléter un objectif semaine → <em>+50 XP</em></li>
+                                    <li>⭐ <strong>Streak</strong> — Jours consécutifs d&apos;utilisation → <em>+20 XP/jour</em></li>
+                                </ul>
+                                <div className="ck-xp-tiers-info">
+                                    <p><strong>Paliers d&apos;évolution :</strong></p>
+                                    <span className="ck-xp-tier-badge base">Niv. 1-10 → Forme Base</span>
+                                    <span className="ck-xp-tier-badge evolved">Niv. 11-30 → Forme Évoluée</span>
+                                    <span className="ck-xp-tier-badge ultimate">Niv. 31+ → Forme Ultime</span>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })()}
 
                 {/* Calculation Result */}
                 {kcalTarget && (

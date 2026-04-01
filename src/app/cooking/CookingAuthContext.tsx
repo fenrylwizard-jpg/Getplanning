@@ -40,7 +40,7 @@ export interface CookingUser {
     shoppingList: ShoppingItem[];
     symptomLog: SymptomEntry[];
     // Gamification
-    selectedFairy?: 'fire' | 'water' | 'nature';
+    selectedFairy?: 'fire' | 'water' | 'nature' | 'ice' | 'shadow';
     fairyXp: number;
 }
 
