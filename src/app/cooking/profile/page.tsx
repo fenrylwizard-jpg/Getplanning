@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useCookingAuth } from '../CookingAuthContext';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 const AVAILABLE_PROTOCOLS = [
     { id: 'low-fodmap', name: 'Low-FODMAP', emoji: '🥦', desc: 'Syndrome de l\'Intestin Irritable (SII)' },
@@ -19,7 +20,8 @@ const AVAILABLE_PROTOCOLS = [
 ];
 
 export default function ProfilePage() {
-    const { user, updateUser } = useCookingAuth();
+    const { user, updateUser, logout } = useCookingAuth();
+    const router = useRouter();
     const [mounted, setMounted] = useState(false);
     const seeded = React.useRef(false);
     
@@ -166,7 +168,7 @@ export default function ProfilePage() {
                 </div>
                 
                 <h1 className="ck-fade-up-1">
-                    Personnalisation
+                    {user.displayName || user.username}
                 </h1>
                 <p className="ck-fade-up-2">
                     Définissez vos régimes et paramètres physiques pour un accompagnement sur-mesure.
@@ -174,8 +176,8 @@ export default function ProfilePage() {
 
                 <button 
                     onClick={() => {
-                        window.dispatchEvent(new Event('logout-trigger')); // To bypass hook dependency if needed
-                        // we can also just call from the useCookingAuth hook
+                        logout();
+                        router.push('/cooking/login');
                     }}
                     className="ck-btn ck-btn-secondary"
                     style={{ position: 'absolute', top: 0, right: 0 }}
