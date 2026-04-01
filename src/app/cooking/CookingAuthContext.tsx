@@ -33,6 +33,7 @@ export interface CookingUser {
     displayName: string;
     protocols: string[]; // Support multiple diets (e.g. ['low-fodmap', 'perte-de-poids'])
     protocolPhase?: 1 | 2 | 3;
+    protocolStartDate?: string; // ISO date format
     personalParams?: PersonalParams;
     mealPrepEnabled: boolean;
     pantryItems: PantryItem[];
@@ -66,6 +67,7 @@ interface CookingAuthContextType {
     logout: () => void;
     updateUser: (updates: Partial<CookingUser>) => void;
     addXp: (amount: number, reason: string) => void;
+    addJournalEntry: (mealType: 'Petit-déj' | 'Déjeuner' | 'Dîner' | 'Collation', recipeName: string, kcal: number, portions: number) => void;
 }
 
 const CookingAuthContext = createContext<CookingAuthContextType | null>(null);
@@ -208,6 +210,7 @@ export function CookingAuthProvider({ children }: { children: ReactNode }) {
                     displayName: parsed.displayName || parsed.username || '',
                     protocols: parsed.protocols ?? (parsed.protocol ? [parsed.protocol] : []),
                     protocolPhase: parsed.protocolPhase ?? 1,
+                    protocolStartDate: parsed.protocolStartDate,
                     personalParams: parsed.personalParams ?? undefined,
                     mealPrepEnabled: parsed.mealPrepEnabled ?? false,
                     pantryItems: parsed.pantryItems ?? [],
@@ -243,7 +246,7 @@ export function CookingAuthProvider({ children }: { children: ReactNode }) {
 
     const login = (username: string, password: string): boolean => {
         const storedDb = localStorage.getItem(USERS_DB_STORAGE_KEY);
-        let currentDb = USERS_DB;
+        let currentDb = JSON.parse(JSON.stringify(USERS_DB));
         if (storedDb) {
             try {
                 currentDb = JSON.parse(storedDb);
@@ -258,7 +261,10 @@ export function CookingAuthProvider({ children }: { children: ReactNode }) {
         return false;
     };
 
-    const logout = () => setUser(null);
+    const logout = () => {
+        setUser(null);
+        localStorage.removeItem(STORAGE_KEY);
+    };
 
     const register = (username: string, displayName: string, password: string): { success: boolean; error?: string } => {
         const key = username.toLowerCase().trim();
@@ -268,9 +274,9 @@ export function CookingAuthProvider({ children }: { children: ReactNode }) {
 
         // Check if username already exists
         const storedDb = localStorage.getItem(USERS_DB_STORAGE_KEY);
-        let currentDb = { ...USERS_DB };
+        let currentDb = JSON.parse(JSON.stringify(USERS_DB));
         if (storedDb) {
-            try { currentDb = { ...USERS_DB, ...JSON.parse(storedDb) }; } catch { /* ignore */ }
+            try { currentDb = { ...currentDb, ...JSON.parse(storedDb) }; } catch { /* ignore */ }
         }
         if (currentDb[key]) return { success: false, error: 'Ce nom d\'utilisateur existe déjà.' };
 
@@ -280,6 +286,7 @@ export function CookingAuthProvider({ children }: { children: ReactNode }) {
             displayName: displayName.trim(),
             protocols: [],
             protocolPhase: 1,
+            protocolStartDate: new Date().toISOString(),
             mealPrepEnabled: false,
             pantryItems: [],
             shoppingList: [],
@@ -301,7 +308,7 @@ export function CookingAuthProvider({ children }: { children: ReactNode }) {
             
             // Also update the persistent DB
             const storedDb = localStorage.getItem(USERS_DB_STORAGE_KEY);
-            let currentDb = USERS_DB;
+            let currentDb = JSON.parse(JSON.stringify(USERS_DB));
             if (storedDb) {
                 try {
                     currentDb = JSON.parse(storedDb);
@@ -331,7 +338,7 @@ export function CookingAuthProvider({ children }: { children: ReactNode }) {
             
             // Sync to permanent storage
             const storedDb = localStorage.getItem(USERS_DB_STORAGE_KEY);
-            let currentDb = USERS_DB;
+            let currentDb = JSON.parse(JSON.stringify(USERS_DB));
             if (storedDb) {
                 try {
                     currentDb = JSON.parse(storedDb);
@@ -348,10 +355,58 @@ export function CookingAuthProvider({ children }: { children: ReactNode }) {
         });
     };
 
+    const addJournalEntry = (
+        mealType: 'Petit-déj' | 'Déjeuner' | 'Dîner' | 'Collation',
+        recipeName: string,
+        kcalPerPortion: number,
+        portions: number
+    ) => {
+        setUser(prev => {
+            if (!prev) return null;
+            
+            const totalKcal = Math.round(kcalPerPortion * portions);
+            const now = new Date();
+            const todayStr = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().split('T')[0];
+            
+            const newEntry: SymptomEntry = {
+                id: Date.now(),
+                date: todayStr,
+                mealType,
+                foodsEaten: [{ name: `${recipeName} (x${portions})`, kcal: totalKcal }],
+                symptoms: [],
+                overallFeeling: 3, 
+                notes: 'Ajouté depuis la recette'
+            };
+            
+            const updatedProfile = {
+                ...prev,
+                symptomLog: [newEntry, ...(prev.symptomLog || [])]
+            };
+            
+            const storedDb = localStorage.getItem(USERS_DB_STORAGE_KEY);
+            let currentDb = JSON.parse(JSON.stringify(USERS_DB));
+            if (storedDb) {
+                try {
+                    currentDb = JSON.parse(storedDb);
+                } catch { /* ignore */ }
+            }
+            const usernameKey = updatedProfile.username.toLowerCase();
+            currentDb[usernameKey] = {
+                ...currentDb[usernameKey],
+                profile: updatedProfile
+            };
+            localStorage.setItem(USERS_DB_STORAGE_KEY, JSON.stringify(currentDb));
+            
+            return updatedProfile;
+        });
+        
+        addXp(10, 'Nouvelle entrée journal (Recette)');
+    };
+
     if (!loaded) return null;
 
     return (
-        <CookingAuthContext.Provider value={{ user, login, register, logout, updateUser, addXp }}>
+        <CookingAuthContext.Provider value={{ user, login, register, logout, updateUser, addXp, addJournalEntry }}>
             {children}
         </CookingAuthContext.Provider>
     );

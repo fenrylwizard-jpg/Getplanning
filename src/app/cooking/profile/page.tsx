@@ -38,6 +38,10 @@ export default function ProfilePage() {
     const [goalWeight, setGoalWeight] = useState<string>('');
     const [goalDurationWeeks, setGoalDurationWeeks] = useState<string>('12'); // weeks
 
+    // Protocol phase state
+    const [protocolPhase, setProtocolPhase] = useState<1 | 2 | 3>(1);
+    const [protocolStartDate, setProtocolStartDate] = useState<string>('');
+
     // Toast state
     const [showToast, setShowToast] = useState(false);
 
@@ -48,6 +52,8 @@ export default function ProfilePage() {
             if (user && !seeded.current) {
                 seeded.current = true;
                 setSelectedProtocols(user.protocols || []);
+                setProtocolPhase(user.protocolPhase || 1);
+                setProtocolStartDate(user.protocolStartDate || new Date().toISOString());
                 setSelectedFairy(user.selectedFairy);
                 if (user.personalParams) {
                     setWeight(user.personalParams.weight?.toString() || '');
@@ -131,6 +137,8 @@ export default function ProfilePage() {
         updateUser({
             selectedFairy,
             protocols: selectedProtocols,
+            protocolPhase,
+            protocolStartDate,
             personalParams: {
                 weight: weight ? parseFloat(weight) : undefined,
                 height: height ? parseFloat(height) : undefined,
@@ -152,16 +160,28 @@ export default function ProfilePage() {
 
     return (
         <div className="ck-page-wrap">
-            <div className="ck-page-header">
+            <div className="ck-page-header" style={{ position: 'relative' }}>
                 <div className="ck-hero-badge ck-fade-up">
                     <span>👤</span> Mon Profil Santé
                 </div>
+                
                 <h1 className="ck-fade-up-1">
                     Personnalisation
                 </h1>
                 <p className="ck-fade-up-2">
                     Définissez vos régimes et paramètres physiques pour un accompagnement sur-mesure.
                 </p>
+
+                <button 
+                    onClick={() => {
+                        window.dispatchEvent(new Event('logout-trigger')); // To bypass hook dependency if needed
+                        // we can also just call from the useCookingAuth hook
+                    }}
+                    className="ck-btn ck-btn-secondary"
+                    style={{ position: 'absolute', top: 0, right: 0 }}
+                >
+                    🚪 Déconnexion
+                </button>
             </div>
 
             <div className="ck-glass-section ck-fade-up-2">
@@ -190,6 +210,80 @@ export default function ProfilePage() {
                         );
                     })}
                 </div>
+
+                {/* FODMAP Tracking Section */}
+                {selectedProtocols.includes('low-fodmap') && (
+                    <div className="ck-inset-section" style={{ borderLeft: '4px solid var(--ck-orange)', background: 'rgba(245,138,61,0.03)' }}>
+                        <h3 className="ck-subsection-title" style={{ color: 'var(--ck-orange)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <span>🥦</span> Suivi du Protocole Low-FODMAP
+                        </h3>
+                        <p className="ck-section-sub">
+                            Le régime FODMAP se déroule en 3 phases pour identifier vos intolérances sereinement.
+                        </p>
+                        
+                        <div className="ck-mb-xl" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                            {[1, 2, 3].map(phase => (
+                                <button
+                                    key={phase}
+                                    onClick={() => setProtocolPhase(phase as 1|2|3)}
+                                    className={`ck-btn ${protocolPhase === phase ? 'ck-btn-primary' : 'ck-btn-secondary'}`}
+                                    style={{ flex: 1, minWidth: '140px', padding: '0.75rem 0.5rem' }}
+                                >
+                                    Phase {phase}
+                                </button>
+                            ))}
+                        </div>
+
+                        {protocolPhase === 1 && (
+                            <div className="ck-fade-up">
+                                <h4>Phase 1 : Élimination (2 à 6 semaines)</h4>
+                                <p className="ck-text-sm ck-text-muted ck-mb-2">
+                                    Éliminez complètement les FODMAPs de votre alimentation pour apaiser vos intestins.
+                                </p>
+                                <div style={{ background: 'rgba(0,0,0,0.05)', borderRadius: '1rem', padding: '1rem' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', fontWeight: 800, marginBottom: '0.5rem' }}>
+                                        <span>Début : {new Date(protocolStartDate).toLocaleDateString()}</span>
+                                        <span>Objectif : 4 semaines</span>
+                                    </div>
+                                    <div style={{ width: '100%', height: '8px', background: 'rgba(0,0,0,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
+                                        {/* Simple dummy progress bar, e.g. 50% */}
+                                        <div style={{ width: '50%', height: '100%', background: 'var(--ck-orange)', borderRadius: '4px' }}></div>
+                                    </div>
+                                    <p style={{ textAlign: 'center', fontSize: '0.75rem', marginTop: '0.5rem', fontWeight: 700 }}>
+                                        Gardez le cap ! Vos symptômes devraient commencer à diminuer.
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+
+                        {protocolPhase === 2 && (
+                            <div className="ck-fade-up">
+                                <h4>Phase 2 : Réintroduction (6 à 8 semaines)</h4>
+                                <p className="ck-text-sm ck-text-muted ck-mb-2">
+                                    Testez méthodiquement chaque famille de FODMAP (Lactose, Fructose, etc.) pour identifier vos déclencheurs.
+                                </p>
+                                <div style={{ background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: '1rem', padding: '1rem' }}>
+                                    <p style={{ margin: 0, fontSize: '0.85rem', color: '#1d4ed8', fontWeight: 600 }}>
+                                        💡 Conseil : Utilisez le <strong>Journal</strong> pour noter précisément vos repas et ressentis lors de chaque test de groupe !
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+
+                        {protocolPhase === 3 && (
+                            <div className="ck-fade-up">
+                                <h4>Phase 3 : Personnalisation (À vie)</h4>
+                                <p className="ck-text-sm ck-text-muted ck-mb-2">
+                                    Vous connaissez maintenant vos tolérances. Mangez librement tout en gérant vos déclencheurs identifiés !
+                                </p>
+                                <div style={{ textAlign: 'center', padding: '1rem' }}>
+                                    <span style={{ fontSize: '2.5rem' }}>🎉</span>
+                                    <p style={{ fontWeight: 800, marginTop: '0.5rem' }}>Félicitations pour ce parcours !</p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 <h2 className="ck-section-title">⚖️ Paramètres Physiques &amp; Objectifs</h2>
                 

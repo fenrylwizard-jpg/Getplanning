@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { useCookingAuth } from '../CookingAuthContext';
 
 interface RecipeDetail {
     ingredients: string[];
@@ -52,6 +53,13 @@ export default function RecipeDetailModal({ recipe, onClose }: RecipeDetailModal
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [closing, setClosing] = useState(false);
+
+    // Mange Moi states
+    const { user, addJournalEntry } = useCookingAuth();
+    const [showMangeMoi, setShowMangeMoi] = useState(false);
+    const [mangeMoiMeal, setMangeMoiMeal] = useState<'Petit-déj' | 'Déjeuner' | 'Dîner' | 'Collation'>('Déjeuner');
+    const [mangeMoiPortions, setMangeMoiPortions] = useState(1);
+    const [mangeMoiSuccess, setMangeMoiSuccess] = useState(false);
 
     const handleClose = useCallback(() => {
         setClosing(true);
@@ -122,24 +130,27 @@ export default function RecipeDetailModal({ recipe, onClose }: RecipeDetailModal
         return () => { document.body.style.overflow = ''; };
     }, [recipe]);
 
+    const handleMangeMoiSubmit = () => {
+        if (!recipe) return;
+        addJournalEntry(mangeMoiMeal, recipe.name, recipe.kcal, mangeMoiPortions);
+        setMangeMoiSuccess(true);
+        setTimeout(() => {
+            setShowMangeMoi(false);
+            setMangeMoiSuccess(false);
+            handleClose(); // optionally close the main modal too
+        }, 1500);
+    };
+
     if (!recipe) return null;
 
     const bgClass = BG_CLASSES[recipe.id % BG_CLASSES.length];
 
     return (
-        <div
-            onClick={handleClose}
-            className={`ck-rdm-backdrop ${closing ? 'closing' : ''}`}
-        >
-            <div
+        <div className="ck-modal-overlay ck-stagger-in" onClick={handleClose}>
+            <div 
+                className={`ck-rdm-container ${opening ? 'open' : ''} ${closing ? 'closing' : ''}`}
                 onClick={e => e.stopPropagation()}
-                className={`ck-rdm-panel ${closing ? 'closing' : ''}`}
             >
-                {/* Header / Hero */}
-                <div className={`ck-rdm-hero ${bgClass}`}>
-                    <button onClick={handleClose} className="ck-rdm-close-btn">
-                        ✕
-                    </button>
                     <div className="ck-rdm-hero-emoji">{recipe.emoji}</div>
                     <h2 className="ck-rdm-hero-title">{recipe.name}</h2>
                     <div className="ck-rdm-hero-meta">
@@ -156,6 +167,16 @@ export default function RecipeDetailModal({ recipe, onClose }: RecipeDetailModal
                             <span key={tag} className="ck-rdm-tag-lavender">{tag}</span>
                         ))}
                     </div>
+
+                    {user && (
+                        <button 
+                            className="ck-btn ck-btn-primary ck-fade-up-2"
+                            style={{ margin: '1.5rem auto 0', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.6rem 1.5rem', borderRadius: '2rem', boxShadow: '0 4px 15px rgba(245,138,61,0.3)' }}
+                            onClick={() => setShowMangeMoi(true)}
+                        >
+                            <span>🍽️</span> Mange Moi !
+                        </button>
+                    )}
                 </div>
 
                 {/* Body */}

@@ -25,6 +25,34 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Nom de recette manquant.' }, { status: 400 });
         }
 
+        // 1. Check our pre-generated local database file first to save tokens!
+        try {
+            // @ts-ignore
+            const fs = require('fs');
+            // @ts-ignore
+            const path = require('path');
+            // The API runs in `.next/server/app/api/...`, but we can resolve relative to cwd
+            const dbPath = path.join(process.cwd(), 'src', 'app', 'cooking', 'data', 'recipeDetails.json');
+            
+            if (fs.existsSync(dbPath)) {
+                const dbStr = fs.readFileSync(dbPath, 'utf8');
+                const db = JSON.parse(dbStr);
+                
+                // Fetch staticRecipes dynamically or use the import.
+                // We'll use a dynamic require safely.
+                // @ts-ignore
+                const { staticRecipes } = require('../../../cooking/data/recipesData');
+                const matchedRecipe = staticRecipes.find((r: any) => r.name === recipeName);
+                
+                if (matchedRecipe && db[matchedRecipe.id]) {
+                    console.log(`Using cached database details for: ${recipeName}`);
+                    return NextResponse.json(db[matchedRecipe.id], { headers: corsHeaders });
+                }
+            }
+        } catch (e) {
+            console.error("Local database read error:", e);
+        }
+
         const prompt = `Tu es un chef cuisinier expert. Génère les détails complets pour cette recette française:
 
 NOM: ${recipeName}
