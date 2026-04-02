@@ -1557,3 +1557,142 @@ a {
     margin-bottom: 2.5rem;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   PWA Install Banner (Worksite)
+   ═══════════════════════════════════════════════════════════ */
+
+.pwa-ws-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 200;
+  display: flex;
+  justify-content: center;
+  padding: 0.75rem 1rem;
+  background: rgba(5, 8, 16, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(37, 209, 244, 0.15);
+  animation: pwa-ws-slide-down 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
+}
+
+@keyframes pwa-ws-slide-down {
+  from { transform: translateY(-100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.pwa-ws-banner-inner {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  max-width: 900px;
+  width: 100%;
+}
+
+.pwa-ws-banner-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.pwa-ws-banner-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.pwa-ws-banner-text strong {
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.pwa-ws-banner-text span {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.75rem;
+}
+
+.pwa-ws-banner-ios {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.pwa-ws-banner-ios strong {
+  color: rgba(37, 209, 244, 0.9);
+}
+
+.pwa-ws-banner-install {
+  flex-shrink: 0;
+  padding: 0.5rem 1.25rem;
+  border-radius: 0.375rem;
+  background: linear-gradient(135deg, #a855f7, #25d1f4);
+  color: white;
+  font-weight: 700;
+  font-size: 0.8rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.pwa-ws-banner-install:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 20px rgba(37, 209, 244, 0.4);
+}
+
+.pwa-ws-banner-close {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  transition: color 0.2s;
+  line-height: 1;
+}
+
+.pwa-ws-banner-close:hover {
+  color: white;
+}
+
+/* Mobile: stack text */
+@media (max-width: 480px) {
+  .pwa-ws-banner-inner {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .pwa-ws-banner-text span {
+    display: none;
+  }
+}
+
+/* Light mode */
+[data-theme="light"] .pwa-ws-banner {
+  background: rgba(255, 255, 255, 0.92);
+  border-bottom-color: rgba(37, 209, 244, 0.2);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .pwa-ws-banner-text strong {
+  color: #1e293b;
+}
+
+[data-theme="light"] .pwa-ws-banner-text span {
+  color: #64748b;
+}
+
+[data-theme="light"] .pwa-ws-banner-close {
+  color: #94a3b8;
+}
+
+[data-theme="light"] .pwa-ws-banner-close:hover {
+  color: #1e293b;
+}
+

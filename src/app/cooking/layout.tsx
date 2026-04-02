@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { CookingAuthProvider, useCookingAuth } from './CookingAuthContext';
+import { usePwaInstall } from '@/lib/usePwaInstall';
 import './cooking.css';
 
 const navItems = [
@@ -24,6 +25,9 @@ function CookingNavbar() {
     const pathname = usePathname();
     const { user, logout } = useCookingAuth();
     const isProfileActive = pathname === '/cooking/profile';
+    const { canInstall, isStandalone, isIOS, handleInstall } = usePwaInstall({
+        storageKey: 'pwa-cooking-dismissed',
+    });
 
     return (
         <>
@@ -45,6 +49,19 @@ function CookingNavbar() {
                                 {item.label}
                             </Link>
                         ))}
+
+                        {/* PWA Install Button */}
+                        {canInstall && !isStandalone && (
+                            <button
+                                onClick={isIOS ? undefined : handleInstall}
+                                className="ck-pwa-shortcut-btn"
+                                title="Installer l'application sur votre appareil"
+                            >
+                                <span className="ck-pwa-shortcut-icon">📲</span>
+                                <span className="ck-pwa-shortcut-label">App Shortcut</span>
+                            </button>
+                        )}
+
                         {user ? (
                             <div className="ck-navbar-user-row">
                                 <Link
