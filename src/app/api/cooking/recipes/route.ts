@@ -37,10 +37,10 @@ export async function POST(req: NextRequest) {
         if (protocols.includes('low-fodmap')) {
             protocolInstructions += `\n- Spécificité Low-FODMAP (Phase ${protocolPhase}): ${
                 protocolPhase === 1 
-                    ? 'Phase d\'élimination stricte. AUCUN aliment riche en FODMAP (pas d\'ail, oignon, blé, seigle, lait, pommes, poires, haricots, lentilles, champignons, avocat, miel). Utilise uniquement des aliments pauvres en FODMAP.'
+                    ? `Phase d'élimination stricte. INTERDITS ABSOLUS: ail, oignon (y compris en poudre), échalote, poireau, blé (pain, pâtes, couscous, farine de blé), seigle, orge, lait de vache, crème fraîche, yaourt classique, ricotta, mascarpone, pommes, poires, mangue, cerises, pastèque, dattes, figues, miel, sirop d'agave, champignons, avocat, haricots, lentilles, pois chiches, fèves, artichauts, asperges, chou-fleur, betterave. AUTORISÉS: riz, quinoa, pommes de terre, carottes, courgettes, poivrons, tomates (petites quantités), épinards, brocoli, concombre, aubergine, poisson, poulet, boeuf, tofu ferme, fromages à pâte dure (parmesan, comté), beurre, lait sans lactose, fraises, myrtilles, framboises, kiwi, citron, oranges, banane (pas trop mûre), érable, sucre, huile d'olive. Set fodmapSafe=true UNIQUEMENT si la recette ne contient AUCUN ingrédient interdit.`
                     : protocolPhase === 2
-                    ? 'Phase de réintroduction. Les recettes peuvent inclure UN groupe FODMAP à tester à la fois.'
-                    : 'Phase de personnalisation. Régime principalement Low-FODMAP avec quelques flexibilités.'
+                    ? 'Phase de réintroduction. Les recettes peuvent inclure UN groupe FODMAP à tester à la fois. Set fodmapSafe en conséquence.'
+                    : 'Phase de personnalisation. Régime principalement Low-FODMAP avec quelques flexibilités. Set fodmapSafe=true si aucun ingrédient fortement FODMAP.'
             }`;
         }
         if (protocols.includes('perte-de-poids')) {
