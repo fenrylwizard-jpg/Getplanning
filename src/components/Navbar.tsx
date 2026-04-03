@@ -27,6 +27,15 @@ export default function Navbar({ userName, userRole, characterId, level, company
         swPath: '/sw.js',
         storageKey: 'pwa-worksite-dismissed',
     });
+    const [showPwaHelp, setShowPwaHelp] = useState(false);
+
+    const onShortcutClick = () => {
+        if (canInstall && !isIOS) {
+            handleInstall();
+        } else {
+            setShowPwaHelp(true);
+        }
+    };
 
     useEffect(() => {
         // Send heartbeat every 1.5 minutes if logged in
@@ -89,10 +98,10 @@ export default function Navbar({ userName, userRole, characterId, level, company
                         )}
                     </button>
 
-                    {/* PWA Install Button */}
-                    {canInstall && !isStandalone && (
+                    {/* PWA Install Button — always visible unless already installed */}
+                    {!isStandalone && (
                         <button
-                            onClick={isIOS ? undefined : handleInstall}
+                            onClick={onShortcutClick}
                             className="pwa-shortcut-btn flex items-center gap-2 h-10 px-4 rounded-md bg-gradient-to-r from-cyan-500/20 to-purple-500/20 border border-cyan-500/30 hover:border-cyan-400/50 hover:from-cyan-500/30 hover:to-purple-500/30 text-white text-xs font-bold tracking-wide transition-all group"
                             title="Installer l'application sur votre appareil"
                         >
@@ -166,7 +175,31 @@ export default function Navbar({ userName, userRole, characterId, level, company
                     </div>
                 </div>
             )}
+
+            {/* PWA Install Instructions Modal */}
+            {showPwaHelp && (
+                <div className="pwa-ws-help-overlay" onClick={() => setShowPwaHelp(false)}>
+                    <div className="pwa-ws-help-modal" onClick={e => e.stopPropagation()}>
+                        <button className="pwa-ws-help-close" onClick={() => setShowPwaHelp(false)} aria-label="Fermer">✕</button>
+                        <div className="pwa-ws-help-icon">📲</div>
+                        <h3 className="pwa-ws-help-title">Installer GetPlanning</h3>
+                        <p className="pwa-ws-help-desc">Ajoutez GetPlanning à votre écran d&apos;accueil pour y accéder comme une app !</p>
+                        {isIOS ? (
+                            <ol className="pwa-ws-help-steps">
+                                <li>Appuyez sur le bouton <strong>Partager</strong> <span>⬆️</span></li>
+                                <li>Faites défiler et appuyez sur <strong>&laquo; Sur l&apos;écran d&apos;accueil &raquo;</strong></li>
+                                <li>Appuyez sur <strong>&laquo; Ajouter &raquo;</strong></li>
+                            </ol>
+                        ) : (
+                            <ol className="pwa-ws-help-steps">
+                                <li>Ouvrez le menu de votre navigateur <strong>⋮</strong></li>
+                                <li>Appuyez sur <strong>&laquo; Installer l&apos;application &raquo;</strong> ou <strong>&laquo; Ajouter à l&apos;écran d&apos;accueil &raquo;</strong></li>
+                                <li>Confirmez l&apos;installation</li>
+                            </ol>
+                        )}
+                    </div>
+                </div>
+            )}
         </>
     );
 }
-

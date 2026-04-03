@@ -28,6 +28,15 @@ function CookingNavbar() {
     const { canInstall, isStandalone, isIOS, handleInstall } = usePwaInstall({
         storageKey: 'pwa-cooking-dismissed',
     });
+    const [showPwaHelp, setShowPwaHelp] = React.useState(false);
+
+    const onShortcutClick = () => {
+        if (canInstall && !isIOS) {
+            handleInstall();
+        } else {
+            setShowPwaHelp(true);
+        }
+    };
 
     return (
         <>
@@ -50,10 +59,10 @@ function CookingNavbar() {
                             </Link>
                         ))}
 
-                        {/* PWA Install Button */}
-                        {canInstall && !isStandalone && (
+                        {/* PWA Install Button — always visible unless already installed */}
+                        {!isStandalone && (
                             <button
-                                onClick={isIOS ? undefined : handleInstall}
+                                onClick={onShortcutClick}
                                 className="ck-pwa-shortcut-btn"
                                 title="Installer l'application sur votre appareil"
                             >
@@ -106,6 +115,31 @@ function CookingNavbar() {
                                 {item.label}
                             </Link>
                         ))}
+                    </div>
+                </div>
+            )}
+
+            {/* PWA Install Instructions Modal */}
+            {showPwaHelp && (
+                <div className="ck-pwa-help-overlay" onClick={() => setShowPwaHelp(false)}>
+                    <div className="ck-pwa-help-modal" onClick={e => e.stopPropagation()}>
+                        <button className="ck-pwa-help-close" onClick={() => setShowPwaHelp(false)} aria-label="Fermer">✕</button>
+                        <div className="ck-pwa-help-icon">📲</div>
+                        <h3 className="ck-pwa-help-title">Installer Saveur</h3>
+                        <p className="ck-pwa-help-desc">Ajoutez Saveur à votre écran d&apos;accueil pour y accéder comme une app !</p>
+                        {isIOS ? (
+                            <ol className="ck-pwa-help-steps">
+                                <li>Appuyez sur le bouton <strong>Partager</strong> <span>⬆️</span></li>
+                                <li>Faites défiler et appuyez sur <strong>&laquo; Sur l&apos;écran d&apos;accueil &raquo;</strong></li>
+                                <li>Appuyez sur <strong>&laquo; Ajouter &raquo;</strong></li>
+                            </ol>
+                        ) : (
+                            <ol className="ck-pwa-help-steps">
+                                <li>Ouvrez le menu de votre navigateur <strong>⋮</strong></li>
+                                <li>Appuyez sur <strong>&laquo; Installer l&apos;application &raquo;</strong> ou <strong>&laquo; Ajouter à l&apos;écran d&apos;accueil &raquo;</strong></li>
+                                <li>Confirmez l&apos;installation</li>
+                            </ol>
+                        )}
                     </div>
                 </div>
             )}

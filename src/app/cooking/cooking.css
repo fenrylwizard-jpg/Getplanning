@@ -2505,3 +2505,100 @@
   }
 }
 
+/* ═══════════════════════════════════════════════════════════
+   PWA Help Instructions Modal (Cooking)
+   ═══════════════════════════════════════════════════════════ */
+
+.ck-pwa-help-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: ck-pwa-fade-in 0.25s ease;
+}
+
+@keyframes ck-pwa-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.ck-pwa-help-modal {
+  background: var(--ck-card-bg, #fff);
+  border: 1px solid var(--ck-border, rgba(0,0,0,0.08));
+  border-radius: 1.25rem;
+  padding: 2rem;
+  max-width: 400px;
+  width: 100%;
+  position: relative;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  animation: ck-pwa-slide-up 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes ck-pwa-slide-up {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.ck-pwa-help-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: var(--ck-text-muted, #9B8B8E);
+  transition: color 0.2s;
+  line-height: 1;
+  padding: 0.25rem;
+}
+
+.ck-pwa-help-close:hover {
+  color: var(--ck-text, #3B2C30);
+}
+
+.ck-pwa-help-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.ck-pwa-help-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--ck-text, #3B2C30);
+  margin-bottom: 0.5rem;
+}
+
+.ck-pwa-help-desc {
+  color: var(--ck-text-soft, #6B5B5E);
+  font-size: 0.85rem;
+  margin-bottom: 1.25rem;
+  line-height: 1.4;
+}
+
+.ck-pwa-help-steps {
+  text-align: left;
+  padding-left: 1.25rem;
+  list-style: decimal;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.ck-pwa-help-steps li {
+  font-size: 0.9rem;
+  color: var(--ck-text, #3B2C30);
+  line-height: 1.5;
+}
+
+.ck-pwa-help-steps strong {
+  color: var(--ck-orange, #f58a3d);
+}
+
