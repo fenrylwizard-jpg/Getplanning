@@ -66,11 +66,14 @@ export async function middleware(req: NextRequest) {
         pathname.startsWith('/landing') ||
         pathname.startsWith('/presentation') ||
         pathname.startsWith('/cooking') ||
+        pathname.startsWith('/forgot-password') ||
         pathname.endsWith('.png') ||
         pathname.endsWith('.jpg') ||
         pathname.endsWith('.svg') ||
         pathname.endsWith('.ico') ||
         pathname.endsWith('.webp') ||
+        pathname.endsWith('.json') ||
+        pathname.endsWith('.js') ||
         pathname === '/'
     ) {
         return NextResponse.next();
@@ -146,5 +149,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-    matcher: ['/((?!public|_next/static|_next/image|favicon.ico).*)'],
+    matcher: ['/((?!public|_next/static|_next/image|favicon.ico|manifest\\.json|worksite-sw\\.js|cooking-sw\\.js|cooking-manifest\\.json).*)'],
 };
