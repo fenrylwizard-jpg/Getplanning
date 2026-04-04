@@ -24,10 +24,63 @@ export default function Navbar({ userName, userRole, characterId, level, company
     const { theme, toggleTheme } = useTheme();
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const { canInstall, isStandalone, showBanner, isIOS, handleInstall, handleDismiss } = usePwaInstall({
-        swPath: '/sw.js',
+        swPath: '/worksite-sw.js',
         storageKey: 'pwa-worksite-dismissed',
     });
     const [showPwaHelp, setShowPwaHelp] = useState(false);
+
+    // Inject the worksite manifest + apple meta tags (same pattern as cooking app)
+    useEffect(() => {
+        // Remove existing manifest link (Next.js may have set one from metadata)
+        const existingManifest = document.querySelector('link[rel="manifest"]');
+        if (existingManifest) {
+            existingManifest.remove();
+        }
+        // Add worksite-specific manifest
+        const link = document.createElement('link');
+        link.rel = 'manifest';
+        link.href = '/manifest.json';
+        document.head.appendChild(link);
+
+        // Set theme-color meta
+        let meta = document.querySelector('meta[name="theme-color"]');
+        if (!meta) {
+            meta = document.createElement('meta');
+            meta.setAttribute('name', 'theme-color');
+            document.head.appendChild(meta);
+        }
+        meta.setAttribute('content', '#1a0533');
+
+        // Apple-specific: make it installable as a web app
+        let appleMeta = document.querySelector('meta[name="apple-mobile-web-app-capable"]');
+        if (!appleMeta) {
+            appleMeta = document.createElement('meta');
+            appleMeta.setAttribute('name', 'apple-mobile-web-app-capable');
+            appleMeta.setAttribute('content', 'yes');
+            document.head.appendChild(appleMeta);
+        }
+
+        let appleStatusBar = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+        if (!appleStatusBar) {
+            appleStatusBar = document.createElement('meta');
+            appleStatusBar.setAttribute('name', 'apple-mobile-web-app-status-bar-style');
+            appleStatusBar.setAttribute('content', 'black-translucent');
+            document.head.appendChild(appleStatusBar);
+        }
+
+        // Apple touch icon — the beautiful hardhat icon
+        let appleIcon = document.querySelector('link[rel="apple-touch-icon"]');
+        if (!appleIcon) {
+            appleIcon = document.createElement('link');
+            appleIcon.setAttribute('rel', 'apple-touch-icon');
+            appleIcon.setAttribute('href', '/apple-touch-icon.png');
+            document.head.appendChild(appleIcon);
+        }
+
+        return () => {
+            link.remove();
+        };
+    }, []);
 
     const onShortcutClick = () => {
         if (canInstall && !isIOS) {
