@@ -4,13 +4,13 @@ import "./globals.css";
 import { LanguageProvider } from "@/lib/LanguageContext";
 import { ThemeProvider } from "@/lib/ThemeContext";
 import { Toaster } from "sonner";
+import WorksitePwaProvider from "@/components/WorksitePwaProvider";
 
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], weight: ["300", "400", "500", "600", "700"] });
 
 export const metadata: Metadata = {
   title: "GetPlanning — Worksite Management",
   description: "Plateforme SaaS de gestion de projet de construction de nouvelle génération",
-  manifest: "/manifest.json",
   icons: {
     icon: [
       { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
@@ -21,11 +21,6 @@ export const metadata: Metadata = {
     apple: [
       { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
     ],
-  },
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "black-translucent",
-    title: "GetPlanning",
   },
   formatDetection: {
     telephone: false,
@@ -54,6 +49,7 @@ export default function RootLayout({
       <body className={spaceGrotesk.className}>
         <ThemeProvider>
         <LanguageProvider>
+          <WorksitePwaProvider />
           {children}
         </LanguageProvider>
         </ThemeProvider>
