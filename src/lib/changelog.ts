@@ -16,6 +16,62 @@ export interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
     {
+        version: '0.2.2',
+        date: '6 avril 2026',
+        changes: [
+            'Correction Efficience Globale: formule = heures valorisées / heures planifiées',
+            'Graphique progression production: barres hebdo Planifié vs Valorisé (heures et %)',
+            'Suppression dépendance aux rapports journaliers pour le calcul d\'efficience',
+            'Affichage détail heures sous le KPI efficience (XXh valorisées / XXh planifiées)',
+        ],
+    },
+    {
+        version: '0.2.1',
+        date: '5 avril 2026',
+        changes: [
+            'PWA améliorée: icône personnalisée, mode standalone (ouvre comme une app native)',
+            'Popup d\'installation PWA avec bouton \"Installer\" sur mobile et desktop',
+            'Service Worker avec cache offline optimisé',
+            'Correction barre d\'état noire (black-translucent) sur iOS',
+        ],
+    },
+    {
+        version: '0.2.0',
+        date: '3 avril 2026',
+        changes: [
+            'Refonte App Shell: navigation persistante, Layout partagé PM/SM/Admin',
+            'Correction du schema Prisma (build fix)',
+        ],
+    },
+    {
+        version: '0.1.9',
+        date: '1 avril 2026',
+        changes: [
+            'App Cuisine: corrections sprites, recettes, journal et bouton Mange-Moi',
+            'App Cuisine: page de connexion dédiée et déconnexion',
+            'Correction routage middleware pour debug',
+        ],
+    },
+    {
+        version: '0.1.8',
+        date: '31 mars 2026',
+        changes: [
+            'Efficience globale ajoutée dans l\'onglet Production (Heures Dépensées vs Gagnées)',
+            'Graphique d\'efficience par jour avec barres colorées (vert/orange/rouge)',
+            'Modal historique XP sur le dashboard admin',
+            'Correction calcul efficience: Used - Earned pour les heures perdues',
+            'Migration app cuisine vers le projet worksite-tracker',
+        ],
+    },
+    {
+        version: '0.1.7',
+        date: '26 mars 2026',
+        changes: [
+            'Historique de logs XP accessible depuis le profil SM',
+            'Persistance hoursPerWorker dans les plans hebdomadaires',
+        ],
+    },
+    {
         version: '0.1.6',
         date: '25 mars 2026',
         changes: [
