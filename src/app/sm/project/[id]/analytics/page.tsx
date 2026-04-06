@@ -2,7 +2,6 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { ArrowLeft, FolderKey, TrendingUp, Clock } from "lucide-react";
 import ProjectAnalyticsCharts from "@/components/ProjectAnalyticsCharts";
-import { getISOWeek, getISOWeekYear } from "date-fns";
 
 export default async function SMProjectAnalytics({ params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = await params;
@@ -18,13 +17,6 @@ export default async function SMProjectAnalytics({ params }: { params: Promise<{
                     tasks: { include: { task: true } }
                 }
             },
-            dailyReports: {
-                where: { status: 'SUBMITTED' },
-                orderBy: { date: 'asc' },
-                include: {
-                    taskProgress: { include: { task: true } }
-                }
-            }
         }
     });
 
@@ -40,39 +32,21 @@ export default async function SMProjectAnalytics({ params }: { params: Promise<{
         totalLaborMinsAchieved += (t.completedQuantity * t.minutesPerUnit);
     });
 
-    let globalUsedHours = 0;
-    let globalEarnedFromReports = 0;
+    // Compute planned/earned hours from weekly plans (valorised hours)
+    let totalPlannedFromPlans = 0;
+    let totalEarnedFromPlans = 0;
     
-    // Lookup hoursPerWorker by week for accurate daily hours
-    const planHoursLookup = new Map<string, number>();
-    project.weeklyPlans.forEach(p => {
-        planHoursLookup.set(`${p.year}-${p.weekNumber}`, (p as any).hoursPerWorker || 40);
+    project.weeklyPlans.forEach(plan => {
+        plan.tasks.forEach((pt) => {
+            const minsPerUnit = pt.task?.minutesPerUnit || 0;
+            totalPlannedFromPlans += (pt.plannedQuantity * minsPerUnit) / 60;
+            totalEarnedFromPlans += (pt.actualQuantity * minsPerUnit) / 60;
+        });
     });
 
-    if (project.dailyReports) {
-        for (const report of project.dailyReports) {
-            if (report.status !== 'DRAFT') {
-                if (report.workersCount) {
-                    const d = new Date(report.date);
-                    const wk = getISOWeek(d);
-                    const yr = getISOWeekYear(d);
-                    const key = `${yr}-${wk}`;
-                    
-                    const weeklyHoursPerWorker = planHoursLookup.get(key) || 40;
-                    const dailyHoursPerWorker = weeklyHoursPerWorker / 5;
-                    globalUsedHours += report.workersCount * dailyHoursPerWorker;
-                }
-                
-                report.taskProgress.forEach(tp => {
-                    globalEarnedFromReports += tp.hours || 0;
-                });
-            }
-        }
-    }
-
     const earnedHoursTotal = totalLaborMinsAchieved / 60;
-    const globalEfficiencyPct = globalUsedHours > 0 ? (globalEarnedFromReports / globalUsedHours) * 100 : 0;
-    const globalHoursLost = globalUsedHours - globalEarnedFromReports;
+    const globalEfficiencyPct = totalPlannedFromPlans > 0 ? (totalEarnedFromPlans / totalPlannedFromPlans) * 100 : 0;
+    const globalHoursLost = totalPlannedFromPlans - totalEarnedFromPlans;
 
     const completionPercentage = totalLaborMinsTotal ? (earnedHoursTotal / (totalLaborMinsTotal / 60)) * 100 : 0;
 
@@ -134,9 +108,12 @@ export default async function SMProjectAnalytics({ params }: { params: Promise<{
                                 <TrendingUp size={24} />
                             </div>
                             <div>
-                                <div className="text-gray-400 text-[10px] uppercase font-bold tracking-widest">Efficience Globale</div>
+                                <div className="text-gray-400 text-[10px] uppercase font-bold tracking-widest">Efficience Globale (Valorisé / Planifié)</div>
                                 <div className={`text-2xl font-black ${globalEfficiencyPct >= 100 ? 'text-emerald-400' : 'text-amber-400'}`}>
                                     {globalEfficiencyPct > 0 ? `${globalEfficiencyPct.toFixed(1)} %` : 'N/A'}
+                                </div>
+                                <div className="text-xs text-gray-500 mt-0.5">
+                                    {totalEarnedFromPlans.toFixed(1)}h valorisées / {totalPlannedFromPlans.toFixed(1)}h planifiées
                                 </div>
                             </div>
                         </div>
@@ -146,7 +123,7 @@ export default async function SMProjectAnalytics({ params }: { params: Promise<{
                                 <Clock size={24} />
                             </div>
                             <div>
-                                <div className="text-gray-400 text-[10px] uppercase font-bold tracking-widest">Heures Perdues (Dépensées - Gagnées)</div>
+                                <div className="text-gray-400 text-[10px] uppercase font-bold tracking-widest">Heures Perdues (Planifié - Valorisé)</div>
                                 <div className={`text-2xl font-black ${globalHoursLost <= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                                     {globalHoursLost > 0 ? '+' : ''}{globalHoursLost.toFixed(1)} h
                                 </div>
@@ -155,7 +132,7 @@ export default async function SMProjectAnalytics({ params }: { params: Promise<{
                     </div>
                 </div>
 
-                <ProjectAnalyticsCharts tasks={project.tasks} weeklyPlans={project.weeklyPlans} dailyReports={project.dailyReports} />
+                <ProjectAnalyticsCharts tasks={project.tasks} weeklyPlans={project.weeklyPlans} />
 
             </main>
         </>

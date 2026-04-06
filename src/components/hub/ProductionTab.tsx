@@ -5,7 +5,6 @@ import Link from "next/link";
 import { ArrowLeft, CheckCircle2, ShieldAlert, Clock, History, TrendingUp } from "lucide-react";
 import { HOURLY_RATE_EUR } from "@/lib/xp-engine";
 import WeeklyReportGenerator from "./WeeklyReportGenerator";
-import { getISOWeek, getISOWeekYear } from "date-fns";
 
 interface ProductionTabProps {
     project: {
@@ -71,48 +70,40 @@ export default function ProductionTab({ project }: ProductionTabProps) {
         totalLaborMinsAchieved += (t.completedQuantity * t.minutesPerUnit);
     });
 
-    let globalUsedHours = 0;
-    let globalEarnedFromReports = 0;
+    // Compute planned/earned hours from weekly plans (valorised hours)
+    let totalPlannedFromPlans = 0;
+    let totalEarnedFromPlans = 0;
     
-    // Group daily reports by ISO week for weekly efficiency
+    // Group daily reports by ISO week for weekly efficiency cards
     const reportsByWeek = new Map<string, typeof project.dailyReports>();
-    
-    // Lookup hoursPerWorker by week for accurate daily hours
-    const planHoursLookup = new Map<string, number>();
-    project.weeklyPlans.forEach(p => {
-        planHoursLookup.set(`${p.year}-${p.weekNumber}`, (p as any).hoursPerWorker || 40);
+
+    project.weeklyPlans.forEach(plan => {
+        plan.tasks.forEach((pt) => {
+            const minsPerUnit = pt.task?.minutesPerUnit || 0;
+            totalPlannedFromPlans += (pt.plannedQuantity * minsPerUnit) / 60;
+            totalEarnedFromPlans += (pt.actualQuantity * minsPerUnit) / 60;
+        });
     });
 
     if (project.dailyReports) {
         for (const report of project.dailyReports) {
-            // Group by week
             const d = new Date(report.date);
-            const wk = getISOWeek(d);
-            const yr = getISOWeekYear(d);
+            const startOfYear = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+            const diff = d.getTime() - startOfYear.getTime();
+            const oneDay = 86400000;
+            const dayOfYear = Math.floor(diff / oneDay);
+            const wk = Math.ceil((dayOfYear + startOfYear.getUTCDay() + 1) / 7);
+            const yr = d.getUTCFullYear();
             const key = `${yr}-${wk}`;
-            
-            // Count used hours if it's submitted or approved (not draft)
-            if (report.status !== 'DRAFT') {
-                if (report.workersCount) {
-                    const weeklyHoursPerWorker = planHoursLookup.get(key) || 40;
-                    const dailyHoursPerWorker = weeklyHoursPerWorker / 5;
-                    globalUsedHours += report.workersCount * dailyHoursPerWorker;
-                }
-                
-                // Keep track of exactly how much was earned during these logs
-                report.taskProgress.forEach(tp => {
-                    globalEarnedFromReports += tp.hours || 0;
-                });
-            }
             
             if (!reportsByWeek.has(key)) reportsByWeek.set(key, []);
             reportsByWeek.get(key)!.push(report);
         }
     }
 
-    const earnedHoursTotal = totalLaborMinsAchieved / 60; // All time
-    const globalEfficiencyPct = globalUsedHours > 0 ? (globalEarnedFromReports / globalUsedHours) * 100 : 0;
-    const globalHoursLost = globalUsedHours - globalEarnedFromReports;
+    const earnedHoursTotal = totalLaborMinsAchieved / 60; // All time from tasks
+    const globalEfficiencyPct = totalPlannedFromPlans > 0 ? (totalEarnedFromPlans / totalPlannedFromPlans) * 100 : 0;
+    const globalHoursLost = totalPlannedFromPlans - totalEarnedFromPlans;
     
     const completionPercentage = totalLaborMinsTotal ? (earnedHoursTotal / (totalLaborMinsTotal / 60)) * 100 : 0;
     const budgetEur = Math.round((totalLaborMinsTotal / 60) * HOURLY_RATE_EUR);
@@ -166,9 +157,12 @@ export default function ProductionTab({ project }: ProductionTabProps) {
                             <TrendingUp size={24} />
                         </div>
                         <div>
-                            <div className="text-gray-400 text-[10px] uppercase font-bold tracking-widest"><T k="global_efficiency" /></div>
+                            <div className="text-gray-400 text-[10px] uppercase font-bold tracking-widest"><T k="global_efficiency" /> (Valorisé / Planifié)</div>
                             <div className={`text-2xl font-black ${globalEfficiencyPct >= 100 ? 'text-emerald-400' : 'text-amber-400'}`}>
                                 {globalEfficiencyPct > 0 ? `${globalEfficiencyPct.toFixed(1)} %` : 'N/A'}
+                            </div>
+                            <div className="text-xs text-gray-500 mt-0.5">
+                                {totalEarnedFromPlans.toFixed(1)}h valorisées / {totalPlannedFromPlans.toFixed(1)}h planifiées
                             </div>
                         </div>
                     </div>
@@ -178,7 +172,7 @@ export default function ProductionTab({ project }: ProductionTabProps) {
                             <Clock size={24} />
                         </div>
                         <div>
-                            <div className="text-gray-400 text-[10px] uppercase font-bold tracking-widest">Heures Perdues (Dépensées - Gagnées)</div>
+                            <div className="text-gray-400 text-[10px] uppercase font-bold tracking-widest">Heures Perdues (Planifié - Valorisé)</div>
                             <div className={`text-2xl font-black ${globalHoursLost <= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                                 {globalHoursLost > 0 ? '+' : ''}{globalHoursLost.toFixed(1)} h
                             </div>
@@ -209,7 +203,7 @@ export default function ProductionTab({ project }: ProductionTabProps) {
             </div>
 
             {/* Project Analytics Charts */}
-            <ProjectAnalyticsCharts tasks={project.tasks} weeklyPlans={project.weeklyPlans} dailyReports={project.dailyReports || []} />
+            <ProjectAnalyticsCharts tasks={project.tasks} weeklyPlans={project.weeklyPlans} />
 
             {/* Weekly Plans */}
             <div className="bg-[#080d1a]/80 border border-white/5 rounded-md p-6">

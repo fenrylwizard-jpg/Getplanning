@@ -7,16 +7,7 @@ import { PieChart, Pie, Cell, Tooltip as PieTooltip, ResponsiveContainer, Cartes
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTranslation } from '@/lib/LanguageContext';
 
-// Color helper for efficiency bars
-function getEfficiencyColor(efficiency: number): string {
-    if (efficiency >= 100) return '#10b981'; // emerald-500
-    if (efficiency >= 90) return '#22c55e';  // green-500
-    if (efficiency >= 70) return '#f59e0b';  // amber-500
-    if (efficiency >= 50) return '#f97316';  // orange-500
-    return '#ef4444';                        // red-500
-}
-
-export default function ProjectAnalyticsCharts({ tasks, weeklyPlans, dailyReports = [] }: { tasks: any[], weeklyPlans: any[], dailyReports?: any[] }) {
+export default function ProjectAnalyticsCharts({ tasks, weeklyPlans }: { tasks: any[], weeklyPlans: any[] }) {
     const { t, tData } = useTranslation();
     const [weeksToShow, setWeeksToShow] = useState<number>(0);
     const [startIndex, setStartIndex] = useState<number>(0);
@@ -103,8 +94,8 @@ export default function ProjectAnalyticsCharts({ tasks, weeklyPlans, dailyReport
         setActiveIndex(-1);
     };
 
-    // 2. Prepare Progression Chart Data (Weekly Planned vs Executed)
-    const lineData = useMemo(() => {
+    // 2. Prepare Weekly Planned vs Earned Data (from WeeklyPlanTask)
+    const weeklyProductionData = useMemo(() => {
         const sortedPlans = [...weeklyPlans].sort((a, b) => {
             if (a.year !== b.year) return a.year - b.year;
             return a.weekNumber - b.weekNumber;
@@ -112,37 +103,38 @@ export default function ProjectAnalyticsCharts({ tasks, weeklyPlans, dailyReport
 
         return sortedPlans.map(plan => {
             let plannedHrs = 0;
-            let executedHrs = 0;
+            let earnedHrs = 0;
 
             plan.tasks.forEach((pt: any) => {
                 const minsPerUnit = pt.task?.minutesPerUnit || 0;
                 plannedHrs += (pt.plannedQuantity * minsPerUnit) / 60;
-                executedHrs += (pt.actualQuantity * minsPerUnit) / 60;
+                earnedHrs += (pt.actualQuantity * minsPerUnit) / 60;
             });
 
-            // Very simple week-to-month approximation mapping for visualization
-            // Week 1 -> Jan, Week 5 -> Feb, Week 9 -> Mar...
             const monthNames = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Aoû", "Sep", "Oct", "Nov", "Déc"];
             let approxMonthIdx = Math.floor((plan.weekNumber - 1) / 4.33);
             if (approxMonthIdx > 11) approxMonthIdx = 11;
             const monthLabel = monthNames[approxMonthIdx];
 
+            const efficiencyPct = plannedHrs > 0 ? (earnedHrs / plannedHrs) * 100 : 0;
+
             return {
                 name: `S${plan.weekNumber} (${monthLabel})`,
-                [t("planned")]: Number(plannedHrs.toFixed(1)),
-                [t("executed")]: Number(executedHrs.toFixed(1)),
+                planned: Number(plannedHrs.toFixed(1)),
+                earned: Number(earnedHrs.toFixed(1)),
+                efficiencyPct: Number(efficiencyPct.toFixed(1)),
             };
         });
-    }, [weeklyPlans, t]);
+    }, [weeklyPlans]);
 
-    const displayLineData = useMemo(() => {
-        if (weeksToShow === 0) return lineData;
+    const displayWeeklyData = useMemo(() => {
+        if (weeksToShow === 0) return weeklyProductionData;
         const start = Math.max(0, startIndex);
-        return lineData.slice(start, start + weeksToShow);
-    }, [lineData, weeksToShow, startIndex]);
+        return weeklyProductionData.slice(start, start + weeksToShow);
+    }, [weeklyProductionData, weeksToShow, startIndex]);
 
     const handleNext = () => {
-        if (startIndex + weeksToShow < lineData.length) {
+        if (startIndex + weeksToShow < weeklyProductionData.length) {
             setStartIndex(s => s + weeksToShow);
         }
     };
@@ -285,7 +277,7 @@ export default function ProjectAnalyticsCharts({ tasks, weeklyPlans, dailyReport
                                         boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.5)'
                                     }} 
                                     itemStyle={{ color: '#fff', fontWeight: 600 }}
-                                    labelStyle={{ display: 'none' }} // Pie charts don't use label typically, hide to prevent black text
+                                    labelStyle={{ display: 'none' }}
                                 />
                                 </PieChart>
                             </ResponsiveContainer>
@@ -329,7 +321,7 @@ export default function ProjectAnalyticsCharts({ tasks, weeklyPlans, dailyReport
 
             <div className="glass-card neon-card-green h-[400px] flex flex-col">
                 <div className="flex justify-between items-center mb-4">
-                    <h3>{t("efficiency_progression")} <span className="text-xs text-gray-500 font-normal ml-2">(par jour)</span></h3>
+                    <h3>{t("efficiency_progression")} <span className="text-xs text-gray-500 font-normal ml-2">(par semaine)</span></h3>
                     
                     <div className="flex items-center gap-4">
                         {/* Toggle % / Hours */}
@@ -363,74 +355,54 @@ export default function ProjectAnalyticsCharts({ tasks, weeklyPlans, dailyReport
                             <div className="flex items-center gap-1">
                                 <button title={t("prev")} className="btn btn-secondary p-1" onClick={handlePrev} disabled={startIndex === 0}><ChevronLeft size={16}/></button>
                                 <span className="text-secondary text-sm mx-2">{t("display")}</span>
-                                <button title={t("next")} className="btn btn-secondary p-1" onClick={handleNext} disabled={startIndex + weeksToShow >= lineData.length}><ChevronRight size={16}/></button>
+                                <button title={t("next")} className="btn btn-secondary p-1" onClick={handleNext} disabled={startIndex + weeksToShow >= weeklyProductionData.length}><ChevronRight size={16}/></button>
                             </div>
                         )}
                     </div>
                 </div>
                 
                 <div className="flex-1">
-                    {dailyReports.length > 0 ? (
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={(() => {
-                                const dayNames = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
-                                return dailyReports.map((r: any) => {
-                                    const d = new Date(r.date);
-                                    const dayLabel = `${dayNames[d.getUTCDay()]} ${d.getUTCDate()}/${(d.getUTCMonth()+1).toString().padStart(2,'0')}`;
-                                    const standardHours = (r.taskProgress || []).reduce((sum: number, p: any) => sum + (p.hours || 0), 0);
-                                    const workers = r.workersCount || 1;
-                                    const expected = workers * 8;
-                                    const effPct = expected > 0 ? (standardHours / expected) * 100 : 0;
-                                    return {
-                                        name: dayLabel,
-                                        value: chartMode === 'percent' ? Number(effPct.toFixed(1)) : Number(standardHours.toFixed(1)),
-                                        workers,
-                                        standardHours: Number(standardHours.toFixed(1)),
-                                        effPct: Number(effPct.toFixed(1)),
-                                    };
-                                });
-                            })()} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                        {chartMode === 'hours' ? (
+                            <BarChart data={displayWeeklyData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" vertical={false} />
                                 <XAxis dataKey="name" stroke="var(--text-secondary)" tick={{fontSize: 11}} />
-                                <YAxis stroke="var(--text-secondary)" unit={chartMode === 'percent' ? '%' : 'H'} />
-                                {chartMode === 'percent' && (
-                                    <Line type="monotone" dataKey={() => 100} stroke="#10b981" strokeWidth={1} strokeDasharray="5 5" dot={false} name="Objectif" />
-                                )}
+                                <YAxis stroke="var(--text-secondary)" unit="h" />
                                 <BarTooltip
                                     contentStyle={{ backgroundColor: 'var(--bg-tertiary)', border: 'none', borderRadius: 'var(--radius-md)' }}
                                     itemStyle={{ color: 'var(--text-primary)' }}
                                     cursor={{ fill: 'rgba(255,255,255,0.05)' }}
-                                    formatter={(value: any, name: any) => {
-                                        if (name === 'value') return [`${value}${chartMode === 'percent' ? '%' : 'H'}`, chartMode === 'percent' ? 'Efficience' : 'Heures Standard'];
-                                        return [value, name || ""];
-                                    }}
+                                    formatter={(value: any, name: string) => [`${value}h`, name]}
                                 />
-                                <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                                    {dailyReports.map((_: any, index: number) => {
-                                        const r = dailyReports[index];
-                                        const stdHrs = (r.taskProgress || []).reduce((sum: number, p: any) => sum + (p.hours || 0), 0);
-                                        const exp = (r.workersCount || 1) * 8;
-                                        const eff = exp > 0 ? (stdHrs / exp) * 100 : 0;
-                                        return <Cell key={`cell-${index}`} fill={getEfficiencyColor(eff)} />;
-                                    })}
+                                <Bar dataKey="planned" name="Planifié" fill="#64748b" radius={[4, 4, 0, 0]} />
+                                <Bar dataKey="earned" name="Valorisé" radius={[4, 4, 0, 0]}>
+                                    {displayWeeklyData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={getEfficiencyColor(entry.efficiencyPct)} />
+                                    ))}
                                 </Bar>
                             </BarChart>
-                        </ResponsiveContainer>
-                    ) : (
-                        <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={displayLineData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                                <XAxis dataKey="name" stroke="var(--text-secondary)" tick={{fontSize: 12}} />
-                                <YAxis stroke="var(--text-secondary)" />
+                        ) : (
+                            <BarChart data={displayWeeklyData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" vertical={false} />
+                                <XAxis dataKey="name" stroke="var(--text-secondary)" tick={{fontSize: 11}} />
+                                <YAxis stroke="var(--text-secondary)" unit="%" domain={[0, (dataMax: number) => Math.max(120, Math.ceil(dataMax * 1.1))]} />
                                 <BarTooltip
                                     contentStyle={{ backgroundColor: 'var(--bg-tertiary)', border: 'none', borderRadius: 'var(--radius-md)' }}
                                     itemStyle={{ color: 'var(--text-primary)' }}
+                                    cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+                                    formatter={(value: any, name: string) => {
+                                        if (name === 'Efficience') return [`${value}%`, name];
+                                        return [value, name];
+                                    }}
                                 />
-                                <Line type="stepAfter" dataKey={t("planned")} stroke="var(--text-secondary)" strokeWidth={2} strokeDasharray="5 5" />
-                                <Line type="monotone" dataKey={t("executed")} stroke="var(--accent-primary)" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
-                            </LineChart>
-                        </ResponsiveContainer>
-                    )}
+                                <Bar dataKey="efficiencyPct" name="Efficience" radius={[4, 4, 0, 0]}>
+                                    {displayWeeklyData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={getEfficiencyColor(entry.efficiencyPct)} />
+                                    ))}
+                                </Bar>
+                            </BarChart>
+                        )}
+                    </ResponsiveContainer>
                 </div>
             </div>
 
